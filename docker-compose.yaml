@@ -1,0 +1,51 @@
+version: "3.9"
+networks:
+  pyciemss-api:
+    driver: bridge
+    name: pyciemss-api
+services:
+  api:
+    container_name: pyciemss-api
+    build:
+      context: ./
+      dockerfile: docker/Dockerfile
+    command:
+      [
+        "uvicorn",
+        "server:app",
+        "--reload",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+      ]
+    ports:
+      - "8010:8000"
+    env_file:
+      - api.env
+    networks:
+      - pyciemss-api
+    depends_on:
+      - redis
+    volumes:
+      - $PWD/api:/api
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - published: 6379
+        target: 6379
+    networks:
+      - pyciemss-api
+  rqworker:
+    build:
+      context: ./
+      dockerfile: docker/Dockerfile.simulations-worker
+    command:
+      - rq
+      - worker
+      - --url
+      - redis://redis:6379
+      - high
+      - default
+      - low

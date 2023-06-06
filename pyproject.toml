@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "pyciemss-api"
+version = "0.1.0"
+description = "PyCIEMSS simulation service to run CIEMSS simulations"
+authors = ["Powell Fendley"]
+readme = "README.md"
+packages = [{include = "pyciemss_api"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+requests = "^2.31.0"
+fastapi = "^0.96.0"
+rq = "^1.15.0"
+redis = "^4.5.5"
+boto3 = "^1.26.147"
+uvicorn = "^0.22.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
