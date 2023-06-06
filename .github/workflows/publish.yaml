@@ -1,0 +1,36 @@
+---
+# Automatically build Docker images on changes to main and push them to a
+# Container Registry using HCL Bake file.
+
+name: Build Docker Images
+# yamllint disable-line rule:truthy
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main']
+    tags: ['*']
+
+jobs:
+  # Call the Lint & Format workflow before publishing
+  verify:
+    uses: ./.github/workflows/lint.yaml
+
+  # Call the Tag Generator to generate an image tag to use
+  tag-generator:
+    uses: darpa-askem/.github/.github/workflows/tag-generator.yaml@main
+
+  # Build and Publish all targets associated with specified group
+  bake:
+    needs:
+      - verify
+      - tag-generator
+    uses: darpa-askem/.github/.github/workflows/bake-publish.yml@main
+    with:
+      file: 'docker-bake.hcl'
+      group: 'prod'
+      registry: 'ghcr.io'
+      organization: ${{ github.repository_owner }}
+      tag: ${{ needs.tag-generator.outputs.tag }}
+    secrets:
+      username: ${{ github.repository_owner }}
+      password: ${{ secrets.GITHUB_TOKEN }}
