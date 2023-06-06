@@ -28,4 +28,4 @@ def build_api(*args) -> FastAPI:
 
 app = build_api()
 
-app.include_router(simulate.router, prefix="/")
+app.include_router(simulate.router)

@@ -8,7 +8,7 @@ services:
     container_name: pyciemss-api
     build:
       context: ./
-      dockerfile: docker/Dockerfile
+      dockerfile: api/Dockerfile
     command:
       [
         "uvicorn",
@@ -40,12 +40,14 @@ services:
   rqworker:
     build:
       context: ./
-      dockerfile: docker/Dockerfile.simulations-worker
+      dockerfile: simulations/Dockerfile
     command:
       - rq
       - worker
       - --url
-      - redis://redis:6379
+      - redis://redis.pyciemss-api:6379
       - high
       - default
       - low
+    networks:
+      - pyciemss-api
