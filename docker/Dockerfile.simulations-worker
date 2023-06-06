@@ -11,3 +11,7 @@ RUN poetry config virtualenvs.create false && \
 
 # PROCESS TO INSTALL PYCIEMSS
 COPY pyciemss pyciemss
+WORKDIR /pyciemss
+RUN pip install --default-timeout=900 -e .
+
+WORKDIR /simulations
