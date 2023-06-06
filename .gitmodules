@@ -1,0 +1,3 @@
+[submodule "pyciemss"]
+	path = pyciemss
+	url = git@github.com:ciemss/pyciemss.git
