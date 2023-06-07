@@ -1,6 +1,12 @@
 from __future__ import annotations
 
+import json
+import os
+import requests
+import sys
+
 from fastapi import APIRouter
+import urllib
 
 from validation.models import (
     CalibratePostRequest,
@@ -13,6 +19,8 @@ from validation.models import (
 )
 
 router = APIRouter()
+
+TDS_MODELS = '/models/'
 
 
 @router.post('/calibrate', response_model=CalibratePostResponse)
@@ -38,15 +46,34 @@ def simulate_model(body: SimulatePostRequest) -> SimulatePostResponse:
     """
     from utils import job
 
-    model_id = body.get("model_config_id")
-    num_samples = body.get("num_samples")
-    start_timestamp = body.get("timespan").get("start_epoch")
-    end_timestamp = body.get("timespan").get("end_epoch")
+    # Parse request body
+    print(body)
+    model_id = body.model_config_id
+    num_samples = body.num_samples
+    start_timestamp = body.timespan.start_epoch
+    end_timestamp = body.timespan.end_epoch
+
+    print(model_id)
+
+    # Get model from TDS
+    tds_api = os.getenv("TDS_URL")
+    url_components = [tds_api, TDS_MODELS, model_id]
+    model_url = ''
+    for component in url_components:
+        model_url = urllib.parse.urljoin(model_url, component)
+    print(model_url)
+    sys.stdout.flush()
+    model_response = requests.get(model_url)
+    model_json = json.loads(json.dumps(model_response.content))["model"]
+
 
     job_string = "ciemss_processor.simulate_model"
-    options = {"start_timestamp": start_timestamp,
-               "end_timestamp": end_timestamp,
-               "num_samples": num_samples}
+    options = {
+        "model": model_json,
+        "start_timestamp": start_timestamp,
+        "end_timestamp": end_timestamp,
+        "num_samples": num_samples
+    }
 
     resp = job(uuid=model_id, job_string=job_string, options=options)
 

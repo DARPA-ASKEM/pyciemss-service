@@ -29,12 +29,13 @@ services:
       - redis
     volumes:
       - $PWD/api:/api
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   redis:
     container_name: redis
     image: redis
     ports:
-      - published: 6379
-        target: 6379
+      - "6379:6379"
     networks:
       - pyciemss-api
   rqworker:
@@ -49,5 +50,7 @@ services:
       - high
       - default
       - low
+    depends_on:
+      - redis
     networks:
       - pyciemss-api

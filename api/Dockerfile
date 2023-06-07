@@ -1,6 +1,6 @@
 FROM python:3.10
 
-RUN pip install poetry
+RUN pip install --no-cache-dir poetry
 WORKDIR /api
 COPY README.md README.md
 

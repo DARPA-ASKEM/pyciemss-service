@@ -4,7 +4,7 @@ from pyciemss.PetriNetODE.interfaces import load_and_sample_petri_model
 
 def simulate_model(*args, **kwargs):
 
-    filename = kwargs.get("filename")
+    model = kwargs.get("model")
     num_samples = kwargs.get("num_samples")
     start_epoch = kwargs.get("start_epoch")
     end_epoch = kwargs.get("end_epoch")
@@ -16,7 +16,7 @@ def simulate_model(*args, **kwargs):
 
     
     samples = load_and_sample_petri_model(
-        filename, num_samples, timepoints=timepoints, add_uncertainty=add_uncertainty
+        model, num_samples, timepoints=timepoints, add_uncertainty=add_uncertainty
     )
 
     return samples
