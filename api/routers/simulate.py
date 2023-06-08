@@ -64,14 +64,17 @@ def simulate_model(body: SimulatePostRequest) -> SimulatePostResponse:
     print(model_url)
     sys.stdout.flush()
     model_response = requests.get(model_url)
-    model_json = json.loads(json.dumps(model_response.content))["model"]
+    model_json = json.loads(model_response.content)
+
+    if os.getenv("MODEL_DEBUG_HARDCODE_FILE"):
+        model_json = json.load(open("/api/BIOMD0000000955_template_model.json"))
 
 
     job_string = "ciemss_processor.simulate_model"
     options = {
         "model": model_json,
-        "start_timestamp": start_timestamp,
-        "end_timestamp": end_timestamp,
+        "start_epoch": start_timestamp,
+        "end_epoch": end_timestamp,
         "num_samples": num_samples
     }
 
