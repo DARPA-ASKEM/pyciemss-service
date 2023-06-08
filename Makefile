@@ -9,7 +9,7 @@ export LANG
 .PHONY:init
 init:
 	make envfile; \
-	git submodule update --init --remote --rebase; \
+	git submodule update --init; \
 
 # Environment file copy
 envfile:
