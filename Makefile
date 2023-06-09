@@ -25,8 +25,8 @@ up:docker-compose.yaml
 
 # Rebuild all containers and turn project on
 .PHONY:up-rebuild
-up-rebuild:docker-compose.yaml ui/node_modules
-	$(DOCKER_COMPOSE) up --build -d
+up-rebuild:docker-compose.yaml
+	$(DOCKER_COMPOSE) compose up --build -d
 
 # Turn project off
 .PHONY:down
