@@ -13,6 +13,8 @@ from pyciemss.PetriNetODE.interfaces import (
 )
 
 TDS_MODELS = "/model_configurations/"
+TDS_SIMULATIONS = "/simulations/"
+OUTPUT_FILENAME = "sim_output.json"
 
 
 def simulate_model(*args, **kwargs):
@@ -45,20 +47,32 @@ def simulate_model(*args, **kwargs):
         model_json, num_samples, timepoints=timepoints, add_uncertainty=add_uncertainty
     )
 
-    # TODO Put results (and files) to TDS
-    parse_samples_into_file(samples)
+    # Upload results file
+    parse_samples_into_file(samples)  # TODO remove when pyciemss implements this
 
-    upload_url = tds_api + f"/simulations/{job_id}/upload-url?filename=sim_output.json"
+    upload_url = (
+        tds_api + f"{TDS_SIMULATIONS}{job_id}/upload-url?filename={OUTPUT_FILENAME}"
+    )
     print(upload_url)
     upload_response = requests.get(upload_url)
-    presigned_upload_url = upload_response.content
+    presigned_upload_url = upload_response.json()["url"]
     print(presigned_upload_url)
-    sys.stdout.flush()
-    with open("sim_output.json", "rb") as f:
+    with open(OUTPUT_FILENAME, "rb") as f:
         upload_response = requests.put(presigned_upload_url, f)
 
-    print(upload_response.content)
-    return upload_response.content
+    print(upload_response.status_code)
+
+    # Update simulation object with status and filepaths.
+    sim_results_url = tds_api + TDS_SIMULATIONS + job_id
+
+    results_payload = requests.get(sim_results_url).json()
+
+    results_payload["result_files"] = [OUTPUT_FILENAME]
+    results_payload["status"] = "complete"
+
+    requests.put(sim_results_url, results_payload)
+
+    return upload_response
 
 
 def calibrate_and_simulate_model(*args, **kwargs):
