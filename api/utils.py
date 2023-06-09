@@ -5,6 +5,7 @@ import logging
 import os
 import time
 import uuid
+import requests
 from ast import Dict
 from typing import Any, Optional
 
@@ -13,6 +14,10 @@ from redis import Redis
 from rq import Queue
 from rq.exceptions import NoSuchJobError
 from rq.job import Job
+
+STANDALONE = os.getenv("STANDALONE_MODE")
+TDS_SIMULATIONS = "/simulations/"
+TDS_API = os.getenv("TDS_URL")
 
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
@@ -41,6 +46,23 @@ def job(model_id: str, job_string: str, options: Optional[Dict[Any, Any]] = None
     job_id = f"{engine_prefix}_{model_id}_{random_id}"
     options["job_id"] = job_id
     job = q.fetch_job(job_id)
+
+    if STANDALONE:
+        post_url = TDS_API + TDS_SIMULATIONS + job_id
+        payload = {
+            "id": {job_id},
+            "execution_payload": {frozenset(options.items())},
+            "result_files": [],
+            "type": "simulation",
+            "status": "queued",
+            "start_time": "",
+            "completed_time": "",
+            "engine": "ciemss",
+            "workflow_id": "",
+            "user_id": "",
+            "project_id": "",
+        }
+        print(requests.put(post_url, payload).status_code)
 
     if job and force_restart:
         job.cleanup(ttl=0)  # Cleanup/remove data immediately

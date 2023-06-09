@@ -5,7 +5,7 @@ import sys
 
 import numpy as np
 import requests
-from utils import parse_samples_into_file
+from utils import parse_samples_into_file, update_tds_status
 
 from pyciemss.PetriNetODE.interfaces import (
     load_and_calibrate_and_sample_petri_model,
@@ -15,6 +15,7 @@ from pyciemss.PetriNetODE.interfaces import (
 TDS_MODELS = "/model_configurations/"
 TDS_SIMULATIONS = "/simulations/"
 OUTPUT_FILENAME = "sim_output.json"
+TDS_API = os.getenv("TDS_URL")
 
 
 def simulate_model(*args, **kwargs):
@@ -25,19 +26,18 @@ def simulate_model(*args, **kwargs):
     add_uncertainty = kwargs.get("add_uncertainty", True)
     job_id = kwargs.get("job_id")
 
+    sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
+
+    update_tds_status(sim_results_url, status="running")
+
     # Get model from TDS
-    tds_api = os.getenv("TDS_URL")
-    url_components = [tds_api, TDS_MODELS, model_id]
+    url_components = [TDS_API, TDS_MODELS, model_id]
     model_url = ""
     for component in url_components:
         model_url = urllib.parse.urljoin(model_url, component)
     model_response = requests.get(model_url)
     # TODO when pyciemss can handle full model payload remove ["model"]
     model_json = json.loads(model_response.content)["configuration"]["model"]
-
-    # TODO Remove when PyCIEMSS can handle correct models
-    # if os.getenv("MODEL_DEBUG_HARDCODE_FILE"):
-    #     model_json = json.load(open("/simulations/BIOMD0000000955_template_model.json"))
 
     # Generate timepoints
     time_count = end_epoch - start_epoch
@@ -48,10 +48,12 @@ def simulate_model(*args, **kwargs):
     )
 
     # Upload results file
-    parse_samples_into_file(samples)  # TODO remove when pyciemss implements this
+    parse_samples_into_file(
+        samples
+    )  # TODO remove when pyciemss implements a file output
 
     upload_url = (
-        tds_api + f"{TDS_SIMULATIONS}{job_id}/upload-url?filename={OUTPUT_FILENAME}"
+        TDS_API + f"{TDS_SIMULATIONS}{job_id}/upload-url?filename={OUTPUT_FILENAME}"
     )
     print(upload_url)
     upload_response = requests.get(upload_url)
@@ -63,14 +65,9 @@ def simulate_model(*args, **kwargs):
     print(upload_response.status_code)
 
     # Update simulation object with status and filepaths.
-    sim_results_url = tds_api + TDS_SIMULATIONS + job_id
-
-    results_payload = requests.get(sim_results_url).json()
-
-    results_payload["result_files"] = [OUTPUT_FILENAME]
-    results_payload["status"] = "complete"
-
-    requests.put(sim_results_url, results_payload)
+    update_tds_status(
+        sim_results_url, status="complete", result_files=[OUTPUT_FILENAME]
+    )
 
     return upload_response
 

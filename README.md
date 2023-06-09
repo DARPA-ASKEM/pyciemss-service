@@ -4,10 +4,6 @@
 
 ## Startup
 
-Follow the directions from NVIDIA for installing and enabling the NVIDIA container toolkit to your system. This is required to run CUDA on the container.
-
-`https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker`
-
 To start the PyCIEMSS Simulation API, first run: 
 
 `make init`

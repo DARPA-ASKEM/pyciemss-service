@@ -1,4 +1,6 @@
 import json
+import requests
+import sys
 
 
 def parse_samples_into_file(samples):
@@ -36,3 +38,20 @@ def parse_samples_into_file(samples):
 
     with open("sim_output.json", "w") as f:
         f.write(json.dumps(file_output_json))
+
+
+def update_tds_status(url, status, result_files=[]):
+    tds_payload = requests.get(url)
+    print(vars(tds_payload).keys())
+    print(tds_payload.json())
+    sys.stdout.flush()
+
+    tds_payload = tds_payload.json()
+
+    tds_payload["status"] = status
+    if result_files:
+        tds_payload["result_files"] = result_files
+
+    update_response = requests.put(url, tds_payload)
+
+    return update_response.content()
