@@ -39,6 +39,7 @@ def job(model_id: str, job_string: str, options: Optional[Dict[Any, Any]] = None
     random_id = str(uuid.uuid4())
 
     job_id = f"{engine_prefix}_{model_id}_{random_id}"
+    options["job_id"] = job_id
     job = q.fetch_job(job_id)
 
     if job and force_restart:

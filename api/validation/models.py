@@ -19,7 +19,7 @@ class Timespan(BaseModel):
 
 class Status(Enum):
     queued = "queued"
-    running = "running"
+    running = "started"
     complete = "finished"
     error = "error"
 

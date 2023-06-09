@@ -1,6 +1,7 @@
 import json
 import os
 import urllib
+import sys
 
 import numpy as np
 import requests
@@ -20,6 +21,7 @@ def simulate_model(*args, **kwargs):
     start_epoch = kwargs.get("start_epoch")
     end_epoch = kwargs.get("end_epoch")
     add_uncertainty = kwargs.get("add_uncertainty", True)
+    job_id = kwargs.get("job_id")
 
     # Get model from TDS
     tds_api = os.getenv("TDS_URL")
@@ -28,6 +30,7 @@ def simulate_model(*args, **kwargs):
     for component in url_components:
         model_url = urllib.parse.urljoin(model_url, component)
     model_response = requests.get(model_url)
+    # TODO when pyciemss can handle full model payload remove ["model"]
     model_json = json.loads(model_response.content)["configuration"]["model"]
 
     # TODO Remove when PyCIEMSS can handle correct models
@@ -45,7 +48,17 @@ def simulate_model(*args, **kwargs):
     # TODO Put results (and files) to TDS
     parse_samples_into_file(samples)
 
-    return samples_str
+    upload_url = tds_api + f"/simulations/{job_id}/upload-url?filename=sim_output.json"
+    print(upload_url)
+    upload_response = requests.get(upload_url)
+    presigned_upload_url = upload_response.content
+    print(presigned_upload_url)
+    sys.stdout.flush()
+    with open("sim_output.json", "rb") as f:
+        upload_response = requests.put(presigned_upload_url, f)
+
+    print(upload_response.content)
+    return upload_response.content
 
 
 def calibrate_and_simulate_model(*args, **kwargs):
