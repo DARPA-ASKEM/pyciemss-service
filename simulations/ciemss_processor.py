@@ -5,7 +5,7 @@ import sys
 
 import numpy as np
 import requests
-from utils import parse_samples_into_file, update_tds_status
+from utils import parse_samples_into_file, update_tds_status, parse_samples_into_csv
 
 from pyciemss.PetriNetODE.interfaces import (
     load_and_calibrate_and_sample_petri_model,
@@ -14,7 +14,7 @@ from pyciemss.PetriNetODE.interfaces import (
 
 TDS_MODELS = "/model_configurations/"
 TDS_SIMULATIONS = "/simulations/"
-OUTPUT_FILENAME = "sim_output.json"
+OUTPUT_FILENAME = os.getenv("PYCIEMSS_OUTPUT_FILEPATH")
 TDS_API = os.getenv("TDS_URL")
 
 
@@ -28,7 +28,7 @@ def simulate_model(*args, **kwargs):
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
 
-    update_tds_status(sim_results_url, status="running")
+    update_tds_status(sim_results_url, status="running", start=True)
 
     # Get model from TDS
     url_components = [TDS_API, TDS_MODELS, model_id]
@@ -36,7 +36,7 @@ def simulate_model(*args, **kwargs):
     for component in url_components:
         model_url = urllib.parse.urljoin(model_url, component)
     model_response = requests.get(model_url)
-    # TODO when pyciemss can handle full model payload remove ["model"]
+    # TODO when pyciemss can handle full model configuration payload remove ["model"]
     model_json = json.loads(model_response.content)["configuration"]["model"]
 
     # Generate timepoints
@@ -48,9 +48,8 @@ def simulate_model(*args, **kwargs):
     )
 
     # Upload results file
-    parse_samples_into_file(
-        samples
-    )  # TODO remove when pyciemss implements a file output
+    # TODO remove when pyciemss implements a file output
+    parse_samples_into_csv(samples)
 
     upload_url = (
         TDS_API + f"{TDS_SIMULATIONS}{job_id}/upload-url?filename={OUTPUT_FILENAME}"
@@ -66,7 +65,7 @@ def simulate_model(*args, **kwargs):
 
     # Update simulation object with status and filepaths.
     update_tds_status(
-        sim_results_url, status="complete", result_files=[OUTPUT_FILENAME]
+        sim_results_url, status="complete", result_files=[OUTPUT_FILENAME], finish=True
     )
 
     return upload_response

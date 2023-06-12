@@ -5,6 +5,8 @@ import logging
 import os
 import time
 import uuid
+import json
+import sys
 import requests
 from ast import Dict
 from typing import Any, Optional
@@ -48,21 +50,30 @@ def job(model_id: str, job_string: str, options: Optional[Dict[Any, Any]] = None
     job = q.fetch_job(job_id)
 
     if STANDALONE:
+        print(f"OPTIONS: {options}")
+        ex_payload = {
+            "engine": options.get("engine"),
+            "model_config_id": model_id,
+            "timespan": {
+                "start_epoch": options.get("start_epoch"),
+                "end_epoch": options.get("end_epoch"),
+            },
+            "num_samples": options.get("num_samples"),
+            "extra": options.get("extra"),
+        }
         post_url = TDS_API + TDS_SIMULATIONS + job_id
         payload = {
-            "id": {job_id},
-            "execution_payload": {frozenset(options.items())},
+            "id": job_id,
+            "execution_payload": ex_payload,
             "result_files": [],
             "type": "simulation",
             "status": "queued",
-            "start_time": "",
-            "completed_time": "",
-            "engine": "ciemss",
-            "workflow_id": "",
-            "user_id": "",
-            "project_id": "",
+            "engine": options.get("engine"),
+            "workflow_id": job_id,
         }
-        print(requests.put(post_url, payload).status_code)
+        print(payload)
+        sys.stdout.flush()
+        print(requests.put(post_url, json=json.loads(json.dumps(payload))).content)
 
     if job and force_restart:
         job.cleanup(ttl=0)  # Cleanup/remove data immediately

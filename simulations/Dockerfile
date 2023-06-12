@@ -7,7 +7,7 @@ COPY README.md README.md
 RUN pip install --no-cache-dir poetry==1.5.1
 COPY pyproject.toml pyproject.toml
 RUN poetry config virtualenvs.create false && \
-    poetry install --no-root --extras torch
+    poetry install --no-root --extras worker
 
 
 # PROCESS TO INSTALL PYCIEMSS
