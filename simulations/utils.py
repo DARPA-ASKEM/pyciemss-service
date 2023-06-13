@@ -99,6 +99,8 @@ def update_tds_status(url, status, result_files=[], start=False, finish=False):
     if result_files:
         tds_payload["result_files"] = result_files
 
-    update_response = requests.put(url, json=json.loads(json.dumps(tds_payload)))
+    update_response = requests.put(
+        url, json=json.loads(json.dumps(tds_payload, default=str))
+    )
 
     return update_response

@@ -21,8 +21,8 @@ TDS_API = os.getenv("TDS_URL")
 def simulate_model(*args, **kwargs):
     model_id = kwargs.get("model_id")
     num_samples = kwargs.get("num_samples")
-    start_epoch = kwargs.get("start_epoch")
-    end_epoch = kwargs.get("end_epoch")
+    start_epoch = kwargs.get("start")
+    end_epoch = kwargs.get("end")
     add_uncertainty = kwargs.get("add_uncertainty", True)
     job_id = kwargs.get("job_id")
 
@@ -74,8 +74,8 @@ def simulate_model(*args, **kwargs):
 def calibrate_and_simulate_model(*args, **kwargs):
     model_id = kwargs.get("model_id")
     num_samples = kwargs.get("num_samples")
-    start_epoch = kwargs.get("start_epoch")
-    end_epoch = kwargs.get("end_epoch")
+    start_epoch = kwargs.get("start")
+    end_epoch = kwargs.get("end")
     add_uncertainty = kwargs.get("add_uncertainty", True)
 
     # Get model from TDS

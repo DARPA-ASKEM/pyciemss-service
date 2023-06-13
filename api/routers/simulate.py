@@ -67,16 +67,16 @@ def simulate_model(body: SimulatePostRequest) -> SimulatePostResponse:
     # Parse request body
     engine = str(body.engine.value).lower()
     model_id = body.model_config_id
-    num_samples = body.num_samples
-    start_timestamp = body.timespan.start_epoch
-    end_timestamp = body.timespan.end_epoch
+    num_samples = body.extra.num_samples
+    start_timestamp = body.timespan.start
+    end_timestamp = body.timespan.end
 
     job_string = "ciemss_processor.simulate_model"
     options = {
         "engine": engine,
         "model_id": model_id,
-        "start_epoch": start_timestamp,
-        "end_epoch": end_timestamp,
+        "start": start_timestamp,
+        "end": end_timestamp,
         "num_samples": num_samples,
     }
 

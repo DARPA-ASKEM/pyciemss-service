@@ -55,8 +55,8 @@ def job(model_id: str, job_string: str, options: Optional[Dict[Any, Any]] = None
             "engine": options.get("engine"),
             "model_config_id": model_id,
             "timespan": {
-                "start_epoch": options.get("start_epoch"),
-                "end_epoch": options.get("end_epoch"),
+                "start": options.get("start"),
+                "end": options.get("end"),
             },
             "num_samples": options.get("num_samples"),
             "extra": options.get("extra"),
