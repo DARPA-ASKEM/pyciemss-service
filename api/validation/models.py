@@ -30,6 +30,27 @@ class Extra(BaseModel):
     num_samples: Optional[int] = Field(
         None, description="number of samples for a CIEMSS simulation", example=100
     )
+    pseudocount: Optional[float] = Field(
+        1.0, description="Optional field for CIEMSS calibration", example=1.0
+    )
+    start_time: Optional[float] = Field(
+        -1e-10, description="Optional field for CIEMSS calibration", example=-1e-10
+    )
+    num_iterations: Optional[int] = Field(
+        1000, description="Optional field for CIEMSS calibration", example=1000
+    )
+    lr: Optional[float] = Field(
+        0.03, description="Optional field for CIEMSS calibration", example=0.03
+    )
+    verbose: Optional[bool] = Field(
+        False, description="Optional field for CIEMSS calibration", example=False
+    )
+    num_particles: Optional[int] = Field(
+        1, description="Optional field for CIEMSS calibration", example=1
+    )
+    method: Optional[str] = Field(
+        "dopri5", description="Optional field for CIEMSS calibration", example="dopri5"
+    )
 
 
 class Dataset(BaseModel):
@@ -60,6 +81,11 @@ class CalibratePostRequest(BaseModel):
     model_config_id: str = Field(..., example="c1cd941a-047d-11ee-be56")
     dataset: Dataset = None
     timespan: Optional[Timespan] = None
+    mappings: Optional[Dict[str, str]] = Field(
+        ...,
+        description="Mappings from the dataset column names to the model names they should be replaced with.",
+        example="{'postive_tests': 'infected'}",
+    )
     extra: Extra = Field(
         None,
         description="optional extra system specific arguments for advanced use cases",

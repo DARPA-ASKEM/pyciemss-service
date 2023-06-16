@@ -1,8 +1,9 @@
+import csv
 import json
 import requests
 import sys
 from datetime import datetime
-import pandas as pd
+import pandas
 import numpy as np
 
 
@@ -80,7 +81,7 @@ def parse_samples_into_csv(samples):
         },
     }
 
-    df = pd.DataFrame(d)
+    df = pandas.DataFrame(d)
 
     # Write to CSV
     df.to_csv("pyciemss_results.csv", index=False)
@@ -104,3 +105,10 @@ def update_tds_status(url, status, result_files=[], start=False, finish=False):
     )
 
     return update_response
+
+
+def fetch_dataset(dataset_url, mappings):
+    response = requests.get(dataset_url)
+    csv = pandas.read_csv(response.body)
+    csv.rename(mapper=mappings)
+    return csv
