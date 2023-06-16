@@ -25,21 +25,25 @@ def calibrate_model(body: CalibratePostRequest) -> CalibratePostResponse:
     print(body)
     engine = str(body.engine).lower()
     model_id = body.model_config_id
-    num_samples = body.num_samples
+    num_samples = body.extra.num_samples
+    dataset = body.dataset
     start_timestamp = body.timespan.start_epoch
     end_timestamp = body.timespan.end_epoch
-    extra = body.extra  # TODO Get extras out for calibration
+    mappings = body.mappings
+    extra = body.extra
 
     print(model_id)
 
     job_string = "ciemss_processor.calibrate_and_simulate_model"
-    # TODO Add extras into options for calibration
     options = {
         "engine": engine,
         "model_id": model_id,
         "start_epoch": start_timestamp,
         "end_epoch": end_timestamp,
         "num_samples": num_samples,
+        "dataset": dataset,
+        "mappings": mappings,
+        "extra": extra,
     }
 
     resp = job(model_id=model_id, job_string=job_string, options=options)

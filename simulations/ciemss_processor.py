@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import urllib
@@ -5,7 +6,7 @@ import sys
 
 import numpy as np
 import requests
-from utils import parse_samples_into_file, update_tds_status, parse_samples_into_csv
+from utils import update_tds_status, parse_samples_into_csv, fetch_dataset
 
 from pyciemss.PetriNetODE.interfaces import (
     load_and_calibrate_and_sample_petri_model,
@@ -76,7 +77,12 @@ def calibrate_and_simulate_model(*args, **kwargs):
     num_samples = kwargs.get("num_samples")
     start_epoch = kwargs.get("start")
     end_epoch = kwargs.get("end")
-    add_uncertainty = kwargs.get("add_uncertainty", True)
+    mappings = kwargs.get("mappings")
+    job_id = kwargs.get("job_id")
+
+    sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
+
+    update_tds_status(sim_results_url, status="running", start=True)
 
     # Get model from TDS
     tds_api = os.getenv("TDS_URL")
@@ -91,22 +97,35 @@ def calibrate_and_simulate_model(*args, **kwargs):
     time_count = end_epoch - start_epoch
     timepoints = map(float, range(1, time_count + 1))
 
+    # Get dataset from TDS
+    dataset = kwargs.get("dataset")
+    dataset_url = (
+        TDS_API + f"/datasets/{dataset.id}/download-url?filename={dataset.filename}"
+    )
+    dataset_df = fetch_dataset(dataset_url=dataset_url, mappings=mappings)
+    dataset_buffer = io.StringIO
+    dataset_df.to_csv(dataset_buffer)
+
     # TODO parse arguments out for calibration
     samples = load_and_calibrate_and_sample_petri_model(
         model_json,
-        # data: Iterable[Tuple[float, dict[str, float]]],
+        data=dataset_buffer,
         num_samples=num_samples,
         timepoints=timepoints,
         # start_state: Optional[dict[str, float]] = None,
-        add_uncertainty=add_uncertainty,
-        # pseudocount: float = 1.0,
-        # start_time: float = -1e-10,
-        # num_iterations: int = 1000,
-        # lr: float = 0.03,
-        # verbose: bool = False,
-        # num_particles: int = 1,
+        add_uncertainty=kwargs.get("add_uncertainty", True),
+        pseudocount=kwargs.get("pseudocount", 1.0),
+        start_time=kwargs.get("start_time", -1e-10),
+        num_iterations=kwargs.get("num_iterations", 1000),
+        lr=kwargs.get("lr", 0.03),
+        verbose=kwargs.get("verbose", False),
+        num_particles=kwargs.get("num_particles", 1),
         # autoguide=pyro.infer.autoguide.AutoLowRankMultivariateNormal,
-        # method="dopri5",
+        method=kwargs.get("method", "dopri5"),
+    )
+
+    update_tds_status(
+        sim_results_url, status="complete", result_files=[OUTPUT_FILENAME], finish=True
     )
 
     return str(samples)
