@@ -19,11 +19,11 @@ OUTPUT_FILENAME = os.getenv("PYCIEMSS_OUTPUT_FILEPATH")
 TDS_API = os.getenv("TDS_URL")
 
 
-def simulate_model(*args, **kwargs):
+def simulate(*args, **kwargs):
     model_id = kwargs.get("model_id")
     num_samples = kwargs.get("num_samples")
-    start_epoch = kwargs.get("start")
-    end_epoch = kwargs.get("end")
+    start = kwargs.get("start")
+    end = kwargs.get("end")
     add_uncertainty = kwargs.get("add_uncertainty", True)
     job_id = kwargs.get("job_id")
 
@@ -41,7 +41,7 @@ def simulate_model(*args, **kwargs):
     model_json = json.loads(model_response.content)["configuration"]["model"]
 
     # Generate timepoints
-    time_count = end_epoch - start_epoch
+    time_count = end - start
     timepoints = map(float, range(1, time_count + 1))
 
     samples = load_and_sample_petri_model(
@@ -72,11 +72,11 @@ def simulate_model(*args, **kwargs):
     return upload_response
 
 
-def calibrate_and_simulate_model(*args, **kwargs):
+def calibrate_then_simulate(*args, **kwargs):
     model_id = kwargs.get("model_id")
     num_samples = kwargs.get("num_samples")
-    start_epoch = kwargs.get("start")
-    end_epoch = kwargs.get("end")
+    start = kwargs.get("start")
+    end = kwargs.get("end")
     mappings = kwargs.get("mappings")
     job_id = kwargs.get("job_id")
 
@@ -94,7 +94,7 @@ def calibrate_and_simulate_model(*args, **kwargs):
     model_json = json.loads(model_response.content)
 
     # Generate timepoints
-    time_count = end_epoch - start_epoch
+    time_count = end - start
     timepoints = map(float, range(1, time_count + 1))
 
     # Get dataset from TDS
