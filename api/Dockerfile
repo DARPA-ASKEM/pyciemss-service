@@ -1,12 +1,15 @@
 FROM python:3.10
 
 RUN pip install --no-cache-dir poetry==1.5.1
-WORKDIR /api
-COPY README.md README.md
-
-COPY pyproject.toml pyproject.toml
-
+ADD pyproject.toml pyproject.toml
+ADD poetry.lock poetry.lock
 RUN poetry config virtualenvs.create false && \
-    poetry install --no-root
+    poetry install --no-root --extras worker
+
+WORKDIR /
+COPY api api
+COPY README.md README.md
+WORKDIR /api
 
 EXPOSE 8000
+CMD [ "uvicorn", "server:app", "--reload", "--host", "0.0.0.0", "--port", "8000" ]
