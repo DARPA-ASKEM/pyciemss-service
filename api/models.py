@@ -12,8 +12,8 @@ class Engine(Enum):
 
 
 class Timespan(BaseModel):
-    start: float = Field(..., example=0.0)
-    end: float = Field(..., example=90.0)
+    start: int = Field(..., example=0)
+    end: int = Field(..., example=90)
 
 
 class Status(Enum):
