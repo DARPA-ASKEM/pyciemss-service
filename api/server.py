@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from models import (
+    Status,
     JobResponse,
     CalibratePostRequest,
     EnsemblePostRequest,
@@ -44,7 +45,7 @@ def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
     """
     from utils import fetch_job_status
 
-    return {"status": fetch_job_status(simulation_id)}
+    return {"status": Status(fetch_job_status(simulation_id))}
 
 
 @app.post("/simulate", response_model=JobResponse)
