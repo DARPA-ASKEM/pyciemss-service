@@ -107,7 +107,6 @@ def calibrate_model(body: CalibratePostRequest) -> CalibratePostResponse:
         "dataset": dataset,
         "extra": extra,
     }
-    options.update(extra.dict())
 
     resp = create_job(operation_name=operation_name, options=options)
 

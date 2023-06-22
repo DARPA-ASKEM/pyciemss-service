@@ -44,7 +44,7 @@ def create_job(operation_name: str, options: Optional[Dict[Any, Any]] = None):
     timeout = options.pop("timeout", 60)
     recheck_delay = 0.5
 
-    assert engine == "ciemss"
+    assert engine.split(".")[-1] == "ciemss"
     engine_prefix = options.get("engine", "ciemss")
     random_id = str(uuid.uuid4())
 
