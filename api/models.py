@@ -18,9 +18,19 @@ class Timespan(BaseModel):
 
 class Status(Enum):
     queued = "queued"
-    running = "started"
-    complete = "finished"
+    running = "running"
+    complete = "complete"
     error = "error"
+
+    @staticmethod
+    def from_rq(rq_status):
+        rq_status_to_tds_status = {
+            "queued": "queued",
+            "started": "running",
+            "finished": "complete",
+            "error": "error",
+        }
+        return Status(rq_status_to_tds_status[rq_status])
 
 
 class SimulateExtra(BaseModel):

@@ -45,7 +45,7 @@ def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
     """
     from utils import fetch_job_status
 
-    return {"status": Status(fetch_job_status(simulation_id))}
+    return {"status": Status.from_rq(fetch_job_status(simulation_id))}
 
 
 @app.post("/simulate", response_model=JobResponse)
