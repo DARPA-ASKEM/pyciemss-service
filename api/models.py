@@ -7,8 +7,8 @@ from pydantic import BaseModel, Field, Extra as ExtraEnum
 
 
 class Engine(Enum):
-    SciML = "SciML"
-    CIEMSS = "CIEMSS"
+    sciml = "sciml"
+    ciemss = "ciemss"
 
 
 class Timespan(BaseModel):
@@ -83,7 +83,7 @@ class Dataset(BaseModel):
 
 
 class SimulatePostRequest(BaseModel):
-    engine: Engine = Field(..., example="CIEMSS")
+    engine: Engine = Field(..., example="ciemss")
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan
     extra: SimulateExtra = Field(
@@ -93,7 +93,7 @@ class SimulatePostRequest(BaseModel):
 
 
 class CalibratePostRequest(BaseModel):
-    engine: Engine = Field(..., example="CIEMSS")
+    engine: Engine = Field(..., example="ciemss")
     model_config_id: str = Field(..., example="c1cd941a-047d-11ee-be56")
     dataset: Dataset = None
     timespan: Optional[Timespan] = None
@@ -104,7 +104,7 @@ class CalibratePostRequest(BaseModel):
 
 
 class EnsemblePostRequest(BaseModel):
-    engine: Engine = Field(..., example="CIEMSS")
+    engine: Engine = Field(..., example="ciemss")
     model_configuration_ids: Optional[List[str]] = Field(
         None,
         example=[
