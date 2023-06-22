@@ -10,6 +10,7 @@ import sys
 import requests
 from ast import Dict
 from typing import Any, Optional
+from copy import deepcopy
 
 from fastapi import Response, status
 from redis import Redis
@@ -33,32 +34,33 @@ redis = Redis(
 q = Queue(connection=redis, default_timeout=-1)
 
 
-def job(model_id: str, job_string: str, options: Optional[Dict[Any, Any]] = None):
+def create_job(operation_name: str, options: Optional[Dict[Any, Any]] = None):
     if options is None:
         options = {}
 
+    engine = options.pop("engine", "ciemss")
     force_restart = options.pop("force_restart", False)
     synchronous = options.pop("synchronous", False)
     timeout = options.pop("timeout", 60)
     recheck_delay = 0.5
 
+    assert engine == "ciemss"
     engine_prefix = options.get("engine", "ciemss")
     random_id = str(uuid.uuid4())
 
-    job_id = f"{engine_prefix}_{model_id}_{random_id}"
+    job_id = f"{engine_prefix}-{random_id}"
     options["job_id"] = job_id
     job = q.fetch_job(job_id)
 
     if STANDALONE:
         print(f"OPTIONS: {options}")
         ex_payload = {
-            "engine": options.get("engine"),
-            "model_config_id": model_id,
+            "engine": "ciemss",
+            "model_config_id": options.get("model_config_id"),
             "timespan": {
                 "start": options.get("start"),
                 "end": options.get("end"),
             },
-            "num_samples": options.get("num_samples"),
             "extra": options.get("extra"),
         }
         post_url = TDS_API + TDS_SIMULATIONS + job_id
@@ -68,7 +70,7 @@ def job(model_id: str, job_string: str, options: Optional[Dict[Any, Any]] = None
             "result_files": [],
             "type": "simulation",
             "status": "queued",
-            "engine": options.get("engine"),
+            "engine": "ciemss",
             "workflow_id": job_id,
         }
         print(payload)
@@ -79,7 +81,9 @@ def job(model_id: str, job_string: str, options: Optional[Dict[Any, Any]] = None
         job.cleanup(ttl=0)  # Cleanup/remove data immediately
 
     if not job or force_restart:
-        job = q.enqueue_call(func=job_string, args=[], kwargs=options, job_id=job_id)
+        flattened_options = deepcopy(options)
+        flattened_options.update(flattened_options.pop("extra"))
+        job = q.enqueue_call(func=operation_name, args=[], kwargs=flattened_options, job_id=job_id)
         if synchronous:
             timer = 0.0
             while (
@@ -114,7 +118,7 @@ def fetch_job_status(job_id):
     """Fetch a job's results from RQ.
 
     Args:
-        job_id (str): The id of the job being run in RQ. Comes from the job/enqueue/{job_string} endpoint.
+        job_id (str): The id of the job being run in RQ. Comes from the job/enqueue/{operation_name} endpoint.
 
     Returns:
         Response:
@@ -132,3 +136,4 @@ def fetch_job_status(job_id):
             status_code=status.HTTP_404_NOT_FOUND,
             content=f"Simulation job with id = {job_id} not found",
         )
+    flattened_opetions

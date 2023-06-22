@@ -37,8 +37,8 @@ class SimulateExtra(BaseModel):
     class Config:
         extra = ExtraEnum.allow
 
-    num_samples: Optional[int] = Field(
-        None, description="number of samples for a CIEMSS simulation", example=100
+    num_samples: int = Field(
+        ..., description="number of samples for a CIEMSS simulation", example=100
     )
 
 
@@ -46,28 +46,31 @@ class CalibrateExtra(BaseModel):
     class Config:
         extra = ExtraEnum.allow
 
-    num_samples: Optional[int] = Field(
-        None, description="number of samples for a CIEMSS simulation", example=100
+    num_samples: int = Field(
+        ..., description="number of samples for a CIEMSS simulation", example=100
     )
-    pseudocount: Optional[float] = Field(
-        1.0, description="Optional field for CIEMSS calibration", example=1.0
-    )
-    start_time: Optional[float] = Field(
+    # start_state: Optional[dict[str,float]]
+    # add_uncertainty: bool
+    # pseudocount: float = Field(
+    #     1.0, description="Optional field for CIEMSS calibration", example=1.0
+    # )
+    start_time: float = Field(
         -1e-10, description="Optional field for CIEMSS calibration", example=-1e-10
     )
-    num_iterations: Optional[int] = Field(
+    num_iterations: int = Field(
         1000, description="Optional field for CIEMSS calibration", example=1000
     )
-    lr: Optional[float] = Field(
+    lr: float = Field(
         0.03, description="Optional field for CIEMSS calibration", example=0.03
     )
-    verbose: Optional[bool] = Field(
+    verbose: bool = Field(
         False, description="Optional field for CIEMSS calibration", example=False
     )
-    num_particles: Optional[int] = Field(
+    num_particles: int = Field(
         1, description="Optional field for CIEMSS calibration", example=1
     )
-    method: Optional[str] = Field(
+    # autoguide: pyro.infer.autoguide.AutoLowRankMultivariateNormal
+    method: str = Field(
         "dopri5", description="Optional field for CIEMSS calibration", example="dopri5"
     )
 
@@ -76,7 +79,7 @@ class Dataset(BaseModel):
     id: str = Field(None, example="cd339570-047d-11ee-be55")
     filename: str = Field(None, example="dataset.csv")
     mappings: Optional[Dict[str, str]] = Field(
-        ...,
+        None,
         description="Mappings from the dataset column names to the model names they should be replaced with.",
         example={'postive_tests': 'infected'},
     )
