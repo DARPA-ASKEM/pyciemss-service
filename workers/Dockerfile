@@ -12,7 +12,7 @@ WORKDIR /pyciemss
 RUN pip install --no-cache-dir --default-timeout=900 -e .
 
 WORKDIR /
-COPY operations operations
+COPY workers workers
 COPY README.md README.md
 
-WORKDIR /operations
+WORKDIR /workers

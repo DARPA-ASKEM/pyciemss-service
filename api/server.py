@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from models import (
@@ -57,25 +57,24 @@ def simulate_model(body: SimulatePostRequest) -> SimulatePostResponse:
     """
     Perform a simulation
     """
-    from utils import job
+    from utils import create_job
 
     # Parse request body
     engine = str(body.engine.value).lower()
-    model_id = body.model_config_id
-    num_samples = body.extra.num_samples
+    model_config_id = body.model_config_id
     start = body.timespan.start
     end = body.timespan.end
 
-    job_string = "operations.simulate"
+    operation_name = "operations.simulate"
     options = {
         "engine": engine,
-        "model_id": model_id,
+        "model_config_id": model_config_id,
         "start": start,
         "end": end,
-        "num_samples": num_samples,
+        "extra": body.extra.dict(),
     }
 
-    resp = job(model_id=model_id, job_string=job_string, options=options)
+    resp = create_job(operation_name=operation_name, options=options)
 
     response = {"simulation_id": resp["id"]}
 
@@ -87,31 +86,30 @@ def calibrate_model(body: CalibratePostRequest) -> CalibratePostResponse:
     """
     Calibrate a model (SciML only)
     """
-    from utils import job
+    from utils import create_job
 
     # Parse request body
     print(body)
     engine = str(body.engine).lower()
-    model_id = body.model_config_id
+    model_config_id = body.model_config_id
     dataset = body.dataset
     start = body.timespan.start
     end = body.timespan.end
-    extra = body.extra
+    extra = body.extra.dict()
 
-    print(model_id)
 
-    job_string = "operations.calibrate_then_simulate"
+    operation_name = "operations.calibrate_then_simulate"
     options = {
         "engine": engine,
-        "model_id": model_id,
+        "model_config_id": model_config_id,
         "start": start,
         "end": end,
-        "num_samples": extra.num_samples,
         "dataset": dataset,
         "extra": extra,
     }
+    options.update(extra.dict())
 
-    resp = job(model_id=model_id, job_string=job_string, options=options)
+    resp = create_job(operation_name=operation_name, options=options)
 
     response = {"simulation_id": resp["id"]}
 
@@ -119,10 +117,13 @@ def calibrate_model(body: CalibratePostRequest) -> CalibratePostResponse:
 
 
 @app.post("/ensemble", response_model=JobResponse)
-def create_ensemble(body: EnsemblePostRequest) -> EnsemblePostResponse:
+def create_ensemble(body: EnsemblePostRequest) -> JobResponse:
     """
     Perform an ensemble simulation
     """
-    pass
+    return Response(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        content="Ensemble is not yet implemented",
+    )
 
 

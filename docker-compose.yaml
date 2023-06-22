@@ -35,7 +35,7 @@ services:
   rqworker:
     build:
       context: ./
-      dockerfile: operations/Dockerfile
+      dockerfile: workers/Dockerfile
     command:
       - rq
       - worker

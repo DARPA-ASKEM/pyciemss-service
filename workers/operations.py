@@ -13,26 +13,25 @@ from pyciemss.PetriNetODE.interfaces import (
     load_and_sample_petri_model,
 )
 
-TDS_MODELS = "/model_configurations/"
+TDS_CONFIGURATIONS = "/model_configurations/"
 TDS_SIMULATIONS = "/simulations/"
 OUTPUT_FILENAME = os.getenv("PYCIEMSS_OUTPUT_FILEPATH")
 TDS_API = os.getenv("TDS_URL")
 
 
 def simulate(*args, **kwargs):
-    model_id = kwargs.get("model_id")
-    num_samples = kwargs.get("num_samples")
-    start = kwargs.get("start")
-    end = kwargs.get("end")
-    add_uncertainty = kwargs.get("add_uncertainty", True)
-    job_id = kwargs.get("job_id")
+    model_config_id = kwargs.pop("model_config_id")
+    num_samples = kwargs.pop("num_samples")
+    start = kwargs.pop("start")
+    end = kwargs.pop("end")
+    job_id = kwargs.pop("job_id")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
 
     update_tds_status(sim_results_url, status="running", start=True)
 
     # Get model from TDS
-    url_components = [TDS_API, TDS_MODELS, model_id]
+    url_components = [TDS_API, TDS_CONFIGURATIONS, model_config_id]
     model_url = ""
     for component in url_components:
         model_url = urllib.parse.urljoin(model_url, component)
@@ -44,9 +43,7 @@ def simulate(*args, **kwargs):
     time_count = end - start
     timepoints = map(float, range(1, time_count + 1))
 
-    samples = load_and_sample_petri_model(
-        model_json, num_samples, timepoints=timepoints, add_uncertainty=add_uncertainty
-    )
+    samples = load_and_sample_petri_model(model_json, num_samples, timepoints=timepoints, **kwargs)
 
     # Upload results file
     # TODO remove when pyciemss implements a file output
@@ -73,12 +70,11 @@ def simulate(*args, **kwargs):
 
 
 def calibrate_then_simulate(*args, **kwargs):
-    model_id = kwargs.get("model_id")
-    num_samples = kwargs.get("num_samples")
-    start = kwargs.get("start")
-    end = kwargs.get("end")
-    mappings = kwargs.get("mappings")
-    job_id = kwargs.get("job_id")
+    model_config_id = kwargs.pop("model_config_id")
+    start = kwargs.pop("start")
+    end = kwargs.pop("end")
+    mappings = kwargs.pop("mappings")
+    job_id = kwargs.pop("job_id")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
 
@@ -86,7 +82,7 @@ def calibrate_then_simulate(*args, **kwargs):
 
     # Get model from TDS
     tds_api = os.getenv("TDS_URL")
-    url_components = [tds_api, TDS_MODELS, model_id]
+    url_components = [tds_api, TDS_CONFIGURATIONS, model_config_id]
     model_url = ""
     for component in url_components:
         model_url = urllib.parse.urljoin(model_url, component)
@@ -103,25 +99,15 @@ def calibrate_then_simulate(*args, **kwargs):
         TDS_API + f"/datasets/{dataset.id}/download-url?filename={dataset.filename}"
     )
     dataset_df = fetch_dataset(dataset_url=dataset_url, mappings=mappings)
-    dataset_buffer = io.StringIO
+    dataset_buffer = io.StringIO()
     dataset_df.to_csv(dataset_buffer)
 
     # TODO parse arguments out for calibration
     samples = load_and_calibrate_and_sample_petri_model(
         model_json,
         data=dataset_buffer,
-        num_samples=num_samples,
         timepoints=timepoints,
-        # start_state: Optional[dict[str, float]] = None,
-        add_uncertainty=kwargs.get("add_uncertainty", True),
-        pseudocount=kwargs.get("pseudocount", 1.0),
-        start_time=kwargs.get("start_time", -1e-10),
-        num_iterations=kwargs.get("num_iterations", 1000),
-        lr=kwargs.get("lr", 0.03),
-        verbose=kwargs.get("verbose", False),
-        num_particles=kwargs.get("num_particles", 1),
-        # autoguide=pyro.infer.autoguide.AutoLowRankMultivariateNormal,
-        method=kwargs.get("method", "dopri5"),
+        **kwargs
     )
 
     update_tds_status(
