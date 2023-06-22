@@ -45,7 +45,11 @@ def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
     """
     from utils import fetch_job_status
 
-    return {"status": Status.from_rq(fetch_job_status(simulation_id))}
+    status = fetch_job_status(simulation_id)
+    if not isinstance(status, str):
+        return status
+
+    return {"status": Status.from_rq(status)}
 
 
 @app.post("/simulate", response_model=JobResponse)
