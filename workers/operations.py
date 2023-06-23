@@ -73,7 +73,7 @@ def calibrate_then_simulate(*args, **kwargs):
     model_config_id = kwargs.pop("model_config_id")
     start = kwargs.pop("start")
     end = kwargs.pop("end")
-    mappings = kwargs.pop("mappings")
+    mappings = kwargs.pop("mappings", {})
     job_id = kwargs.pop("job_id")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
@@ -94,9 +94,9 @@ def calibrate_then_simulate(*args, **kwargs):
     timepoints = map(float, range(1, time_count + 1))
 
     # Get dataset from TDS
-    dataset = kwargs.get("dataset")
+    dataset = kwargs.pop("dataset")
     dataset_url = (
-        TDS_API + f"/datasets/{dataset.id}/download-url?filename={dataset.filename}"
+        TDS_API + f"/datasets/{dataset['id']}/download-url?filename={dataset['filename']}"
     )
     dataset_df = fetch_dataset(dataset_url=dataset_url, mappings=mappings)
     dataset_buffer = io.StringIO()

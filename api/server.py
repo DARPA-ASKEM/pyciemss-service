@@ -84,7 +84,7 @@ def simulate_model(body: SimulatePostRequest) -> SimulatePostResponse:
 @app.post("/calibrate", response_model=JobResponse)
 def calibrate_model(body: CalibratePostRequest) -> CalibratePostResponse:
     """
-    Calibrate a model (SciML only)
+    Calibrate a model
     """
     from utils import create_job
 
@@ -104,7 +104,7 @@ def calibrate_model(body: CalibratePostRequest) -> CalibratePostResponse:
         "model_config_id": model_config_id,
         "start": start,
         "end": end,
-        "dataset": dataset,
+        "dataset": dataset.dict(),
         "extra": extra,
     }
 
