@@ -37,17 +37,18 @@ def simulate(*args, **kwargs):
         model_url = urllib.parse.urljoin(model_url, component)
     model_response = requests.get(model_url)
     # TODO when pyciemss can handle full model configuration payload remove ["model"]
-    model_json = json.loads(model_response.content)["configuration"]["model"]
+    amr_path = os.path.abspath("/amr.json")
+    with open(amr_path, "w") as file:
+        json.dump(model_response.json()["configuration"], file)
 
     # Generate timepoints
     time_count = end - start
     timepoints = map(float, range(1, time_count + 1))
 
-    samples = load_and_sample_petri_model(model_json, num_samples, timepoints=timepoints, **kwargs)
+    samples = load_and_sample_petri_model(amr_path, num_samples, timepoints=timepoints, **kwargs)
 
     # Upload results file
-    # TODO remove when pyciemss implements a file output
-    parse_samples_into_csv(samples)
+    samples.to_csv(OUTPUT_FILENAME)
 
     upload_url = (
         TDS_API + f"{TDS_SIMULATIONS}{job_id}/upload-url?filename={OUTPUT_FILENAME}"
