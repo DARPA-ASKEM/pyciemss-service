@@ -109,6 +109,6 @@ def update_tds_status(url, status, result_files=[], start=False, finish=False):
 
 def fetch_dataset(dataset_url, mappings):
     response = requests.get(dataset_url)
-    csv = pandas.read_csv(response.body)
+    csv = pandas.read_csv(response.json()["url"])
     csv.rename(mapper=mappings)
     return csv
