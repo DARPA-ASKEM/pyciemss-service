@@ -121,8 +121,12 @@ def fetch_model(model_config_id, tds_api_url, config_endpoint):
     return amr_path
 
 
-def fetch_dataset(dataset_url, mappings):
+def fetch_dataset(dataset: dict, tds_api):
+    dataset_url = f"{tds_api}/datasets/{dataset['id']}/download-url?filename={dataset['filename']}"
     response = requests.get(dataset_url)
-    csv = pandas.read_csv(response.json()["url"])
-    csv.rename(mapper=mappings)
-    return csv
+    df = pandas.read_csv(response.json()["url"])
+    df.rename(mapper=dataset["mappings"])
+    dataset_path = os.path.abspath("./temp.json")
+    with open(dataset_path, "w") as file:
+        df.to_csv(file, index=False)
+    return dataset_path
