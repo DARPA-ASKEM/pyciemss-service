@@ -79,15 +79,7 @@ def calibrate_then_simulate(*args, **kwargs):
     time_count = end - start
     timepoints = map(float, range(1, time_count + 1))
 
-    # Get dataset from TDS
-    dataset = kwargs.pop("dataset")
-    dataset_url = (
-        TDS_API + f"/datasets/{dataset['id']}/download-url?filename={dataset['filename']}"
-    )
-    dataset_df = fetch_dataset(dataset_url=dataset_url, mappings=mappings)
-    dataset_path = os.path.abspath("/amr.json")
-    with open(dataset_path, "wb") as file:
-        dataset_df.to_csv(file, mode="wb")
+    dataset_path = fetch_dataset(kwargs.pop("dataset"), TDS_API)
 
     samples = load_and_calibrate_and_sample_petri_model(
         amr_path,
