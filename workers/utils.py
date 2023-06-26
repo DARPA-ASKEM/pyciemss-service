@@ -2,6 +2,8 @@ import csv
 import json
 import requests
 import sys
+import urllib
+import os
 from datetime import datetime
 import pandas
 import numpy as np
@@ -105,6 +107,18 @@ def update_tds_status(url, status, result_files=[], start=False, finish=False):
     )
 
     return update_response
+
+def fetch_model(model_config_id, tds_api_url, config_endpoint):
+    # Get model from TDS
+    url_components = [tds_api_url, config_endpoint, model_config_id]
+    model_url = ""
+    for component in url_components:
+        model_url = urllib.parse.urljoin(model_url, component)
+    model_response = requests.get(model_url)
+    amr_path = os.path.abspath("./amr.json")
+    with open(amr_path, "w") as file:
+        json.dump(model_response.json()["configuration"], file)
+    return amr_path
 
 
 def fetch_dataset(dataset_url, mappings):
