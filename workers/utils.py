@@ -108,9 +108,8 @@ def update_tds_status(url, status, result_files=[], start=False, finish=False):
 
     return update_response
 
-def fetch_model(model_config_id, tds_api_url, config_endpoint):
-    # Get model from TDS
-    url_components = [tds_api_url, config_endpoint, model_config_id]
+def fetch_model(model_config_id, tds_api, config_endpoint):
+    url_components = [tds_api, config_endpoint, model_config_id]
     model_url = ""
     for component in url_components:
         model_url = urllib.parse.urljoin(model_url, component)
@@ -130,3 +129,19 @@ def fetch_dataset(dataset: dict, tds_api):
     with open(dataset_path, "w") as file:
         df.to_csv(file, index=False)
     return dataset_path
+
+
+def attach_files(files: dict, tds_api, simulation_endpoint, job_id):
+    sim_results_url = tds_api + simulation_endpoint + job_id
+    for (location, handle) in files.items():   
+        upload_url = f"{sim_results_url}/upload-url?filename={handle}"
+        upload_response = requests.get(upload_url)
+        presigned_upload_url = upload_response.json()["url"]
+        with open(location, "rb") as f:
+            upload_response = requests.put(presigned_upload_url, f)
+
+
+    # Update simulation object with status and filepaths.
+    update_tds_status(
+        sim_results_url, status="complete", result_files=list(files.values()), finish=True
+    )

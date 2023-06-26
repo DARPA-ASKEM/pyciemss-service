@@ -6,7 +6,7 @@ import sys
 
 import numpy as np
 import requests
-from utils import update_tds_status, parse_samples_into_csv, fetch_dataset, fetch_model
+from utils import update_tds_status, parse_samples_into_csv, fetch_dataset, fetch_model, attach_files
 
 from pyciemss.PetriNetODE.interfaces import (
     load_and_calibrate_and_sample_petri_model,
@@ -38,28 +38,10 @@ def simulate(*args, **kwargs):
     timepoints = map(float, range(1, time_count + 1))
 
     samples = load_and_sample_petri_model(amr_path, num_samples, timepoints=timepoints, **kwargs)
-
-    # Upload results file
     samples.to_csv(OUTPUT_FILENAME)
+    attach_files({OUTPUT_FILENAME: "result.csv"}, TDS_API, TDS_SIMULATIONS, job_id)
 
-    upload_url = (
-        TDS_API + f"{TDS_SIMULATIONS}{job_id}/upload-url?filename={OUTPUT_FILENAME}"
-    )
-    print(upload_url)
-    upload_response = requests.get(upload_url)
-    presigned_upload_url = upload_response.json()["url"]
-    print(presigned_upload_url)
-    with open(OUTPUT_FILENAME, "rb") as f:
-        upload_response = requests.put(presigned_upload_url, f)
-
-    print(upload_response.status_code)
-
-    # Update simulation object with status and filepaths.
-    update_tds_status(
-        sim_results_url, status="complete", result_files=[OUTPUT_FILENAME], finish=True
-    )
-
-    return upload_response
+    return True
 
 
 def calibrate_then_simulate(*args, **kwargs):
@@ -87,9 +69,7 @@ def calibrate_then_simulate(*args, **kwargs):
         timepoints=timepoints,
         **kwargs
     )
+    samples.to_csv(OUTPUT_FILENAME)
+    attach_files({OUTPUT_FILENAME: "simulation.csv"}, TDS_API, TDS_SIMULATIONS, job_id)
 
-    update_tds_status(
-        sim_results_url, status="complete", result_files=[OUTPUT_FILENAME], finish=True
-    )
-
-    return str(samples)
+    return True
