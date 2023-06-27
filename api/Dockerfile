@@ -7,7 +7,6 @@ COPY poetry.lock poetry.lock
 RUN poetry config virtualenvs.create false && \
     poetry install --no-root --extras worker
 
-WORKDIR /
 COPY api api
 COPY README.md README.md
 WORKDIR /api

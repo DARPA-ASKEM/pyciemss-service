@@ -9,10 +9,8 @@ RUN poetry config virtualenvs.create false && \
 
 # PROCESS TO INSTALL PYCIEMSS
 COPY pyciemss pyciemss
-WORKDIR /pyciemss
-RUN pip install --no-cache-dir --default-timeout=900 -e .
+RUN pip install --no-cache-dir --default-timeout=900 -e pyciemss
 
-WORKDIR /
 COPY workers workers
 COPY README.md README.md
 
