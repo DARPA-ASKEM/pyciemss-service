@@ -1,8 +1,9 @@
 FROM python:3.10
 
+WORKDIR /
 RUN pip install --no-cache-dir poetry==1.5.1
-ADD pyproject.toml pyproject.toml
-ADD poetry.lock poetry.lock
+COPY pyproject.toml pyproject.toml
+COPY poetry.lock poetry.lock
 RUN poetry config virtualenvs.create false && \
     poetry install --no-root --extras worker
 
