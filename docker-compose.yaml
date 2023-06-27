@@ -1,8 +1,8 @@
 version: "3.9"
 networks:
-  pyciemss-api:
+  pyciemss:
     driver: bridge
-    name: pyciemss-api
+    name: pyciemss
   data-api:
     #TODO Remove in production
     external: true
@@ -17,7 +17,7 @@ services:
     env_file:
       - api.env
     networks:
-      - pyciemss-api
+      - pyciemss
       - data-api # TODO Remove in production
     depends_on:
       - redis
@@ -31,23 +31,16 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - pyciemss-api
+      - pyciemss
   rqworker:
+    container_name: pyciemss-worker
     build:
       context: ./
       dockerfile: workers/Dockerfile
-    command:
-      - rq
-      - worker
-      - --url
-      - redis://redis.pyciemss-api:6379
-      - high
-      - default
-      - low
     env_file:
       - api.env
     depends_on:
       - redis
     networks:
-      - pyciemss-api
+      - pyciemss
       - data-api

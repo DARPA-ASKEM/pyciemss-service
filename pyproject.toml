@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "pyciemss-api"
+name = "pyciemss-service"
 version = "0.1.0"
 description = "PyCIEMSS simulation service to run CIEMSS simulations"
-authors = ["Powell Fendley"]
+authors = ["Powell Fendley", "Five Grant"]
 readme = "README.md"
-packages = [{include = "pyciemss_api"}]
+packages = [{include = "api"}, {include = "workers"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
