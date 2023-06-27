@@ -15,4 +15,8 @@ WORKDIR /
 COPY workers workers
 COPY README.md README.md
 
+ENV REDIS_HOST redis
+ENV REDIS_PORT 6379
+
 WORKDIR /workers
+CMD rq worker --url redis://$REDIS_HOST:$REDIS_PORT high default low
