@@ -7,10 +7,7 @@ COPY poetry.lock poetry.lock
 RUN poetry config virtualenvs.create false && \
     poetry install --no-root --extras worker
 
-# PROCESS TO INSTALL PYCIEMSS
-COPY pyciemss pyciemss
-RUN pip install --no-cache-dir --default-timeout=900 -e pyciemss
-
+RUN pip install git+https://github.com/ciemss/pyciemss.git
 COPY workers workers
 COPY README.md README.md
 
