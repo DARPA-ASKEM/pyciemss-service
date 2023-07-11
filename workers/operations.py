@@ -38,7 +38,7 @@ def simulate(*args, **kwargs):
     timepoints = map(float, range(1, time_count + 1))
 
     samples = load_and_sample_petri_model(amr_path, num_samples, timepoints=timepoints, **kwargs)
-    samples.to_csv(OUTPUT_FILENAME)
+    samples.to_csv(OUTPUT_FILENAME, index=False)
     attach_files({OUTPUT_FILENAME: "result.csv"}, TDS_API, TDS_SIMULATIONS, job_id)
 
     return True
@@ -69,7 +69,7 @@ def calibrate_then_simulate(*args, **kwargs):
         timepoints=timepoints,
         **kwargs
     )
-    samples.to_csv(OUTPUT_FILENAME)
+    samples.to_csv(OUTPUT_FILENAME, index=False)
     attach_files({OUTPUT_FILENAME: "simulation.csv"}, TDS_API, TDS_SIMULATIONS, job_id)
 
     return True

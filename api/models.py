@@ -50,7 +50,6 @@ class CalibrateExtra(BaseModel):
         ..., description="number of samples for a CIEMSS simulation", example=100
     )
     # start_state: Optional[dict[str,float]]
-    # add_uncertainty: bool
     # pseudocount: float = Field(
     #     1.0, description="Optional field for CIEMSS calibration", example=1.0
     # )
