@@ -7,7 +7,12 @@ import os
 from datetime import datetime
 import pandas
 import numpy as np
+import time
+import logging
 
+TDS_SIMULATIONS = "/simulations/"
+OUTPUT_FILENAME = os.getenv("PYCIEMSS_OUTPUT_FILEPATH")
+TDS_API = os.getenv("TDS_URL")
 
 def parse_samples_into_file(samples):
     # samples_str = json.dumps(samples)
@@ -90,7 +95,9 @@ def parse_samples_into_csv(samples):
 
 
 def update_tds_status(url, status, result_files=[], start=False, finish=False):
+    logging.error(f'inside update tds {url}')
     tds_payload = requests.get(url)
+    logging.error(tds_payload.text)
     tds_payload = tds_payload.json()
 
     if start:
@@ -102,6 +109,7 @@ def update_tds_status(url, status, result_files=[], start=False, finish=False):
     if result_files:
         tds_payload["result_files"] = result_files
 
+    logging.error(tds_payload)
     update_response = requests.put(
         url, json=json.loads(json.dumps(tds_payload, default=str))
     )
@@ -131,17 +139,56 @@ def fetch_dataset(dataset: dict, tds_api):
     return dataset_path
 
 
-def attach_files(files: dict, tds_api, simulation_endpoint, job_id):
+def attach_files(files: dict, tds_api, simulation_endpoint, job_id, status='complete'):
+    logging.error(f'inside job id {job_id}')
     sim_results_url = tds_api + simulation_endpoint + job_id
-    for (location, handle) in files.items():   
-        upload_url = f"{sim_results_url}/upload-url?filename={handle}"
-        upload_response = requests.get(upload_url)
-        presigned_upload_url = upload_response.json()["url"]
-        with open(location, "rb") as f:
-            upload_response = requests.put(presigned_upload_url, f)
+
+    if status!="error":
+        for (location, handle) in files.items():   
+            upload_url = f"{sim_results_url}/upload-url?filename={handle}"
+            upload_response = requests.get(upload_url)
+            presigned_upload_url = upload_response.json()["url"]
+            with open(location, "rb") as f:
+                upload_response = requests.put(presigned_upload_url, f)
 
 
     # Update simulation object with status and filepaths.
     update_tds_status(
-        sim_results_url, status="complete", result_files=list(files.values()), finish=True
+        sim_results_url, status=status, result_files=list(files.values()), finish=True
     )
+
+
+def catch_job_status_to_tds( function):
+    """
+    decorator that catches failed wrapped rq jobs and make sure the simulation status is set in tds.
+    """
+    def wrapped(*args, **kwargs):
+        try:
+            start_time = time.perf_counter()
+            result = function(*args, **kwargs)
+            end_time = time.perf_counter()
+            logging.info(
+                f"Elapsed time for {function.__name__}:",
+                end_time - start_time
+                )
+            return result
+        except Exception as e:
+
+            attach_files({OUTPUT_FILENAME: "result.csv"},
+                         TDS_API,
+                         TDS_SIMULATIONS,
+                         job_id=kwargs.get('job_id'),
+                         status="error")
+
+            log_message = f"""
+                ###############################
+
+                There was an exception in CIEMSS Service
+                
+                Error occured in function: {function.__name__}
+
+                ################################
+            """
+            logging.exception(log_message)
+            raise e
+    return wrapped

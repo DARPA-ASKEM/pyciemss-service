@@ -46,19 +46,19 @@ def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
     from utils import fetch_job_status
 
     status = fetch_job_status(simulation_id)
+    print(status)
     if not isinstance(status, str):
         return status
 
     return {"status": Status.from_rq(status)}
 
-
+import logging
 @app.post("/simulate", response_model=JobResponse)
-def simulate_model(body: SimulatePostRequest) -> SimulatePostResponse:
+def simulate_model(body: SimulatePostRequest) -> JobResponse:
     """
     Perform a simulation
     """
     from utils import create_job
-
     # Parse request body
     engine = str(body.engine.value).lower()
     model_config_id = body.model_config_id
@@ -82,7 +82,7 @@ def simulate_model(body: SimulatePostRequest) -> SimulatePostResponse:
 
 
 @app.post("/calibrate", response_model=JobResponse)
-def calibrate_model(body: CalibratePostRequest) -> CalibratePostResponse:
+def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     """
     Calibrate a model
     """
