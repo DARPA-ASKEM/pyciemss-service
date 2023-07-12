@@ -72,6 +72,7 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
         "start": start,
         "end": end,
         "extra": body.extra.dict(),
+        "visual_options": True
     }
 
     resp = create_job(operation_name=operation_name, options=options)
@@ -106,6 +107,7 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
         "end": end,
         "dataset": dataset.dict(),
         "extra": extra,
+        "visual_options": True
     }
 
     resp = create_job(operation_name=operation_name, options=options)

@@ -42,9 +42,13 @@ def simulate(*args, **kwargs):
     time_count = end - start
     timepoints=[x for x in range(1,time_count+1)]
 
-    samples = load_and_sample_petri_model(amr_path, num_samples, timepoints=timepoints, **kwargs)
+    output = load_and_sample_petri_model(amr_path, num_samples, timepoints=timepoints, **kwargs)
+    samples = output.get('data')
+    schema = output.get('visual')
+    with open("visualization.json", "w") as f:
+        json.dump(schema, f, indent=2)
     samples.to_csv(OUTPUT_FILENAME, index=False)
-    attach_files({OUTPUT_FILENAME: "result.csv"}, TDS_API, TDS_SIMULATIONS, job_id)
+    attach_files({OUTPUT_FILENAME: "result.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
 
     return
 
