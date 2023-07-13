@@ -11,7 +11,15 @@ from models import (
     SimulatePostRequest,
     StatusSimulationIdGetResponse,
 )
+from pika_service import pika_service
+import os
+import redis
+import sys
+from threading import Thread
+import time
 
+REDIS = os.getenv("REDIS_HOST")
+r = redis.Redis(host=REDIS, port=6379, decode_responses=True)
 
 def build_api(*args) -> FastAPI:
 
@@ -46,11 +54,12 @@ def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
     from utils import fetch_job_status
 
     status = fetch_job_status(simulation_id)
-    print(status)
+    progress = r.get(simulation_id)
+
     if not isinstance(status, str):
         return status
 
-    return {"status": Status.from_rq(status)}
+    return {"status": Status.from_rq(status), "progress":progress}
 
 import logging
 @app.post("/simulate", response_model=JobResponse)
@@ -90,7 +99,6 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     from utils import create_job
 
     # Parse request body
-    print(body)
     engine = str(body.engine).lower()
     model_config_id = body.model_config_id
     dataset = body.dataset
@@ -128,3 +136,6 @@ def create_ensemble(body: EnsemblePostRequest) -> JobResponse:
     )
 
 
+time.sleep(10)
+thread = Thread(target = pika_service)
+thread.start()

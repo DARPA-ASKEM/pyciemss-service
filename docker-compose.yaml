@@ -21,6 +21,7 @@ services:
       - data-api # TODO Remove in production
     depends_on:
       - redis
+      - pika
     volumes:
       - $PWD/api:/api
     extra_hosts:
