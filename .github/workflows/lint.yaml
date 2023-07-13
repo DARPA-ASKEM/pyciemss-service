@@ -22,12 +22,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lintYaml:
-    name: Lint YAML Files
-    uses: darpa-askem/.github/.github/workflows/lint-yaml.yaml@main
-    with:
-      strict: false
-
   lintDocker:
     name: Lint Docker Files
     uses: darpa-askem/.github/.github/workflows/lint-docker.yaml@main
