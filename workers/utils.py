@@ -95,9 +95,7 @@ def parse_samples_into_csv(samples):
 
 
 def update_tds_status(url, status, result_files=[], start=False, finish=False):
-    logging.error(f'inside update tds {url}')
     tds_payload = requests.get(url)
-    logging.error(tds_payload.text)
     tds_payload = tds_payload.json()
 
     if start:
@@ -109,7 +107,6 @@ def update_tds_status(url, status, result_files=[], start=False, finish=False):
     if result_files:
         tds_payload["result_files"] = result_files
 
-    logging.error(tds_payload)
     update_response = requests.put(
         url, json=json.loads(json.dumps(tds_payload, default=str))
     )
@@ -140,7 +137,6 @@ def fetch_dataset(dataset: dict, tds_api):
 
 
 def attach_files(files: dict, tds_api, simulation_endpoint, job_id, status='complete'):
-    logging.error(f'inside job id {job_id}')
     sim_results_url = tds_api + simulation_endpoint + job_id
 
     if status!="error":
@@ -158,7 +154,7 @@ def attach_files(files: dict, tds_api, simulation_endpoint, job_id, status='comp
     )
 
 
-def catch_job_status_to_tds( function):
+def catch_job_status( function):
     """
     decorator that catches failed wrapped rq jobs and make sure the simulation status is set in tds.
     """

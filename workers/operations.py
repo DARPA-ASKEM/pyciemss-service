@@ -11,7 +11,7 @@ from utils import update_tds_status,\
                 fetch_dataset,\
                 fetch_model,\
                 attach_files,\
-                catch_job_status_to_tds
+                catch_job_status
 
 from pyciemss.PetriNetODE.interfaces import (
     load_and_calibrate_and_sample_petri_model,
@@ -23,7 +23,7 @@ TDS_SIMULATIONS = "/simulations/"
 OUTPUT_FILENAME = os.getenv("PYCIEMSS_OUTPUT_FILEPATH")
 TDS_API = os.getenv("TDS_URL")
 
-@catch_job_status_to_tds
+@catch_job_status
 def simulate(*args, **kwargs):
     model_config_id = kwargs.pop("model_config_id")
     num_samples = kwargs.pop("num_samples")
@@ -52,7 +52,7 @@ def simulate(*args, **kwargs):
 
     return
 
-@catch_job_status_to_tds
+@catch_job_status
 def calibrate_then_simulate(*args, **kwargs):
     model_config_id = kwargs.pop("model_config_id")
     start = kwargs.pop("start")
