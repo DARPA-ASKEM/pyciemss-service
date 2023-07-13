@@ -35,7 +35,7 @@ class Status(Enum):
             "queued": "queued",
             "running": "running",
             "failed": "failed",
-            "started": "started",
+            "started": "running",
             "finished": "complete"
         }
         return Status(rq_status_to_tds_status[rq_status])
