@@ -3,10 +3,15 @@ import json
 import os
 import urllib
 import sys
-
+import logging
 import numpy as np
 import requests
-from utils import update_tds_status, parse_samples_into_csv, fetch_dataset, fetch_model, attach_files
+from utils import update_tds_status,\
+                parse_samples_into_csv,\
+                fetch_dataset,\
+                fetch_model,\
+                attach_files,\
+                catch_job_status
 
 from pyciemss.PetriNetODE.interfaces import (
     load_and_calibrate_and_sample_petri_model,
@@ -18,7 +23,7 @@ TDS_SIMULATIONS = "/simulations/"
 OUTPUT_FILENAME = os.getenv("PYCIEMSS_OUTPUT_FILEPATH")
 TDS_API = os.getenv("TDS_URL")
 
-
+@catch_job_status
 def simulate(*args, **kwargs):
     model_config_id = kwargs.pop("model_config_id")
     num_samples = kwargs.pop("num_samples")
@@ -35,15 +40,19 @@ def simulate(*args, **kwargs):
 
     # Generate timepoints
     time_count = end - start
-    timepoints = map(float, range(1, time_count + 1))
+    timepoints=[x for x in range(1,time_count+1)]
 
-    samples = load_and_sample_petri_model(amr_path, num_samples, timepoints=timepoints, **kwargs)
+    output = load_and_sample_petri_model(amr_path, num_samples, timepoints=timepoints, **kwargs)
+    samples = output.get('data')
+    schema = output.get('visual')
+    with open("visualization.json", "w") as f:
+        json.dump(schema, f, indent=2)
     samples.to_csv(OUTPUT_FILENAME, index=False)
-    attach_files({OUTPUT_FILENAME: "result.csv"}, TDS_API, TDS_SIMULATIONS, job_id)
+    attach_files({OUTPUT_FILENAME: "result.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
 
-    return True
+    return
 
-
+@catch_job_status
 def calibrate_then_simulate(*args, **kwargs):
     model_config_id = kwargs.pop("model_config_id")
     start = kwargs.pop("start")
@@ -59,7 +68,7 @@ def calibrate_then_simulate(*args, **kwargs):
 
     # Generate timepoints
     time_count = end - start
-    timepoints = map(float, range(1, time_count + 1))
+    timepoints=[x for x in range(1,time_count+1)]
 
     dataset_path = fetch_dataset(kwargs.pop("dataset"), TDS_API)
 

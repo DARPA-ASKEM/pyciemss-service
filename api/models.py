@@ -17,18 +17,26 @@ class Timespan(BaseModel):
 
 
 class Status(Enum):
-    queued = "queued"
-    running = "running"
+    cancelled = "cancelled"
     complete = "complete"
     error = "error"
+    queued = "queued"
+    running = "running"
+    failed = "failed"
+    started = "started"
+    finished = "finished"
 
     @staticmethod
     def from_rq(rq_status):
         rq_status_to_tds_status = {
-            "queued": "queued",
-            "started": "running",
-            "finished": "complete",
+            "cancelled": "cancelled",
+            "complete": "complete",
             "error": "error",
+            "queued": "queued",
+            "running": "running",
+            "failed": "failed",
+            "started": "running",
+            "finished": "complete"
         }
         return Status(rq_status_to_tds_status[rq_status])
 
