@@ -72,13 +72,19 @@ def calibrate_then_simulate(*args, **kwargs):
 
     dataset_path = fetch_dataset(kwargs.pop("dataset"), TDS_API)
 
-    samples = load_and_calibrate_and_sample_petri_model(
+    output = load_and_calibrate_and_sample_petri_model(
         amr_path,
         dataset_path,
         timepoints=timepoints,
         **kwargs
     )
+    logging.error('sssssssssssssssssssssssss')
+    logging.error(output)
+    samples = output.get('data')
+    schema = output.get('visual')
+    with open("visualization.json", "w") as f:
+        json.dump(schema, f, indent=2)
     samples.to_csv(OUTPUT_FILENAME, index=False)
-    attach_files({OUTPUT_FILENAME: "simulation.csv"}, TDS_API, TDS_SIMULATIONS, job_id)
+    attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
 
     return True
