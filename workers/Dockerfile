@@ -7,7 +7,7 @@ COPY poetry.lock poetry.lock
 RUN poetry config virtualenvs.create false && \
     poetry install --no-root --no-cache --extras worker
 
-RUN pip install --no-cache-dir git+https://github.com/marshHawk4/pyciemss.git
+RUN pip install --no-cache-dir git+https://github.com/ciemss/pyciemss.git
 COPY workers workers
 COPY README.md README.md
 

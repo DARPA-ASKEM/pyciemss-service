@@ -1,5 +1,7 @@
 import pika, sys, os
 import json
+
+## This is for testing locally 
 def main():
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
     channel = connection.channel()
