@@ -78,8 +78,7 @@ def calibrate_then_simulate(*args, **kwargs):
         timepoints=timepoints,
         **kwargs
     )
-    logging.error('sssssssssssssssssssssssss')
-    logging.error(output)
+    
     samples = output.get('data')
     schema = output.get('visual')
     with open("visualization.json", "w") as f:
