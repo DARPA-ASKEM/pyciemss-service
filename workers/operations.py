@@ -58,7 +58,7 @@ def calibrate_then_simulate(*args, **kwargs):
     start = kwargs.pop("start")
     end = kwargs.pop("end")
     mappings = kwargs.pop("mappings", {})
-    job_id = kwargs.pop("job_id")
+    job_id = kwargs.get("job_id")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
 

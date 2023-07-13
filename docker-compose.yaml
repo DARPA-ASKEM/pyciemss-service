@@ -44,3 +44,13 @@ services:
     networks:
       - pyciemss
       - data-api
+  pika:
+    container_name: pika_service
+    hostname: my_rabit
+    image: 'rabbitmq:3'
+    ports:
+      - "5672:5672"
+    env_file:
+      - api.env
+    networks:
+      - pyciemss

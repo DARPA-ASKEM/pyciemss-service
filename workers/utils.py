@@ -129,7 +129,9 @@ def fetch_dataset(dataset: dict, tds_api):
     dataset_url = f"{tds_api}/datasets/{dataset['id']}/download-url?filename={dataset['filename']}"
     response = requests.get(dataset_url)
     df = pandas.read_csv(response.json()["url"])
-    df.rename(mapper=dataset["mappings"])
+    mapping = dataset.get("mappings",{})
+    if bool(mapping):
+        df.rename(columns=mapping)
     dataset_path = os.path.abspath("./temp.json")
     with open(dataset_path, "w") as file:
         df.to_csv(file, index=False)
