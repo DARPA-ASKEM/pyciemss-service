@@ -29,6 +29,7 @@ jobs:
       file: 'docker-bake.hcl'
       group: 'prod'
       registry: 'ghcr.io'
+      flags: '--no-cache'
       organization: ${{ github.repository_owner }}
       tag: ${{ needs.tag-generator.outputs.tag }}
     secrets:
