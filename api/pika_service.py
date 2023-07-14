@@ -15,10 +15,8 @@ def pika_service():
 
     def callback(ch, method, properties, body):
         print(" [x] Received %r" % body)
-        print(json.loads(body))
         resp = json.loads(body)
         r.set(resp.get('job_id'), resp.get('progress'))
-        print('after')
 
 
     channel.basic_consume(queue='terarium', on_message_callback=callback, auto_ack=True)
