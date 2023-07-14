@@ -71,6 +71,12 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
     model_config_id = body.model_config_id
     start = body.timespan.start
     end = body.timespan.end
+    intervention_tuples=None
+    interventions_array =  body.interventions
+
+    if interventions_array is not None:
+        intervention_tuples= [(intervention.timestep +.001, intervention.name, intervention.value) for intervention in interventions_array ]
+        
 
     operation_name = "operations.simulate"
     options = {
@@ -79,7 +85,8 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
         "start": start,
         "end": end,
         "extra": body.extra.dict(),
-        "visual_options": True
+        "visual_options": True,
+        "interventions":intervention_tuples
     }
 
     resp = create_job(operation_name=operation_name, options=options)
@@ -104,6 +111,12 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     start = body.timespan.start
     end = body.timespan.end
     extra = body.extra.dict()
+    intervention_tuples=None
+    interventions_array =  body.interventions
+
+    if interventions_array is not None:
+        intervention_tuples= [(intervention.timestep +.001, intervention.name, intervention.value) for intervention in interventions_array ]
+        
 
 
     operation_name = "operations.calibrate_then_simulate"
@@ -114,7 +127,8 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
         "end": end,
         "dataset": dataset.dict(),
         "extra": extra,
-        "visual_options": True
+        "visual_options": True,
+        "interventions":intervention_tuples
     }
 
     resp = create_job(operation_name=operation_name, options=options)
