@@ -46,7 +46,7 @@ class SimulateExtra(BaseModel):
         extra = ExtraEnum.allow
 
     num_samples: int = Field(
-        ..., description="number of samples for a CIEMSS simulation", example=100
+        100, description="number of samples for a CIEMSS simulation", example=100
     )
 
 
@@ -55,7 +55,7 @@ class CalibrateExtra(BaseModel):
         extra = ExtraEnum.allow
 
     num_samples: int = Field(
-        ..., description="number of samples for a CIEMSS simulation", example=100
+        100,  description="number of samples for a CIEMSS simulation", example=100
     )
     # start_state: Optional[dict[str,float]]
     # pseudocount: float = Field(
