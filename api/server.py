@@ -38,6 +38,13 @@ def build_api(*args) -> FastAPI:
 app = build_api()
 
 
+@app.get("/ping")
+def get_ping():
+    """
+    Retrieve the status of a simulation
+    """
+    return {"status": "ok"}
+
 @app.get("/status/{simulation_id}", response_model=StatusSimulationIdGetResponse)
 def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
     """
