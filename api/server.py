@@ -124,14 +124,38 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     return response
 
 
-@app.post("/ensemble", response_model=JobResponse)
+@app.post("/ensemble-simulate", response_model=JobResponse)
 def create_ensemble(body: EnsemblePostRequest) -> JobResponse:
     """
-    Perform an ensemble simulation
+    Perform ensemble simulate
     """
-    return Response(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        content="Ensemble is not yet implemented",
-    )
+    from utils import create_job
+
+    # Parse request body
+    print(body)
+    engine = str(body.engine).lower()
+    model_config_id = body.model_config_id
+    dataset = body.dataset
+    start = body.timespan.start
+    end = body.timespan.end
+    extra = body.extra.dict()
+
+
+    operation_name = "operations.calibrate_then_simulate"
+    options = {
+        "engine": engine,
+        "model_config_id": model_config_id,
+        "start": start,
+        "end": end,
+        "dataset": dataset.dict(),
+        "extra": extra,
+        "visual_options": True
+    }
+
+    resp = create_job(operation_name=operation_name, options=options)
+
+    response = {"simulation_id": resp["id"]}
+
+    return response
 
 

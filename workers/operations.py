@@ -87,3 +87,13 @@ def calibrate_then_simulate(*args, **kwargs):
     
 
     return True
+
+
+@catch_job_status
+def ensemble_simulate(*args, **kwargs):
+    return True
+
+
+@catch_job_status
+def ensemble_calibrate(*args, **kwargs):
+    return True
