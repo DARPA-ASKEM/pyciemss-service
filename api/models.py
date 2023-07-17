@@ -100,7 +100,7 @@ class SimulatePostRequest(BaseModel):
     engine: Engine = Field(..., example="ciemss")
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan
-    interventions: Optional[List[InterventionObject]] = Field(None, example=[{"timestep":1,"name":"beta","value":.4}])
+    interventions: List[InterventionObject] = Field(default_factory=list, example=[{"timestep":1,"name":"beta","value":.4}])
     extra: SimulateExtra = Field(
         None,
         description="optional extra system specific arguments for advanced use cases",

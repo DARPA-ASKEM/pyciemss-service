@@ -71,11 +71,9 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
     model_config_id = body.model_config_id
     start = body.timespan.start
     end = body.timespan.end
-    intervention_tuples=None
-    interventions_array =  body.interventions
-
-    if interventions_array is not None:
-        intervention_tuples= [(intervention.timestep +.001, intervention.name, intervention.value) for intervention in interventions_array ]
+    interventions = [
+        (intervention.timestep, intervention.name, intervention.value) for intervention in body.interventions 
+    ]
         
 
     operation_name = "operations.simulate"
@@ -86,7 +84,7 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
         "end": end,
         "extra": body.extra.dict(),
         "visual_options": True,
-        "interventions":intervention_tuples
+        "interventions": interventions
     }
 
     resp = create_job(operation_name=operation_name, options=options)
