@@ -53,7 +53,7 @@ def create_job(operation_name: str, options: Optional[Dict[Any, Any]] = None):
     job = q.fetch_job(job_id)
 
     if STANDALONE:
-        print(f"OPTIONS: {options}")
+        logging.info(f"OPTIONS: {options}")
         ex_payload = {
             "engine": "ciemss",
             "model_config_id": options.get("model_config_id"),
@@ -73,9 +73,9 @@ def create_job(operation_name: str, options: Optional[Dict[Any, Any]] = None):
             "engine": "ciemss",
             "workflow_id": job_id,
         }
-        print(payload)
+        logging.info(payload)
         sys.stdout.flush()
-        print(requests.put(post_url, json=json.loads(json.dumps(payload))).content)
+        logging.info(requests.put(post_url, json=json.loads(json.dumps(payload))).content)
 
     if job and force_restart:
         job.cleanup(ttl=0)  # Cleanup/remove data immediately
@@ -110,6 +110,7 @@ def create_job(operation_name: str, options: Optional[Dict[Any, Any]] = None):
         "status": status,
         "simulation_error": job_error,
         "result": job_result,
+        "interventions": options["interventions"],
     }
     return response
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from fastapi import FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -12,6 +13,9 @@ from models import (
     StatusSimulationIdGetResponse,
 )
 
+
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
 
 def build_api(*args) -> FastAPI:
 
@@ -53,7 +57,7 @@ def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
     from utils import fetch_job_status
 
     status = fetch_job_status(simulation_id)
-    print(status)
+    logging.info(status)
     if not isinstance(status, str):
         return status
 
@@ -102,20 +106,16 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     from utils import create_job
 
     # Parse request body
-    print(body)
+    logging.info(body)
     engine = str(body.engine).lower()
     model_config_id = body.model_config_id
     dataset = body.dataset
     start = body.timespan.start
     end = body.timespan.end
     extra = body.extra.dict()
-    intervention_tuples=None
-    interventions_array =  body.interventions
-
-    if interventions_array is not None:
-        intervention_tuples= [(intervention.timestep +.001, intervention.name, intervention.value) for intervention in interventions_array ]
-        
-
+    interventions = [
+        (intervention.timestep, intervention.name, intervention.value) for intervention in body.interventions 
+    ]
 
     operation_name = "operations.calibrate_then_simulate"
     options = {
@@ -126,7 +126,7 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
         "dataset": dataset.dict(),
         "extra": extra,
         "visual_options": True,
-        "interventions":intervention_tuples
+        "interventions":interventions
     }
 
     resp = create_job(operation_name=operation_name, options=options)
@@ -145,5 +145,6 @@ def create_ensemble(body: EnsemblePostRequest) -> JobResponse:
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
         content="Ensemble is not yet implemented",
     )
+
 
 
