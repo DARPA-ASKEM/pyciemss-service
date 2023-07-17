@@ -69,12 +69,14 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
     # Parse request body
     engine = str(body.engine.value).lower()
     model_config_id = body.model_config_id
+    username = body.username
     start = body.timespan.start
     end = body.timespan.end
 
     operation_name = "operations.simulate"
     options = {
         "engine": engine,
+        "username": username,
         "model_config_id": model_config_id,
         "start": start,
         "end": end,
@@ -99,6 +101,7 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     # Parse request body
     print(body)
     engine = str(body.engine).lower()
+    username = body.username
     model_config_id = body.model_config_id
     dataset = body.dataset
     start = body.timespan.start
@@ -109,6 +112,7 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     operation_name = "operations.calibrate_then_simulate"
     options = {
         "engine": engine,
+        "username": username,
         "model_config_id": model_config_id,
         "start": start,
         "end": end,

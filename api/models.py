@@ -94,6 +94,7 @@ class Dataset(BaseModel):
 
 class SimulatePostRequest(BaseModel):
     engine: Engine = Field(..., example="ciemss")
+    username: str = Field("foo", example="foo")
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan
     extra: SimulateExtra = Field(
@@ -104,6 +105,7 @@ class SimulatePostRequest(BaseModel):
 
 class CalibratePostRequest(BaseModel):
     engine: Engine = Field(..., example="ciemss")
+    username: str = Field("foo", example="foo")
     model_config_id: str = Field(..., example="c1cd941a-047d-11ee-be56")
     dataset: Dataset = None
     timespan: Optional[Timespan] = None
