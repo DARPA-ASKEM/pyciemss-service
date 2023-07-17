@@ -121,8 +121,8 @@ class ModelConfig(BaseModel):
 class Dataset(BaseModel):
     id: str = Field(None, example="cd339570-047d-11ee-be55")
     filename: str = Field(None, example="dataset.csv")
-    mappings: Optional[Dict[str, str]] = Field(
-        None,
+    mappings: Dict[str, str] = Field(
+        default_factory=dict,
         description="Mappings from the dataset column names to the model names they should be replaced with.",
         example={'postive_tests': 'infected'},
     )

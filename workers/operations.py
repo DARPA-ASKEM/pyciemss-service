@@ -152,7 +152,7 @@ def ensemble_calibrate(*args, **kwargs):
     solution_mappings = [config["solution_mappings"] for config in model_configs]
     amr_paths = [fetch_model(config["id"], TDS_API, TDS_CONFIGURATIONS) for config in model_configs]
 
-    dataset_path = fetch_dataset(kwargs.pop("dataset"), TDS_API)
+    dataset_path = fetch_dataset(dataset, TDS_API)
 
     # Generate timepoints
     time_count = end - start
