@@ -110,7 +110,6 @@ def create_job(operation_name: str, options: Optional[Dict[Any, Any]] = None):
         "status": status,
         "simulation_error": job_error,
         "result": job_result,
-        "interventions": options["interventions"],
     }
     return response
 

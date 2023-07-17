@@ -93,6 +93,8 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
 
     resp = create_job(operation_name=operation_name, options=options)
 
+    if len(interventions) > 0:
+        logging.info("{resp['id']} used interventions: {interventiosn}")
     response = {"simulation_id": resp["id"]}
 
     return response
@@ -113,9 +115,6 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     start = body.timespan.start
     end = body.timespan.end
     extra = body.extra.dict()
-    interventions = [
-        (intervention.timestep, intervention.name, intervention.value) for intervention in body.interventions 
-    ]
 
     operation_name = "operations.calibrate_then_simulate"
     options = {
@@ -126,7 +125,6 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
         "dataset": dataset.dict(),
         "extra": extra,
         "visual_options": True,
-        "interventions":interventions
     }
 
     resp = create_job(operation_name=operation_name, options=options)
