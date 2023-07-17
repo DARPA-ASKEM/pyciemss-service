@@ -10,6 +10,8 @@ from models import (
     CalibratePostRequest,
     EnsemblePostRequest,
     SimulatePostRequest,
+    EnsembleSimulatePostRequest,
+    EnsembleCalibratePostRequest,
     StatusSimulationIdGetResponse,
 )
 
@@ -139,29 +141,28 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
 
 
 @app.post("/ensemble-simulate", response_model=JobResponse)
-def create_ensemble(body: EnsemblePostRequest) -> JobResponse:
+def create_simulate_ensemble(body: EnsembleSimulatePostRequest) -> JobResponse:
     """
     Perform ensemble simulate
     """
     from utils import create_job
 
     # Parse request body
-    print(body)
     engine = str(body.engine).lower()
-    model_config_id = body.model_config_id
-    dataset = body.dataset
+    model_configs = [config.dict() for config in body.model_configs]
     start = body.timespan.start
     end = body.timespan.end
+    username = body.username
     extra = body.extra.dict()
 
 
     operation_name = "operations.calibrate_then_simulate"
     options = {
         "engine": engine,
-        "model_config_id": model_config_id,
+        "model_configs": model_configs,
         "start": start,
         "end": end,
-        "dataset": dataset.dict(),
+        "username": username,
         "extra": extra,
         "visual_options": True
     }
@@ -172,5 +173,40 @@ def create_ensemble(body: EnsemblePostRequest) -> JobResponse:
 
     return response
 
+
+@app.post("/ensemble-calibrate", response_model=JobResponse)
+def create_calibrate_ensemble(body: EnsembleCalibratePostRequest) -> JobResponse:
+    """
+    Perform ensemble simulate
+    """
+    from utils import create_job
+
+    # Parse request body
+    engine = str(body.engine).lower()
+    username = body.username
+    dataset = body.dataset.dict()
+    model_configs = [config.dict() for config in body.model_configs]
+    start = body.timespan.start
+    end = body.timespan.end
+    extra = body.extra.dict()
+
+
+    operation_name = "operations.calibrate_then_simulate"
+    options = {
+        "engine": engine,
+        "model_configs": model_configs,
+        "dataset": dataset, 
+        "start": start,
+        "end": end,
+        "username": username,
+        "extra": extra,
+        "visual_options": True
+    }
+
+    resp = create_job(operation_name=operation_name, options=options)
+
+    response = {"simulation_id": resp["id"]}
+
+    return response
 
 

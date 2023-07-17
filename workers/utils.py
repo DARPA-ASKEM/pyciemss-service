@@ -119,7 +119,7 @@ def fetch_model(model_config_id, tds_api, config_endpoint):
     for component in url_components:
         model_url = urllib.parse.urljoin(model_url, component)
     model_response = requests.get(model_url)
-    amr_path = os.path.abspath("./amr.json")
+    amr_path = os.path.abspath(f"./{model_config_id}.json")
     with open(amr_path, "w") as file:
         json.dump(model_response.json()["configuration"], file)
     return amr_path
