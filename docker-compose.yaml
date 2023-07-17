@@ -3,6 +3,9 @@ networks:
   pyciemss:
     driver: bridge
     name: pyciemss
+  data-api:
+    #TODO Remove in production
+    external: true
 services:
   api:
     container_name: pyciemss-api
@@ -15,6 +18,7 @@ services:
       - api.env
     networks:
       - pyciemss
+      - data-api # TODO Remove in production
     depends_on:
       - redis
     volumes:
@@ -39,3 +43,4 @@ services:
       - redis
     networks:
       - pyciemss
+      - data-api
