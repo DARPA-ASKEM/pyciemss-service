@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from fastapi import FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -12,6 +13,9 @@ from models import (
     StatusSimulationIdGetResponse,
 )
 
+
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
 
 def build_api(*args) -> FastAPI:
 
@@ -53,7 +57,7 @@ def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
     from utils import fetch_job_status
 
     status = fetch_job_status(simulation_id)
-    print(status)
+    logging.info(status)
     if not isinstance(status, str):
         return status
 
@@ -72,6 +76,10 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
     username = body.username
     start = body.timespan.start
     end = body.timespan.end
+    interventions = [
+        (intervention.timestep, intervention.name, intervention.value) for intervention in body.interventions 
+    ]
+        
 
     operation_name = "operations.simulate"
     options = {
@@ -81,11 +89,14 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
         "start": start,
         "end": end,
         "extra": body.extra.dict(),
-        "visual_options": True
+        "visual_options": True,
+        "interventions": interventions
     }
 
     resp = create_job(operation_name=operation_name, options=options)
 
+    if len(interventions) > 0:
+        logging.info(f"{resp['id']} used interventions: {interventions}")
     response = {"simulation_id": resp["id"]}
 
     return response
@@ -99,7 +110,7 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     from utils import create_job
 
     # Parse request body
-    print(body)
+    logging.info(body)
     engine = str(body.engine).lower()
     username = body.username
     model_config_id = body.model_config_id
@@ -107,7 +118,6 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     start = body.timespan.start
     end = body.timespan.end
     extra = body.extra.dict()
-
 
     operation_name = "operations.calibrate_then_simulate"
     options = {
@@ -118,7 +128,7 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
         "end": end,
         "dataset": dataset.dict(),
         "extra": extra,
-        "visual_options": True
+        "visual_options": True,
     }
 
     resp = create_job(operation_name=operation_name, options=options)
@@ -137,5 +147,6 @@ def create_ensemble(body: EnsemblePostRequest) -> JobResponse:
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
         content="Ensemble is not yet implemented",
     )
+
 
 
