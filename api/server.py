@@ -94,7 +94,7 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
     resp = create_job(operation_name=operation_name, options=options)
 
     if len(interventions) > 0:
-        logging.info("{resp['id']} used interventions: {interventions}")
+        logging.info(f"{resp['id']} used interventions: {interventions}")
     response = {"simulation_id": resp["id"]}
 
     return response
