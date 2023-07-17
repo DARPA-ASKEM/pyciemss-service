@@ -54,16 +54,17 @@ def create_job(operation_name: str, options: Optional[Dict[Any, Any]] = None):
 
     if STANDALONE:
         logging.info(f"OPTIONS: {options}")
+        # TODO: Allow extras on payload and simply put full object here
         ex_payload = {
             "engine": "ciemss",
-            "model_config_id": options.get("model_config_id"),
+            "model_config_id": options.get("model_config_id", "not_provided"),
             "timespan": {
-                "start": options.get("start"),
-                "end": options.get("end"),
+                "start": options.get("start", 0),
+                "end": options.get("end", 1),
             },
-            "extra": options.get("extra"),
+            "extra": options.get("extra", None),
         }
-        post_url = TDS_API + TDS_SIMULATIONS + job_id
+        post_url = TDS_API + TDS_SIMULATIONS #+ job_id
         payload = {
             "id": job_id,
             "execution_payload": ex_payload,
@@ -75,7 +76,10 @@ def create_job(operation_name: str, options: Optional[Dict[Any, Any]] = None):
         }
         logging.info(payload)
         sys.stdout.flush()
-        logging.info(requests.put(post_url, json=json.loads(json.dumps(payload))).content)
+        response = requests.post(post_url, json=payload)
+        if response.status_code >= 300:
+            raise Exception(f"Failed to create simulation on TDS (status: {response.status_code}): {json.dumps(payload)}")
+        logging.info(response.content)
 
     if job and force_restart:
         job.cleanup(ttl=0)  # Cleanup/remove data immediately
