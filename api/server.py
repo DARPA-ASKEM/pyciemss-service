@@ -155,7 +155,7 @@ def create_simulate_ensemble(body: EnsembleSimulatePostRequest) -> JobResponse:
     extra = body.extra.dict()
 
 
-    operation_name = "operations.calibrate_then_simulate"
+    operation_name = "operations.ensemble_simulate"
     options = {
         "engine": engine,
         "model_configs": model_configs,
@@ -190,7 +190,7 @@ def create_calibrate_ensemble(body: EnsembleCalibratePostRequest) -> JobResponse
     extra = body.extra.dict()
 
 
-    operation_name = "operations.calibrate_then_simulate"
+    operation_name = "operations.ensemble_calibrate"
     options = {
         "engine": engine,
         "model_configs": model_configs,

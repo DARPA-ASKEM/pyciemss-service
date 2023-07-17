@@ -146,7 +146,8 @@ def attach_files(files: dict, tds_api, simulation_endpoint, job_id, status='comp
             presigned_upload_url = upload_response.json()["url"]
             with open(location, "rb") as f:
                 upload_response = requests.put(presigned_upload_url, f)
-
+    else:
+        logging.info(f"{job_id} ran into error")
 
     # Update simulation object with status and filepaths.
     update_tds_status(

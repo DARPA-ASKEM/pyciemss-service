@@ -158,6 +158,7 @@ class CalibratePostRequest(BaseModel):
 
 class EnsembleSimulatePostRequest(BaseModel):
     engine: Engine = Field(..., example="ciemss")
+    username: str = Field("not_provided", example="not_provided")
     model_configs: List[ModelConfig] = Field(
         [],
         example=[],
@@ -172,6 +173,7 @@ class EnsembleSimulatePostRequest(BaseModel):
 
 class EnsembleCalibratePostRequest(BaseModel):
     engine: Engine = Field(..., example="ciemss")
+    username: str = Field("not_provided", example="not_provided")
     model_configs: List[ModelConfig] = Field(
         [],
         example=[],
