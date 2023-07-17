@@ -82,6 +82,42 @@ class CalibrateExtra(BaseModel):
     )
 
 
+class EnsembleSimulateExtra(BaseModel):
+    class Config:
+        extra = ExtraEnum.allow
+
+    num_samples: int = Field(
+        100, description="number of samples for a CIEMSS simulation", example=100
+    )
+
+
+class EnsembleCalibrateExtra(BaseModel):
+    class Config:
+        extra = ExtraEnum.allow
+
+    num_samples: int = Field(
+        100, description="number of samples for a CIEMSS simulation", example=100
+    )
+
+    total_population: int = Field(
+        1000, description="total population", example=1000
+    )
+
+    num_iterations: int = Field(
+        350, description="number of iterations", example=1000
+    )
+
+    time_unit: int = Field(
+        "days", description="units in numbers of days", example="days"
+    )
+
+
+class ModelConfig(BaseModel):
+    id: str = Field(..., example="cd339570-047d-11ee-be55")
+    solution_mappings: dict[str, str] = Field(..., example={"Infected": "Cases", "Hospitalizations": "hospitalized_population"})
+    weight: float = Field(..., example="cd339570-047d-11ee-be55") 
+
+
 class Dataset(BaseModel):
     id: str = Field(None, example="cd339570-047d-11ee-be55")
     filename: str = Field(None, example="dataset.csv")
@@ -115,18 +151,29 @@ class CalibratePostRequest(BaseModel):
     )
 
 
-class EnsemblePostRequest(BaseModel):
+class EnsembleSimulatePostRequest(BaseModel):
     engine: Engine = Field(..., example="ciemss")
-    model_configuration_ids: Optional[List[str]] = Field(
-        None,
-        example=[
-            "ba8da8d4-047d-11ee-be56",
-            "c1cd941a-047d-11ee-be56",
-            "c4b9f88a-047d-11ee-be56",
-        ],
+    model_configs: List[ModelConfig] = Field(
+        [],
+        example=[],
     )
     timespan: Timespan
-    extra: Optional[Dict[str, Any]] = Field(
+
+    extra: EnsembleSimulateExtra = Field(
+        None,
+        description="optional extra system specific arguments for advanced use cases",
+    )
+
+
+class EnsembleCalibratePostRequest(BaseModel):
+    engine: Engine = Field(..., example="ciemss")
+    model_configs: List[ModelConfig] = Field(
+        [],
+        example=[],
+    )
+    timespan: Timespan
+    dataset: Dataset
+    extra: EnsembleCalibrateExtra = Field(
         None,
         description="optional extra system specific arguments for advanced use cases",
     )
