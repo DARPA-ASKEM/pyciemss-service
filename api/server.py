@@ -8,7 +8,6 @@ from models import (
     Status,
     JobResponse,
     CalibratePostRequest,
-    EnsemblePostRequest,
     SimulatePostRequest,
     EnsembleSimulatePostRequest,
     EnsembleCalibratePostRequest,
