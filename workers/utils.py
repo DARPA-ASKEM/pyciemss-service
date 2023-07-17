@@ -164,7 +164,7 @@ def catch_job_status( function):
             result = function(*args, **kwargs)
             end_time = time.perf_counter()
             logging.info(
-                f"Elapsed time for {function.__name__}:",
+                f"Elapsed time for {function.__name__} for {kwargs["username"]}:",
                 end_time - start_time
                 )
             return result
@@ -182,6 +182,8 @@ def catch_job_status( function):
                 There was an exception in CIEMSS Service
                 
                 Error occured in function: {function.__name__}
+
+                Username: {kwargs["username"]}
 
                 ################################
             """
