@@ -121,7 +121,7 @@ def ensemble_simulate(*args, **kwargs):
         amr_paths,
         weights,
         solution_mappings,
-        num_samples
+        num_samples,
         timepoints,
         **kwargs
     )
@@ -161,9 +161,9 @@ def ensemble_calibrate(*args, **kwargs):
     output = load_and_calibrate_and_sample_ensemble_model(
         amr_paths,
         weights,
-        dataset_path
+        dataset_path,
         solution_mappings,
-        num_samples
+        num_samples,
         timepoints,
         **kwargs
     )
