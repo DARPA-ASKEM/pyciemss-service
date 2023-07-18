@@ -14,88 +14,11 @@ TDS_SIMULATIONS = "/simulations/"
 OUTPUT_FILENAME = os.getenv("PYCIEMSS_OUTPUT_FILEPATH")
 TDS_API = os.getenv("TDS_URL")
 
-def parse_samples_into_file(samples):
-    # samples_str = json.dumps(samples)
-    # samples_dict = json.loads(samples)
-
-    pyciemss_results = {"states": {}, "params": {}}
-    for key, value in samples.items():
-        key_components = key.split("_")
-        if len(key_components) > 1:
-            if key_components[1] == "sol":
-                pyciemss_results["states"][key] = value
-        else:
-            pyciemss_results["params"][key] = value
-
-    print(pyciemss_results)
-
-    file_output_json = {
-        "0": {
-            "description": "PyCIEMSS integration demo",
-            "initials": {
-                str(i): {"name": k, "identifiers": {}, "value": v.tolist()[0][0]}
-                for i, (k, v) in enumerate(pyciemss_results["states"].items())
-            },
-            "parameters": {
-                str(i): {"name": k, "identifiers": {}, "value": v.tolist()}
-                for i, (k, v) in enumerate(pyciemss_results["params"].items())
-            },
-            "output": {
-                str(i): {"name": k, "identifiers": {}, "value": v.tolist()}
-                for i, (k, v) in enumerate(pyciemss_results["states"].items())
-            },
-        }
-    }
-
-    with open("sim_output.json", "w") as f:
-        f.write(json.dumps(file_output_json))
-
-
-def parse_samples_into_csv(samples):
-    # Alternate: flat dataframe CSV
-
-    pyciemss_results = {"states": {}, "params": {}}
-    for key, value in samples.items():
-        key_components = key.split("_")
-        if len(key_components) > 1:
-            if key_components[1] == "sol":
-                pyciemss_results["states"][key] = value
-        else:
-            pyciemss_results["params"][key] = value
-
-    # Time points and sample points
-    num_samples, num_timepoints = next(iter(pyciemss_results["states"].values())).shape
-    d = {
-        "timepoint_id": np.tile(np.array(range(num_timepoints)), num_samples),
-        "sample_id": np.repeat(np.array(range(num_samples)), num_timepoints),
-    }
-
-    # Parameters
-    d = {
-        **d,
-        **{
-            f"{k}_param": np.repeat(v, num_timepoints)
-            for k, v in pyciemss_results["params"].items()
-        },
-    }
-
-    # Solution (state variables)
-    d = {
-        **d,
-        **{
-            f"{k}_sol": np.squeeze(v.reshape((num_timepoints * num_samples, 1)))
-            for k, v in pyciemss_results["states"].items()
-        },
-    }
-
-    df = pandas.DataFrame(d)
-
-    # Write to CSV
-    df.to_csv("pyciemss_results.csv", index=False)
-
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
 
 def update_tds_status(url, status, result_files=[], start=False, finish=False):
-    logging.info(f"Updating simulation `{url}` -- {status} start: {start}; finish: {finish}; result_files: {result_files}")
+    logging.debug(f"Updating simulation `{url}` -- {status} start: {start}; finish: {finish}; result_files: {result_files}")
     tds_payload = requests.get(url)
     tds_payload = tds_payload.json()
 
@@ -114,8 +37,9 @@ def update_tds_status(url, status, result_files=[], start=False, finish=False):
 
     return update_response
 
+
 def fetch_model(model_config_id, tds_api, config_endpoint):
-    logging.info(f"Fetching model {model_config_id}")
+    logging.debug(f"Fetching model {model_config_id}")
     url_components = [tds_api, config_endpoint, model_config_id]
     model_url = ""
     for component in url_components:
@@ -128,7 +52,7 @@ def fetch_model(model_config_id, tds_api, config_endpoint):
 
 
 def fetch_dataset(dataset: dict, tds_api):
-    logging.info(f"Fetching dataset {dataset['id']}")
+    logging.debug(f"Fetching dataset {dataset['id']}")
     dataset_url = f"{tds_api}/datasets/{dataset['id']}/download-url?filename={dataset['filename']}"
     response = requests.get(dataset_url)
     df = pandas.read_csv(response.json()["url"])
@@ -150,7 +74,7 @@ def attach_files(files: dict, tds_api, simulation_endpoint, job_id, status='comp
             with open(location, "rb") as f:
                 upload_response = requests.put(presigned_upload_url, f)
     else:
-        logging.info(f"{job_id} ran into error")
+        logging.error(f"{job_id} ran into error")
 
     # Update simulation object with status and filepaths.
     update_tds_status(
@@ -168,8 +92,8 @@ def catch_job_status(function):
             result = function(*args, **kwargs)
             end_time = time.perf_counter()
             logging.info(
-                f"Elapsed time for {function.__name__} for {kwargs['username']}:",
-                end_time - start_time
+                "Elapsed time for %s for %s: %d",
+                function.__name__, kwargs['username'], end_time - start_time
                 )
             return result
         except Exception as e:

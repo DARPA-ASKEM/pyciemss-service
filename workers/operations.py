@@ -29,6 +29,9 @@ TDS_SIMULATIONS = "/simulations/"
 OUTPUT_FILENAME = os.getenv("PYCIEMSS_OUTPUT_FILEPATH")
 TDS_API = os.getenv("TDS_URL")
 
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
+
 @catch_job_status
 def simulate(*args, **kwargs):
     username = kwargs.pop("username")
@@ -37,7 +40,7 @@ def simulate(*args, **kwargs):
     start = kwargs.pop("start")
     end = kwargs.pop("end")
     job_id = kwargs.pop("job_id")
-    logging.info(f"{job_id} (username - {username}): start simulate")
+    logging.debug(f"{job_id} (username - {username}): start simulate")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
 
@@ -57,7 +60,7 @@ def simulate(*args, **kwargs):
         json.dump(schema, f, indent=2)
     samples.to_csv(OUTPUT_FILENAME, index=False)
     attach_files({OUTPUT_FILENAME: "result.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
-    logging.info(f"{job_id} (username - {username}): finish simulate")
+    logging.debug(f"{job_id} (username - {username}): finish simulate")
 
     return
 
@@ -69,7 +72,7 @@ def calibrate_then_simulate(*args, **kwargs):
     end = kwargs.pop("end")
     mappings = kwargs.pop("mappings", {})
     job_id = kwargs.pop("job_id")
-    logging.info(f"{job_id} (username - {username}): start calibrate")
+    logging.debug(f"{job_id} (username - {username}): start calibrate")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
 
@@ -96,7 +99,7 @@ def calibrate_then_simulate(*args, **kwargs):
     samples.to_csv(OUTPUT_FILENAME, index=False)
     attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
 
-    logging.info(f"{job_id} (username - {username}): finish calibrate")
+    logging.debug(f"{job_id} (username - {username}): finish calibrate")
     
     return True
 
@@ -109,7 +112,7 @@ def ensemble_simulate(*args, **kwargs):
     end = kwargs.pop("end")
     num_samples = kwargs.pop("num_samples")
     job_id = kwargs.pop("job_id")
-    logging.info(f"{job_id} (username - {username}): start ensemble simulate")
+    logging.debug(f"{job_id} (username - {username}): start ensemble simulate")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
 
@@ -137,7 +140,7 @@ def ensemble_simulate(*args, **kwargs):
         json.dump(schema, f, indent=2)
     samples.to_csv(OUTPUT_FILENAME, index=False)
     attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
-    logging.info(f"{job_id} (username - {username}): finish ensemble simulate")
+    logging.debug(f"{job_id} (username - {username}): finish ensemble simulate")
     return True
 
 
@@ -150,7 +153,7 @@ def ensemble_calibrate(*args, **kwargs):
     num_samples = kwargs.pop("num_samples")
     dataset = kwargs.pop("dataset")
     job_id = kwargs.pop("job_id")
-    logging.info(f"{job_id} (username - {username}): start ensemble calibrate")
+    logging.debug(f"{job_id} (username - {username}): start ensemble calibrate")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
 
@@ -181,5 +184,5 @@ def ensemble_calibrate(*args, **kwargs):
         json.dump(schema, f, indent=2)
     samples.to_csv(OUTPUT_FILENAME, index=False)
     attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
-    logging.info(f"{job_id} (username - {username}): finish ensemble calibrate")
+    logging.debug(f"{job_id} (username - {username}): finish ensemble calibrate")
     return True
