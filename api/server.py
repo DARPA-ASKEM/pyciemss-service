@@ -8,8 +8,9 @@ from models import (
     Status,
     JobResponse,
     CalibratePostRequest,
-    EnsemblePostRequest,
     SimulatePostRequest,
+    EnsembleSimulatePostRequest,
+    EnsembleCalibratePostRequest,
     StatusSimulationIdGetResponse,
 )
 
@@ -138,15 +139,73 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     return response
 
 
-@app.post("/ensemble", response_model=JobResponse)
-def create_ensemble(body: EnsemblePostRequest) -> JobResponse:
+@app.post("/ensemble-simulate", response_model=JobResponse)
+def create_simulate_ensemble(body: EnsembleSimulatePostRequest) -> JobResponse:
     """
-    Perform an ensemble simulation
+    Perform ensemble simulate
     """
-    return Response(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        content="Ensemble is not yet implemented",
-    )
+    from utils import create_job
 
+    # Parse request body
+    engine = str(body.engine).lower()
+    model_configs = [config.dict() for config in body.model_configs]
+    start = body.timespan.start
+    end = body.timespan.end
+    username = body.username
+    extra = body.extra.dict()
+
+
+    operation_name = "operations.ensemble_simulate"
+    options = {
+        "engine": engine,
+        "model_configs": model_configs,
+        "start": start,
+        "end": end,
+        "username": username,
+        "extra": extra,
+        "visual_options": True
+    }
+
+    resp = create_job(operation_name=operation_name, options=options)
+
+    response = {"simulation_id": resp["id"]}
+
+    return response
+
+
+@app.post("/ensemble-calibrate", response_model=JobResponse)
+def create_calibrate_ensemble(body: EnsembleCalibratePostRequest) -> JobResponse:
+    """
+    Perform ensemble simulate
+    """
+    from utils import create_job
+
+    # Parse request body
+    engine = str(body.engine).lower()
+    username = body.username
+    dataset = body.dataset.dict()
+    model_configs = [config.dict() for config in body.model_configs]
+    start = body.timespan.start
+    end = body.timespan.end
+    extra = body.extra.dict()
+
+
+    operation_name = "operations.ensemble_calibrate"
+    options = {
+        "engine": engine,
+        "model_configs": model_configs,
+        "dataset": dataset, 
+        "start": start,
+        "end": end,
+        "username": username,
+        "extra": extra,
+        "visual_options": True
+    }
+
+    resp = create_job(operation_name=operation_name, options=options)
+
+    response = {"simulation_id": resp["id"]}
+
+    return response
 
 

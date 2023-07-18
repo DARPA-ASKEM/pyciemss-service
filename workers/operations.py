@@ -18,6 +18,11 @@ from pyciemss.PetriNetODE.interfaces import (
     load_and_sample_petri_model,
 )
 
+from pyciemss.Ensemble.interfaces import (
+    load_and_sample_petri_ensemble, load_and_calibrate_and_sample_ensemble_model
+)
+
+
 TDS_CONFIGURATIONS = "/model_configurations/"
 TDS_SIMULATIONS = "/simulations/"
 OUTPUT_FILENAME = os.getenv("PYCIEMSS_OUTPUT_FILEPATH")
@@ -88,4 +93,84 @@ def calibrate_then_simulate(*args, **kwargs):
     attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
     
 
+    return True
+
+
+@catch_job_status
+def ensemble_simulate(*args, **kwargs):
+    model_configs = kwargs.pop("model_configs")
+    start = kwargs.pop("start")
+    end = kwargs.pop("end")
+    num_samples = kwargs.pop("num_samples")
+    username = kwargs.pop("username")
+    job_id = kwargs.pop("job_id")
+
+    sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
+
+    update_tds_status(sim_results_url, status="running", start=True)
+
+    weights = [config["weight"] for config in model_configs]
+    solution_mappings = [config["solution_mappings"] for config in model_configs]
+    amr_paths = [fetch_model(config["id"], TDS_API, TDS_CONFIGURATIONS) for config in model_configs]
+
+    # Generate timepoints
+    time_count = end - start
+    timepoints=[x for x in range(1,time_count+1)]
+
+    output = load_and_sample_petri_ensemble(
+        amr_paths,
+        weights,
+        solution_mappings,
+        num_samples,
+        timepoints,
+        **kwargs
+    )
+    samples = output.get('data')
+    schema = output.get('visual')
+    with open("visualization.json", "w") as f:
+        json.dump(schema, f, indent=2)
+    samples.to_csv(OUTPUT_FILENAME, index=False)
+    attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
+    return True
+
+
+@catch_job_status
+def ensemble_calibrate(*args, **kwargs):
+    model_configs = kwargs.pop("model_configs")
+    start = kwargs.pop("start")
+    end = kwargs.pop("end")
+    num_samples = kwargs.pop("num_samples")
+    dataset = kwargs.pop("dataset")
+    username = kwargs.pop("username")
+    job_id = kwargs.pop("job_id")
+
+    sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
+
+    update_tds_status(sim_results_url, status="running", start=True)
+
+    weights = [config["weight"] for config in model_configs]
+    solution_mappings = [config["solution_mappings"] for config in model_configs]
+    amr_paths = [fetch_model(config["id"], TDS_API, TDS_CONFIGURATIONS) for config in model_configs]
+
+    dataset_path = fetch_dataset(dataset, TDS_API)
+
+    # Generate timepoints
+    time_count = end - start
+    timepoints=[x for x in range(1,time_count+1)]
+
+    output = load_and_calibrate_and_sample_ensemble_model(
+        amr_paths,
+        weights,
+        dataset_path,
+        solution_mappings,
+        num_samples,
+        timepoints,
+        **kwargs
+    )
+    samples = output.get('data')
+    schema = output.get('visual')
+    with open("visualization.json", "w") as f:
+        json.dump(schema, f, indent=2)
+    samples.to_csv(OUTPUT_FILENAME, index=False)
+    attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
     return True

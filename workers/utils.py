@@ -119,7 +119,7 @@ def fetch_model(model_config_id, tds_api, config_endpoint):
     for component in url_components:
         model_url = urllib.parse.urljoin(model_url, component)
     model_response = requests.get(model_url)
-    amr_path = os.path.abspath("./amr.json")
+    amr_path = os.path.abspath(f"./{model_config_id}.json")
     with open(amr_path, "w") as file:
         json.dump(model_response.json()["configuration"], file)
     return amr_path
@@ -146,7 +146,8 @@ def attach_files(files: dict, tds_api, simulation_endpoint, job_id, status='comp
             presigned_upload_url = upload_response.json()["url"]
             with open(location, "rb") as f:
                 upload_response = requests.put(presigned_upload_url, f)
-
+    else:
+        logging.info(f"{job_id} ran into error")
 
     # Update simulation object with status and filepaths.
     update_tds_status(
@@ -164,7 +165,7 @@ def catch_job_status( function):
             result = function(*args, **kwargs)
             end_time = time.perf_counter()
             logging.info(
-                f"Elapsed time for {function.__name__} for {kwargs["username"]}:",
+                f"Elapsed time for {function.__name__} for {kwargs['username']}:",
                 end_time - start_time
                 )
             return result
@@ -183,7 +184,7 @@ def catch_job_status( function):
                 
                 Error occured in function: {function.__name__}
 
-                Username: {kwargs["username"]}
+                Username: {kwargs['username']}
 
                 ################################
             """
