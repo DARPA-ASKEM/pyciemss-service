@@ -95,6 +95,7 @@ def parse_samples_into_csv(samples):
 
 
 def update_tds_status(url, status, result_files=[], start=False, finish=False):
+    logging.info(f"Updating simulation `{url}` -- {status} start: {start}; finish: {finish}; result_files: {result_files}")
     tds_payload = requests.get(url)
     tds_payload = tds_payload.json()
 
@@ -114,6 +115,7 @@ def update_tds_status(url, status, result_files=[], start=False, finish=False):
     return update_response
 
 def fetch_model(model_config_id, tds_api, config_endpoint):
+    logging.info(f"Fetching model {model_config_id}")
     url_components = [tds_api, config_endpoint, model_config_id]
     model_url = ""
     for component in url_components:
@@ -126,6 +128,7 @@ def fetch_model(model_config_id, tds_api, config_endpoint):
 
 
 def fetch_dataset(dataset: dict, tds_api):
+    logging.info(f"Fetching dataset {dataset['id']}")
     dataset_url = f"{tds_api}/datasets/{dataset['id']}/download-url?filename={dataset['filename']}"
     response = requests.get(dataset_url)
     df = pandas.read_csv(response.json()["url"])
@@ -155,7 +158,7 @@ def attach_files(files: dict, tds_api, simulation_endpoint, job_id, status='comp
     )
 
 
-def catch_job_status( function):
+def catch_job_status(function):
     """
     decorator that catches failed wrapped rq jobs and make sure the simulation status is set in tds.
     """
@@ -170,12 +173,6 @@ def catch_job_status( function):
                 )
             return result
         except Exception as e:
-
-            attach_files({OUTPUT_FILENAME: "result.csv"},
-                         TDS_API,
-                         TDS_SIMULATIONS,
-                         job_id=kwargs.get('job_id'),
-                         status="error")
 
             log_message = f"""
                 ###############################

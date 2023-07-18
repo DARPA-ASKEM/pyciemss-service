@@ -6,12 +6,13 @@ import sys
 import logging
 import numpy as np
 import requests
-from utils import update_tds_status,\
-                parse_samples_into_csv,\
-                fetch_dataset,\
-                fetch_model,\
-                attach_files,\
-                catch_job_status
+from utils import (
+    update_tds_status,
+    fetch_dataset,
+    fetch_model,
+    attach_files,
+    catch_job_status
+)
 
 from pyciemss.PetriNetODE.interfaces import (
     load_and_calibrate_and_sample_petri_model,
@@ -30,12 +31,13 @@ TDS_API = os.getenv("TDS_URL")
 
 @catch_job_status
 def simulate(*args, **kwargs):
+    username = kwargs.pop("username")
     model_config_id = kwargs.pop("model_config_id")
     num_samples = kwargs.pop("num_samples")
     start = kwargs.pop("start")
     end = kwargs.pop("end")
-    username = kwargs.pop("username")
     job_id = kwargs.pop("job_id")
+    logging.info(f"{job_id} (username - {username}): start simulate")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
 
@@ -55,17 +57,19 @@ def simulate(*args, **kwargs):
         json.dump(schema, f, indent=2)
     samples.to_csv(OUTPUT_FILENAME, index=False)
     attach_files({OUTPUT_FILENAME: "result.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
+    logging.info(f"{job_id} (username - {username}): finish simulate")
 
     return
 
 @catch_job_status
 def calibrate_then_simulate(*args, **kwargs):
+    username = kwargs.pop("username")
     model_config_id = kwargs.pop("model_config_id")
     start = kwargs.pop("start")
     end = kwargs.pop("end")
-    username = kwargs.pop("username")
     mappings = kwargs.pop("mappings", {})
     job_id = kwargs.pop("job_id")
+    logging.info(f"{job_id} (username - {username}): start calibrate")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
 
@@ -91,19 +95,21 @@ def calibrate_then_simulate(*args, **kwargs):
         json.dump(schema, f, indent=2)
     samples.to_csv(OUTPUT_FILENAME, index=False)
     attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
-    
 
+    logging.info(f"{job_id} (username - {username}): finish calibrate")
+    
     return True
 
 
 @catch_job_status
 def ensemble_simulate(*args, **kwargs):
+    username = kwargs.pop("username")
     model_configs = kwargs.pop("model_configs")
     start = kwargs.pop("start")
     end = kwargs.pop("end")
     num_samples = kwargs.pop("num_samples")
-    username = kwargs.pop("username")
     job_id = kwargs.pop("job_id")
+    logging.info(f"{job_id} (username - {username}): start ensemble simulate")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
 
@@ -131,18 +137,20 @@ def ensemble_simulate(*args, **kwargs):
         json.dump(schema, f, indent=2)
     samples.to_csv(OUTPUT_FILENAME, index=False)
     attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
+    logging.info(f"{job_id} (username - {username}): finish ensemble simulate")
     return True
 
 
 @catch_job_status
 def ensemble_calibrate(*args, **kwargs):
+    username = kwargs.pop("username")
     model_configs = kwargs.pop("model_configs")
     start = kwargs.pop("start")
     end = kwargs.pop("end")
     num_samples = kwargs.pop("num_samples")
     dataset = kwargs.pop("dataset")
-    username = kwargs.pop("username")
     job_id = kwargs.pop("job_id")
+    logging.info(f"{job_id} (username - {username}): start ensemble calibrate")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
 
@@ -160,8 +168,8 @@ def ensemble_calibrate(*args, **kwargs):
 
     output = load_and_calibrate_and_sample_ensemble_model(
         amr_paths,
-        weights,
         dataset_path,
+        weights,
         solution_mappings,
         num_samples,
         timepoints,
@@ -173,4 +181,5 @@ def ensemble_calibrate(*args, **kwargs):
         json.dump(schema, f, indent=2)
     samples.to_csv(OUTPUT_FILENAME, index=False)
     attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
+    logging.info(f"{job_id} (username - {username}): finish ensemble calibrate")
     return True
