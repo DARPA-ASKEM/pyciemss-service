@@ -92,7 +92,7 @@ def catch_job_status(function):
             result = function(*args, **kwargs)
             end_time = time.perf_counter()
             logging.info(
-                "Elapsed time for %s for %s: %d",
+                "Elapsed time for %s for %s: %f",
                 function.__name__, kwargs['username'], end_time - start_time
                 )
             return result

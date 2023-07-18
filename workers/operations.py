@@ -27,6 +27,7 @@ from pyciemss.Ensemble.interfaces import (
 TDS_CONFIGURATIONS = "/model_configurations/"
 TDS_SIMULATIONS = "/simulations/"
 OUTPUT_FILENAME = os.getenv("PYCIEMSS_OUTPUT_FILEPATH")
+EVAL_OUTPUT_FILENAME = "eval.csv"
 TDS_API = os.getenv("TDS_URL")
 
 logging.basicConfig()
@@ -59,7 +60,9 @@ def simulate(*args, **kwargs):
     with open("visualization.json", "w") as f:
         json.dump(schema, f, indent=2)
     samples.to_csv(OUTPUT_FILENAME, index=False)
-    attach_files({OUTPUT_FILENAME: "result.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
+    eval = output.get('quantiles')
+    eval.to_csv(EVAL_OUTPUT_FILENAME, index=False)
+    attach_files({OUTPUT_FILENAME: "result.csv", "visualization.json": "visualization.json", EVAL_OUTPUT_FILENAME: EVAL_OUTPUT_FILENAME}, TDS_API, TDS_SIMULATIONS, job_id)
     logging.debug(f"{job_id} (username - {username}): finish simulate")
 
     return
@@ -97,7 +100,9 @@ def calibrate_then_simulate(*args, **kwargs):
     with open("visualization.json", "w") as f:
         json.dump(schema, f, indent=2)
     samples.to_csv(OUTPUT_FILENAME, index=False)
-    attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
+    eval = output.get('quantiles')
+    eval.to_csv(EVAL_OUTPUT_FILENAME, index=False)
+    attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json", EVAL_OUTPUT_FILENAME: EVAL_OUTPUT_FILENAME}, TDS_API, TDS_SIMULATIONS, job_id)
 
     logging.debug(f"{job_id} (username - {username}): finish calibrate")
     
@@ -139,7 +144,9 @@ def ensemble_simulate(*args, **kwargs):
     with open("visualization.json", "w") as f:
         json.dump(schema, f, indent=2)
     samples.to_csv(OUTPUT_FILENAME, index=False)
-    attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
+    eval = output.get('quantiles')
+    eval.to_csv(EVAL_OUTPUT_FILENAME, index=False)
+    attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json", EVAL_OUTPUT_FILENAME: EVAL_OUTPUT_FILENAME}, TDS_API, TDS_SIMULATIONS, job_id)
     logging.debug(f"{job_id} (username - {username}): finish ensemble simulate")
     return True
 
@@ -183,6 +190,8 @@ def ensemble_calibrate(*args, **kwargs):
     with open("visualization.json", "w") as f:
         json.dump(schema, f, indent=2)
     samples.to_csv(OUTPUT_FILENAME, index=False)
-    attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json"}, TDS_API, TDS_SIMULATIONS, job_id)
+    eval = output.get('quantiles')
+    eval.to_csv(EVAL_OUTPUT_FILENAME, index=False)
+    attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json", EVAL_OUTPUT_FILENAME: EVAL_OUTPUT_FILENAME}, TDS_API, TDS_SIMULATIONS, job_id)
     logging.debug(f"{job_id} (username - {username}): finish ensemble calibrate")
     return True
