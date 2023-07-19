@@ -147,7 +147,7 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
         "visual_options": True,
     }
 
-    resp = create_job(operation_name=operation_name, options=options)
+    resp = create_job(operation_name=operation_name, options=options, sim_type="calibration_simulation")
 
     response = {"simulation_id": resp["id"]}
 
@@ -181,7 +181,7 @@ def create_simulate_ensemble(body: EnsembleSimulatePostRequest) -> JobResponse:
         "visual_options": True
     }
 
-    resp = create_job(operation_name=operation_name, options=options)
+    resp = create_job(operation_name=operation_name, options=options, sim_type="ensemble")
 
     response = {"simulation_id": resp["id"]}
 
@@ -217,7 +217,7 @@ def create_calibrate_ensemble(body: EnsembleCalibratePostRequest) -> JobResponse
         "visual_options": True
     }
 
-    resp = create_job(operation_name=operation_name, options=options)
+    resp = create_job(operation_name=operation_name, options=options, sim_type="ensemble")
 
     response = {"simulation_id": resp["id"]}
 

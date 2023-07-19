@@ -34,42 +34,37 @@ redis = Redis(
 q = Queue(connection=redis, default_timeout=-1)
 
 
-def create_job(operation_name: str, options: Optional[Dict[Any, Any]] = None):
+def create_job(operation_name: str, options: Optional[Dict[Any, Any]] = None, sim_type="simulation"):
     if options is None:
         options = {}
 
-    engine = options.pop("engine", "ciemss")
+    engine = options.get("engine", "ciemss")
     force_restart = options.pop("force_restart", False)
     synchronous = options.pop("synchronous", False)
     timeout = options.pop("timeout", 60)
     recheck_delay = 0.5
 
     assert engine.split(".")[-1] == "ciemss"
-    engine_prefix = options.get("engine", "ciemss")
+    engine = "ciemss"; options["engine"] = "ciemss"
     random_id = str(uuid.uuid4())
 
-    job_id = f"{engine_prefix}-{random_id}"
+    job_id = f"{engine}-{random_id}"
     options["job_id"] = job_id
     job = q.fetch_job(job_id)
 
     if STANDALONE:
         logging.info(f"OPTIONS: {options}")
+
+        
         # TODO: Allow extras on payload and simply put full object here
-        ex_payload = {
-            "engine": "ciemss",
-            "model_config_id": options.get("model_config_id", "not_provided"),
-            "timespan": {
-                "start": options.get("start", 0),
-                "end": options.get("end", 1),
-            },
-            "extra": options.get("extra", None),
-        }
+        if "model_config_id" not in options:
+            options["model_config_id"] = "not_provided"
         post_url = TDS_API + TDS_SIMULATIONS #+ job_id
         payload = {
             "id": job_id,
-            "execution_payload": ex_payload,
+            "execution_payload": options,
             "result_files": [],
-            "type": "simulation",
+            "type": sim_type,
             "status": "queued",
             "engine": "ciemss",
             "workflow_id": job_id,
@@ -79,6 +74,12 @@ def create_job(operation_name: str, options: Optional[Dict[Any, Any]] = None):
         response = requests.post(post_url, json=payload)
         if response.status_code >= 300:
             raise Exception(f"Failed to create simulation on TDS (status: {response.status_code}): {json.dumps(payload)}")
+        else:
+            options.pop("engine")
+            # TODO: Remove when model_config no longer required
+            if options["model_config_id"] == "not_provided":
+                options.pop("model_config_id")
+            
         logging.info(response.content)
 
     if job and force_restart:
