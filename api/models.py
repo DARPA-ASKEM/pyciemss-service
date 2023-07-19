@@ -29,7 +29,7 @@ class Status(Enum):
     @staticmethod
     def from_rq(rq_status):
         rq_status_to_tds_status = {
-            "cancelled": "cancelled",
+            "canceled": "cancelled",
             "complete": "complete",
             "error": "error",
             "queued": "queued",

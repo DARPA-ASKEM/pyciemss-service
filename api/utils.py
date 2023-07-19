@@ -140,4 +140,23 @@ def fetch_job_status(job_id):
             status_code=status.HTTP_404_NOT_FOUND,
             content=f"Simulation job with id = {job_id} not found",
         )
-    flattened_opetions
+    
+
+def kill_job(job_id):
+    try:
+        job = Job.fetch(job_id, connection=redis)
+    except NoSuchJobError:
+        return Response(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=f"Simulation job with id = {job_id} not found",
+        )
+    else:
+        job.cancel()
+
+        url = TDS_API + TDS_SIMULATIONS + str(job_id)
+        tds_payload = requests.get(url).json()
+        tds_payload["status"] = "cancelled"
+        requests.put(url, json=json.loads(json.dumps(tds_payload, default=str)))
+
+        result = job.get_status()
+        return result

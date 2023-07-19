@@ -64,6 +64,21 @@ def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
 
     return {"status": Status.from_rq(status)}
 
+@app.get("/cancel/{simulation_id}", response_model=StatusSimulationIdGetResponse)
+def cancel_job(simulation_id: str) -> StatusSimulationIdGetResponse:
+    """
+    Cancel a simulation
+    """
+    from utils import kill_job
+
+    status = kill_job(simulation_id)
+    logging.info(status)
+    if not isinstance(status, str):
+        return status
+
+    return {"status": Status.from_rq(status)}
+
+
 import logging
 @app.post("/simulate", response_model=JobResponse)
 def simulate_model(body: SimulatePostRequest) -> JobResponse:
