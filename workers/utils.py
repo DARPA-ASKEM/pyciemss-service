@@ -19,7 +19,9 @@ logging.getLogger().setLevel(logging.DEBUG)
 
 
 def make_job_dir(job_id):
-    return os.makedirs(os.path.join("/tmp", str(job_id)))
+    path = os.path.join("/tmp", str(job_id))    
+    os.makedirs(path)
+    return path
 
 
 def update_tds_status(url, status, result_files=[], start=False, finish=False):
