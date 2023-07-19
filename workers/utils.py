@@ -17,6 +17,11 @@ TDS_API = os.getenv("TDS_URL")
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
 
+
+def make_job_dir(job_id):
+    return os.makedirs(os.path.join("/tmp", str(job_id)))
+
+
 def update_tds_status(url, status, result_files=[], start=False, finish=False):
     logging.debug(f"Updating simulation `{url}` -- {status} start: {start}; finish: {finish}; result_files: {result_files}")
     tds_payload = requests.get(url)
@@ -38,26 +43,26 @@ def update_tds_status(url, status, result_files=[], start=False, finish=False):
     return update_response
 
 
-def fetch_model(model_config_id, tds_api, config_endpoint):
+def fetch_model(model_config_id, tds_api, config_endpoint, job_dir):
     logging.debug(f"Fetching model {model_config_id}")
     url_components = [tds_api, config_endpoint, model_config_id]
     model_url = ""
     for component in url_components:
         model_url = urllib.parse.urljoin(model_url, component)
     model_response = requests.get(model_url)
-    amr_path = os.path.abspath(f"./{model_config_id}.json")
+    amr_path = os.path.join(job_dir, f"./{model_config_id}.json")
     with open(amr_path, "w") as file:
         json.dump(model_response.json()["configuration"], file)
     return amr_path
 
 
-def fetch_dataset(dataset: dict, tds_api):
+def fetch_dataset(dataset: dict, tds_api, job_dir):
     logging.debug(f"Fetching dataset {dataset['id']}")
     dataset_url = f"{tds_api}/datasets/{dataset['id']}/download-url?filename={dataset['filename']}"
     response = requests.get(dataset_url)
     df = pandas.read_csv(response.json()["url"])
     df = df.rename(columns=dataset["mappings"])
-    dataset_path = os.path.abspath("./temp.json")
+    dataset_path = os.path.join(job_dir, "./temp.json")
     with open(dataset_path, "w") as file:
         df.to_csv(file, index=False)
     return dataset_path

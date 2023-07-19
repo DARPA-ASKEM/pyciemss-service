@@ -7,6 +7,7 @@ import logging
 import numpy as np
 import requests
 from utils import (
+    make_job_dir,
     update_tds_status,
     fetch_dataset,
     fetch_model,
@@ -44,11 +45,15 @@ def simulate(*args, **kwargs):
     logging.debug(f"{job_id} (username - {username}): start simulate")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
+    job_dir = make_job_dir(job_id)
+    output_filename = os.path.join(job_dir, OUTPUT_FILENAME)
+    eval_output_filename = os.path.join(job_dir, EVAL_OUTPUT_FILENAME)
+    visualization_filename = os.path.join(job_dir, "./visualization.json")
 
     update_tds_status(sim_results_url, status="running", start=True)
 
     # Get model from TDS
-    amr_path = fetch_model(model_config_id, TDS_API, TDS_CONFIGURATIONS)
+    amr_path = fetch_model(model_config_id, TDS_API, TDS_CONFIGURATIONS, job_dir)
 
     # Generate timepoints
     time_count = end - start
@@ -57,12 +62,12 @@ def simulate(*args, **kwargs):
     output = load_and_sample_petri_model(amr_path, num_samples, timepoints=timepoints, **kwargs)
     samples = output.get('data')
     schema = output.get('visual')
-    with open("visualization.json", "w") as f:
+    with open(visualization_filename, "w") as f:
         json.dump(schema, f, indent=2)
-    samples.to_csv(OUTPUT_FILENAME, index=False)
+    samples.to_csv(output_filename, index=False)
     eval = output.get('quantiles')
-    eval.to_csv(EVAL_OUTPUT_FILENAME, index=False)
-    attach_files({OUTPUT_FILENAME: "result.csv", "visualization.json": "visualization.json", EVAL_OUTPUT_FILENAME: EVAL_OUTPUT_FILENAME}, TDS_API, TDS_SIMULATIONS, job_id)
+    eval.to_csv(eval_output_filename, index=False)
+    attach_files({output_filename: "result.csv", visualization_filename: "visualization.json", eval_output_filename: "eval.csv"}, TDS_API, TDS_SIMULATIONS, job_id)
     logging.debug(f"{job_id} (username - {username}): finish simulate")
 
     return
@@ -78,16 +83,20 @@ def calibrate_then_simulate(*args, **kwargs):
     logging.debug(f"{job_id} (username - {username}): start calibrate")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
+    job_dir = make_job_dir(job_id)
+    output_filename = os.path.join(job_dir, OUTPUT_FILENAME)
+    eval_output_filename = os.path.join(job_dir, EVAL_OUTPUT_FILENAME)
+    visualization_filename = os.path.join(job_dir, "./visualization.json")
 
     update_tds_status(sim_results_url, status="running", start=True)
 
-    amr_path = fetch_model(model_config_id, TDS_API, TDS_CONFIGURATIONS)
+    amr_path = fetch_model(model_config_id, TDS_API, TDS_CONFIGURATIONS, job_dir)
 
     # Generate timepoints
     time_count = end - start
     timepoints=[x for x in range(1,time_count+1)]
 
-    dataset_path = fetch_dataset(kwargs.pop("dataset"), TDS_API)
+    dataset_path = fetch_dataset(kwargs.pop("dataset"), TDS_API, job_dir)
 
     output = load_and_calibrate_and_sample_petri_model(
         amr_path,
@@ -97,12 +106,12 @@ def calibrate_then_simulate(*args, **kwargs):
     )
     samples = output.get('data')
     schema = output.get('visual')
-    with open("visualization.json", "w") as f:
+    with open(visualization_filename, "w") as f:
         json.dump(schema, f, indent=2)
-    samples.to_csv(OUTPUT_FILENAME, index=False)
+    samples.to_csv(output_filename, index=False)
     eval = output.get('quantiles')
-    eval.to_csv(EVAL_OUTPUT_FILENAME, index=False)
-    attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json", EVAL_OUTPUT_FILENAME: EVAL_OUTPUT_FILENAME}, TDS_API, TDS_SIMULATIONS, job_id)
+    eval.to_csv(eval_output_filename, index=False)
+    attach_files({output_filename: "simulation.csv", visualization_filename: "visualization.json", eval_output_filename: "eval.csv"}, TDS_API, TDS_SIMULATIONS, job_id)
 
     logging.debug(f"{job_id} (username - {username}): finish calibrate")
     
@@ -120,12 +129,16 @@ def ensemble_simulate(*args, **kwargs):
     logging.debug(f"{job_id} (username - {username}): start ensemble simulate")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
+    job_dir = make_job_dir(job_id)
+    output_filename = os.path.join(job_dir, OUTPUT_FILENAME)
+    eval_output_filename = os.path.join(job_dir, EVAL_OUTPUT_FILENAME)
+    visualization_filename = os.path.join(job_dir, "./visualization.json")
 
     update_tds_status(sim_results_url, status="running", start=True)
 
     weights = [config["weight"] for config in model_configs]
     solution_mappings = [config["solution_mappings"] for config in model_configs]
-    amr_paths = [fetch_model(config["id"], TDS_API, TDS_CONFIGURATIONS) for config in model_configs]
+    amr_paths = [fetch_model(config["id"], TDS_API, TDS_CONFIGURATIONS, job_dir) for config in model_configs]
 
     # Generate timepoints
     time_count = end - start
@@ -141,12 +154,12 @@ def ensemble_simulate(*args, **kwargs):
     )
     samples = output.get('data')
     schema = output.get('visual')
-    with open("visualization.json", "w") as f:
+    with open(visualization_filename, "w") as f:
         json.dump(schema, f, indent=2)
-    samples.to_csv(OUTPUT_FILENAME, index=False)
+    samples.to_csv(output_filename, index=False)
     eval = output.get('quantiles')
-    eval.to_csv(EVAL_OUTPUT_FILENAME, index=False)
-    attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json", EVAL_OUTPUT_FILENAME: EVAL_OUTPUT_FILENAME}, TDS_API, TDS_SIMULATIONS, job_id)
+    eval.to_csv(eval_output_filename, index=False)
+    attach_files({output_filename: "simulation.csv", visualization_filename: "visualization.json", eval_output_filename: "eval.csv"}, TDS_API, TDS_SIMULATIONS, job_id)
     logging.debug(f"{job_id} (username - {username}): finish ensemble simulate")
     return True
 
@@ -163,14 +176,18 @@ def ensemble_calibrate(*args, **kwargs):
     logging.debug(f"{job_id} (username - {username}): start ensemble calibrate")
 
     sim_results_url = TDS_API + TDS_SIMULATIONS + job_id
+    job_dir = make_job_dir(job_id)
+    output_filename = os.path.join(job_dir, OUTPUT_FILENAME)
+    eval_output_filename = os.path.join(job_dir, EVAL_OUTPUT_FILENAME)
+    visualization_filename = os.path.join(job_dir, "./visualization.json")
 
     update_tds_status(sim_results_url, status="running", start=True)
 
     weights = [config["weight"] for config in model_configs]
     solution_mappings = [config["solution_mappings"] for config in model_configs]
-    amr_paths = [fetch_model(config["id"], TDS_API, TDS_CONFIGURATIONS) for config in model_configs]
+    amr_paths = [fetch_model(config["id"], TDS_API, TDS_CONFIGURATIONS, job_dir) for config in model_configs]
 
-    dataset_path = fetch_dataset(dataset, TDS_API)
+    dataset_path = fetch_dataset(dataset, TDS_API, job_dir)
 
     # Generate timepoints
     time_count = end - start
@@ -187,11 +204,11 @@ def ensemble_calibrate(*args, **kwargs):
     )
     samples = output.get('data')
     schema = output.get('visual')
-    with open("visualization.json", "w") as f:
+    with open(visualization_filename, "w") as f:
         json.dump(schema, f, indent=2)
-    samples.to_csv(OUTPUT_FILENAME, index=False)
+    samples.to_csv(output_filename, index=False)
     eval = output.get('quantiles')
-    eval.to_csv(EVAL_OUTPUT_FILENAME, index=False)
-    attach_files({OUTPUT_FILENAME: "simulation.csv", "visualization.json": "visualization.json", EVAL_OUTPUT_FILENAME: EVAL_OUTPUT_FILENAME}, TDS_API, TDS_SIMULATIONS, job_id)
+    eval.to_csv(eval_output_filename, index=False)
+    attach_files({output_filename: "simulation.csv", visualization_filename: "visualization.json", eval_output_filename: "eval.csv"}, TDS_API, TDS_SIMULATIONS, job_id)
     logging.debug(f"{job_id} (username - {username}): finish ensemble calibrate")
     return True
