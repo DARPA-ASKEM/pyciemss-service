@@ -64,6 +64,9 @@ def fetch_dataset(dataset: dict, tds_api, job_dir):
     response = requests.get(dataset_url)
     df = pandas.read_csv(response.json()["url"])
     df = df.rename(columns=dataset["mappings"])
+    if len(dataset["mappings"]) > 0:
+        dropped_columns = set(df.columns) - set(datset["mappings"].values())
+        df = df.drop(columns=list(dropped_columns))
     dataset_path = os.path.join(job_dir, "./temp.json")
     with open(dataset_path, "w") as file:
         df.to_csv(file, index=False)
