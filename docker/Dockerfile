@@ -7,9 +7,12 @@ COPY poetry.lock poetry.lock
 RUN poetry config virtualenvs.create false && \
     poetry install --no-root --no-cache
 
-COPY api api
+RUN pip install --no-cache-dir git+https://github.com/ciemss/pyciemss.git
+COPY service service
 COPY README.md README.md
-WORKDIR /api
 
-EXPOSE 8000
-CMD [ "uvicorn", "server:app", "--reload", "--host", "0.0.0.0", "--port", "8000" ]
+ENV REDIS_HOST redis
+ENV REDIS_PORT 6379
+
+WORKDIR /workers
+CMD rq worker --url redis://$REDIS_HOST:$REDIS_PORT high default low
