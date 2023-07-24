@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyciemss-service"
-version = "0.1.0"
+version = "1.6.0"
 description = "PyCIEMSS simulation service to run CIEMSS simulations"
 authors = ["Powell Fendley", "Five Grant"]
 readme = "README.md"
