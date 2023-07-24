@@ -30,14 +30,17 @@ logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
 
 @catch_job_status
-def simulate(*args, **kwargs):
-    username = kwargs.pop("username")
-    model_config_id = kwargs.pop("model_config_id")
-    num_samples = kwargs.pop("num_samples")
-    start = kwargs.pop("start")
-    end = kwargs.pop("end")
-    job_id = kwargs.pop("job_id")
-    logging.debug(f"{job_id} (username - {username}): start simulate")
+def simulate(request, *, job_id):
+    extra = request.dict()
+    num_samples = extra.pop("num_samples")
+    if len(request.interventions) > 0:
+        interventions = [
+            (intervention.timestep, intervention.name, intervention.value) for intervention in body.interventions 
+        ]
+    else:
+        intervention = []
+
+    logging.debug(f"{job_id} (username - {request.username}): start simulate")
 
     sim_results_url = TDS_URL + TDS_SIMULATIONS + job_id
     job_dir = make_job_dir(job_id)
@@ -48,13 +51,20 @@ def simulate(*args, **kwargs):
     update_tds_status(sim_results_url, status="running", start=True)
 
     # Get model from TDS
-    amr_path = fetch_model(model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_dir)
+    amr_path = fetch_model(request.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_dir)
 
     # Generate timepoints
-    time_count = end - start
+    time_count = request.end - request.start
     timepoints=[x for x in range(1,time_count+1)]
 
-    output = load_and_sample_petri_model(amr_path, num_samples, timepoints=timepoints, **kwargs)
+    output = load_and_sample_petri_model(
+        amr_path, 
+        num_samples, 
+        timepoints=timepoints, 
+        interventions=interventions,
+        visual_options=True, 
+        **extra
+    )
     samples = output.get('data')
     schema = output.get('visual')
     with open(visualization_filename, "w") as f:
@@ -63,20 +73,14 @@ def simulate(*args, **kwargs):
     eval = output.get('quantiles')
     eval.to_csv(eval_output_filename, index=False)
     attach_files({output_filename: "result.csv", visualization_filename: "visualization.json", eval_output_filename: "eval.csv"}, TDS_URL, TDS_SIMULATIONS, job_id)
-    logging.debug(f"{job_id} (username - {username}): finish simulate")
+    logging.debug(f"{job_id} (username - {request.username}): finish simulate")
 
-    return
+    return True
 
 @catch_job_status
-def calibrate_then_simulate(*args, **kwargs):
-    username = kwargs.pop("username")
-    model_config_id = kwargs.pop("model_config_id")
-    start = kwargs.pop("start")
-    end = kwargs.pop("end")
-    mappings = kwargs.pop("mappings", {})
-    job_id = kwargs.pop("job_id")
-    logging.debug(f"{job_id} (username - {username}): start calibrate")
-
+def calibrate_then_simulate(request, *, job_id):
+    extra = request.extra.dict()
+    logging.debug(f"{job_id} (username - {request.username}): start calibrate")
     sim_results_url = TDS_URL + TDS_SIMULATIONS + job_id
     job_dir = make_job_dir(job_id)
     output_filename = os.path.join(job_dir, OUTPUT_FILENAME)
@@ -85,19 +89,20 @@ def calibrate_then_simulate(*args, **kwargs):
 
     update_tds_status(sim_results_url, status="running", start=True)
 
-    amr_path = fetch_model(model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_dir)
+    amr_path = fetch_model(request.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_dir)
 
     # Generate timepoints
-    time_count = end - start
+    time_count = request.end - request.start
     timepoints=[x for x in range(1,time_count+1)]
 
-    dataset_path = fetch_dataset(kwargs.pop("dataset"), TDS_URL, job_dir)
+    dataset_path = fetch_dataset(request.dataset.dict(), TDS_URL, job_dir)
 
     output = load_and_calibrate_and_sample_petri_model(
         amr_path,
         dataset_path,
         timepoints=timepoints,
-        **kwargs
+        visual_options=True,
+        **extra
     )
     samples = output.get('data')
     schema = output.get('visual')
@@ -108,20 +113,16 @@ def calibrate_then_simulate(*args, **kwargs):
     eval.to_csv(eval_output_filename, index=False)
     attach_files({output_filename: "simulation.csv", visualization_filename: "visualization.json", eval_output_filename: "eval.csv"}, TDS_URL, TDS_SIMULATIONS, job_id)
 
-    logging.debug(f"{job_id} (username - {username}): finish calibrate")
+    logging.debug(f"{job_id} (username - {request.username}): finish calibrate")
     
     return True
 
 
 @catch_job_status
-def ensemble_simulate(*args, **kwargs):
-    username = kwargs.pop("username")
-    model_configs = kwargs.pop("model_configs")
-    start = kwargs.pop("start")
-    end = kwargs.pop("end")
-    num_samples = kwargs.pop("num_samples")
-    job_id = kwargs.pop("job_id")
-    logging.debug(f"{job_id} (username - {username}): start ensemble simulate")
+def ensemble_simulate(request, *, job_id):
+    extra = request.dict()
+    num_samples = extra.pop("num_samples")
+    logging.debug(f"{job_id} (username - {request.username}): start ensemble simulate")
 
     sim_results_url = TDS_URL + TDS_SIMULATIONS + job_id
     job_dir = make_job_dir(job_id)
@@ -131,12 +132,12 @@ def ensemble_simulate(*args, **kwargs):
 
     update_tds_status(sim_results_url, status="running", start=True)
 
-    weights = [config["weight"] for config in model_configs]
-    solution_mappings = [config["solution_mappings"] for config in model_configs]
-    amr_paths = [fetch_model(config["id"], TDS_URL, TDS_CONFIGURATIONS, job_dir) for config in model_configs]
+    weights = [config.weight for config in request.model_configs]
+    solution_mappings = [config.solution_mappings for config in request.model_configs]
+    amr_paths = [fetch_model(config.id, TDS_URL, TDS_CONFIGURATIONS, job_dir) for config in request.model_configs]
 
     # Generate timepoints
-    time_count = end - start
+    time_count = request.end - request.start
     timepoints=[x for x in range(1,time_count+1)]
 
     output = load_and_sample_petri_ensemble(
@@ -145,7 +146,8 @@ def ensemble_simulate(*args, **kwargs):
         solution_mappings,
         num_samples,
         timepoints,
-        **kwargs
+        visual_options=True,
+        **extra
     )
     samples = output.get('data')
     schema = output.get('visual')
@@ -160,14 +162,9 @@ def ensemble_simulate(*args, **kwargs):
 
 
 @catch_job_status
-def ensemble_calibrate(*args, **kwargs):
-    username = kwargs.pop("username")
-    model_configs = kwargs.pop("model_configs")
-    start = kwargs.pop("start")
-    end = kwargs.pop("end")
-    num_samples = kwargs.pop("num_samples")
-    dataset = kwargs.pop("dataset")
-    job_id = kwargs.pop("job_id")
+def ensemble_calibrate(request, *, job_id):
+    extra = request.extra.dict()
+    num_samples = extra.pop("num_samples")
     logging.debug(f"{job_id} (username - {username}): start ensemble calibrate")
 
     sim_results_url = TDS_URL + TDS_SIMULATIONS + job_id
@@ -178,14 +175,14 @@ def ensemble_calibrate(*args, **kwargs):
 
     update_tds_status(sim_results_url, status="running", start=True)
 
-    weights = [config["weight"] for config in model_configs]
-    solution_mappings = [config["solution_mappings"] for config in model_configs]
-    amr_paths = [fetch_model(config["id"], TDS_URL, TDS_CONFIGURATIONS, job_dir) for config in model_configs]
+    weights = [config.weight for config in request.model_configs]
+    solution_mappings = [config.solution_mappings for config in request.model_configs]
+    amr_paths = [fetch_model(config.id, TDS_URL, TDS_CONFIGURATIONS, job_dir) for config in request.model_configs]
 
-    dataset_path = fetch_dataset(dataset, TDS_URL, job_dir)
+    dataset_path = fetch_dataset(request.dataset.dict(), TDS_URL, job_dir)
 
     # Generate timepoints
-    time_count = end - start
+    time_count = request.end - request.start
     timepoints=[x for x in range(1,time_count+1)]
 
     output = load_and_calibrate_and_sample_ensemble_model(
@@ -195,7 +192,8 @@ def ensemble_calibrate(*args, **kwargs):
         solution_mappings,
         num_samples,
         timepoints,
-        **kwargs
+        visual_options=True,
+        **request.extra
     )
     samples = output.get('data')
     schema = output.get('visual')

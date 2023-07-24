@@ -36,8 +36,8 @@ logging.getLogger().setLevel(logging.DEBUG)
 
 # REDIS CONNECTION AND QUEUE OBJECTS
 redis = Redis(
-    os.environ.get("REDIS_HOST", "redis.pyciemss-api"),
-    os.environ.get("REDIS_PORT", "6379"),
+    settings.REDIS_HOST,
+    settings.REDIS_PORT
 )
 q = Queue(connection=redis, default_timeout=-1)
 
@@ -46,41 +46,17 @@ def make_job_dir(job_id):
     os.makedirs(path)
     return path
 
-def create_job(operation_name: str, options: Optional[Dict[Any, Any]] = None):
-    if options is None:
-        options = {}
-
-    engine = options.pop("engine", "ciemss")
-    force_restart = options.pop("force_restart", False)
-    synchronous = options.pop("synchronous", False)
-    timeout = options.pop("timeout", 60)
-    recheck_delay = 0.5
-
-    assert engine.split(".")[-1] == "ciemss"
-    engine_prefix = options.get("engine", "ciemss")
+def create_job(operation_name: str, request_payload, sim_type: str):
     random_id = str(uuid.uuid4())
-
-    job_id = f"{engine_prefix}-{random_id}"
-    options["job_id"] = job_id
+    job_id = f"ciemss-{random_id}"
     job = q.fetch_job(job_id)
 
-    logging.info(f"OPTIONS: {options}")
-    # TODO: Allow extras on payload and simply put full object here
-    ex_payload = {
-        "engine": "ciemss",
-        "model_config_id": options.get("model_config_id", "not_provided"),
-        "timespan": {
-            "start": options.get("start", 0),
-            "end": options.get("end", 1),
-        },
-        "extra": options.get("extra", None),
-    }
     post_url = TDS_URL + TDS_SIMULATIONS #+ job_id
     payload = {
         "id": job_id,
-        "execution_payload": ex_payload,
+        "execution_payload": request_payload.dict(),
         "result_files": [],
-        "type": "simulation",
+        "type": sim_type,
         "status": "queued",
         "engine": "ciemss",
         "workflow_id": job_id,
@@ -92,21 +68,7 @@ def create_job(operation_name: str, options: Optional[Dict[Any, Any]] = None):
         raise Exception(f"Failed to create simulation on TDS (status: {response.status_code}): {json.dumps(payload)}")
     logging.info(response.content)
 
-    if job and force_restart:
-        job.cleanup(ttl=0)  # Cleanup/remove data immediately
-
-    if not job or force_restart:
-        flattened_options = deepcopy(options)
-        flattened_options.update(flattened_options.pop("extra"))
-        job = q.enqueue_call(func=operation_name, args=[], kwargs=flattened_options, job_id=job_id)
-        if synchronous:
-            timer = 0.0
-            while (
-                job.get_status(refresh=True) not in ("finished", "failed")
-                and timer < timeout
-            ):
-                time.sleep(recheck_delay)
-                timer += recheck_delay
+    job = q.enqueue_call(func=operation_name, args=[request_payload], kwargs={"job_id": job_id}, job_id=job_id)
 
     status = job.get_status()
     if status in ("finished", "failed"):

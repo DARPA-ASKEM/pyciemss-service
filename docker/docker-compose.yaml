@@ -3,6 +3,8 @@ networks:
   pyciemss:
     driver: bridge
     name: pyciemss
+  data-api:
+    external: true
 services:
   api:
     container_name: pyciemss-api
@@ -16,6 +18,7 @@ services:
       - ../.env
     networks:
       - pyciemss
+      - data-api
     depends_on:
       - redis
     volumes:
@@ -40,4 +43,5 @@ services:
       - redis
       - api
     networks:
+      - data-api
       - pyciemss

@@ -83,33 +83,8 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
     """
     Perform a simulation
     """
-    # Parse request body
-    engine = str(body.engine.value).lower()
-    model_config_id = body.model_config_id
-    username = body.username
-    start = body.timespan.start
-    end = body.timespan.end
-    interventions = [
-        (intervention.timestep, intervention.name, intervention.value) for intervention in body.interventions 
-    ]
-        
+    resp = create_job("operations.simulate", body, "simulate")
 
-    operation_name = "operations.simulate"
-    options = {
-        "engine": engine,
-        "username": username,
-        "model_config_id": model_config_id,
-        "start": start,
-        "end": end,
-        "extra": body.extra.dict(),
-        "visual_options": True,
-        "interventions": interventions
-    }
-
-    resp = create_job(operation_name=operation_name, options=options)
-
-    if len(interventions) > 0:
-        logging.info(f"{resp['id']} used interventions: {interventions}")
     response = {"simulation_id": resp["id"]}
 
     return response
@@ -120,30 +95,7 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     """
     Calibrate a model
     """
-
-    # Parse request body
-    logging.info(body)
-    engine = str(body.engine).lower()
-    username = body.username
-    model_config_id = body.model_config_id
-    dataset = body.dataset
-    start = body.timespan.start
-    end = body.timespan.end
-    extra = body.extra.dict()
-
-    operation_name = "operations.calibrate_then_simulate"
-    options = {
-        "engine": engine,
-        "username": username,
-        "model_config_id": model_config_id,
-        "start": start,
-        "end": end,
-        "dataset": dataset.dict(),
-        "extra": extra,
-        "visual_options": True,
-    }
-
-    resp = create_job(operation_name=operation_name, options=options)
+    resp = create_job("operations.calibrate_then_simulate", body, "calibrate")
 
     response = {"simulation_id": resp["id"]}
 
@@ -155,28 +107,7 @@ def create_simulate_ensemble(body: EnsembleSimulatePostRequest) -> JobResponse:
     """
     Perform ensemble simulate
     """
-
-    # Parse request body
-    engine = str(body.engine).lower()
-    model_configs = [config.dict() for config in body.model_configs]
-    start = body.timespan.start
-    end = body.timespan.end
-    username = body.username
-    extra = body.extra.dict()
-
-
-    operation_name = "operations.ensemble_simulate"
-    options = {
-        "engine": engine,
-        "model_configs": model_configs,
-        "start": start,
-        "end": end,
-        "username": username,
-        "extra": extra,
-        "visual_options": True
-    }
-
-    resp = create_job(operation_name=operation_name, options=options)
+    resp = create_job("operations.ensemble_simulate", body, "ensemble-simulate")
 
     response = {"simulation_id": resp["id"]}
 
@@ -188,30 +119,7 @@ def create_calibrate_ensemble(body: EnsembleCalibratePostRequest) -> JobResponse
     """
     Perform ensemble simulate
     """
-
-    # Parse request body
-    engine = str(body.engine).lower()
-    username = body.username
-    dataset = body.dataset.dict()
-    model_configs = [config.dict() for config in body.model_configs]
-    start = body.timespan.start
-    end = body.timespan.end
-    extra = body.extra.dict()
-
-
-    operation_name = "operations.ensemble_calibrate"
-    options = {
-        "engine": engine,
-        "model_configs": model_configs,
-        "dataset": dataset, 
-        "start": start,
-        "end": end,
-        "username": username,
-        "extra": extra,
-        "visual_options": True
-    }
-
-    resp = create_job(operation_name=operation_name, options=options)
+    resp = create_job("operations.ensemble_calibrate", body, "ensemble-calibrate")
 
     response = {"simulation_id": resp["id"]}
 

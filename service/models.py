@@ -6,11 +6,6 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, Extra as ExtraEnum
 
 
-class Engine(Enum):
-    sciml = "sciml"
-    ciemss = "ciemss"
-
-
 class Timespan(BaseModel):
     start: int = Field(..., example=0)
     end: int = Field(..., example=90)
@@ -63,8 +58,14 @@ class InterventionObject(BaseModel):
 
 ######################### Base operation request ############
 class OperationRequest(BaseModel):
-    engine: Engine = Field(..., example="ciemss")
+    engine: str = Field("ciemss", example="ciemss")
     username: str = Field("not_provided", example="not_provided")
+
+    # @field_validator("engine")
+    # def must_be_ciemss(cls, engine_choice):
+    #     if engine_choice != "ciemss":
+    #         raise ValueError("The chosen engine is NOT 'ciemss'")
+    #     return engine_choice
 
 
 ######################### `simulate` Operation ############
