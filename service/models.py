@@ -41,6 +41,33 @@ class Status(Enum):
         return Status(rq_status_to_tds_status[rq_status])
 
 
+class ModelConfig(BaseModel):
+    id: str = Field(..., example="cd339570-047d-11ee-be55")
+    solution_mappings: dict[str, str] = Field(..., example={"Infected": "Cases", "Hospitalizations": "hospitalized_population"})
+    weight: float = Field(..., example="cd339570-047d-11ee-be55") 
+
+
+class Dataset(BaseModel):
+    id: str = Field(None, example="cd339570-047d-11ee-be55")
+    filename: str = Field(None, example="dataset.csv")
+    mappings: Dict[str, str] = Field(
+        default_factory=dict,
+        description="Mappings from the dataset column names to the model names they should be replaced with.",
+        example={'postive_tests': 'infected'},
+    )
+
+class InterventionObject(BaseModel):
+    timestep: float
+    name: str
+    value: float
+
+######################### Base operation request ############
+class OperationRequest(BaseModel):
+    engine: Engine = Field(..., example="ciemss")
+    username: str = Field("not_provided", example="not_provided")
+
+
+######################### `simulate` Operation ############
 class SimulateExtra(BaseModel):
     class Config:
         extra = ExtraEnum.allow
@@ -50,6 +77,17 @@ class SimulateExtra(BaseModel):
     )
 
 
+class SimulatePostRequest(OperationRequest):
+    model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
+    timespan: Timespan
+    interventions: List[InterventionObject] = Field(default_factory=list, example=[{"timestep":1,"name":"beta","value":.4}])
+    extra: SimulateExtra = Field(
+        None,
+        description="optional extra system specific arguments for advanced use cases",
+    )
+
+
+######################### `calibrate` Operation ############
 class CalibrateExtra(BaseModel):
     class Config:
         extra = ExtraEnum.allow
@@ -82,6 +120,17 @@ class CalibrateExtra(BaseModel):
     )
 
 
+class CalibratePostRequest(OperationRequest):
+    model_config_id: str = Field(..., example="c1cd941a-047d-11ee-be56")
+    dataset: Dataset = None
+    timespan: Optional[Timespan] = None
+    extra: CalibrateExtra = Field(
+        None,
+        description="optional extra system specific arguments for advanced use cases",
+    )
+
+
+######################### `ensemble-simulate` Operation ############
 class EnsembleSimulateExtra(BaseModel):
     class Config:
         extra = ExtraEnum.allow
@@ -91,6 +140,19 @@ class EnsembleSimulateExtra(BaseModel):
     )
 
 
+class EnsembleSimulatePostRequest(OperationRequest):
+    model_configs: List[ModelConfig] = Field(
+        [],
+        example=[],
+    )
+    timespan: Timespan
+
+    extra: EnsembleSimulateExtra = Field(
+        None,
+        description="optional extra system specific arguments for advanced use cases",
+    )
+
+######################### `ensemble-calibrate` Operation ############
 class EnsembleCalibrateExtra(BaseModel):
     class Config:
         extra = ExtraEnum.allow
@@ -111,67 +173,7 @@ class EnsembleCalibrateExtra(BaseModel):
         "days", description="units in numbers of days", example="days"
     )
 
-
-class ModelConfig(BaseModel):
-    id: str = Field(..., example="cd339570-047d-11ee-be55")
-    solution_mappings: dict[str, str] = Field(..., example={"Infected": "Cases", "Hospitalizations": "hospitalized_population"})
-    weight: float = Field(..., example="cd339570-047d-11ee-be55") 
-
-
-class Dataset(BaseModel):
-    id: str = Field(None, example="cd339570-047d-11ee-be55")
-    filename: str = Field(None, example="dataset.csv")
-    mappings: Dict[str, str] = Field(
-        default_factory=dict,
-        description="Mappings from the dataset column names to the model names they should be replaced with.",
-        example={'postive_tests': 'infected'},
-    )
-
-class InterventionObject(BaseModel):
-    timestep: float
-    name: str
-    value: float
-
-class SimulatePostRequest(BaseModel):
-    engine: Engine = Field(..., example="ciemss")
-    username: str = Field("not_provided", example="not_provided")
-    model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
-    timespan: Timespan
-    interventions: List[InterventionObject] = Field(default_factory=list, example=[{"timestep":1,"name":"beta","value":.4}])
-    extra: SimulateExtra = Field(
-        None,
-        description="optional extra system specific arguments for advanced use cases",
-    )
-
-
-class CalibratePostRequest(BaseModel):
-    engine: Engine = Field(..., example="ciemss")
-    username: str = Field("not_provided", example="not_provided")
-    model_config_id: str = Field(..., example="c1cd941a-047d-11ee-be56")
-    dataset: Dataset = None
-    timespan: Optional[Timespan] = None
-    extra: CalibrateExtra = Field(
-        None,
-        description="optional extra system specific arguments for advanced use cases",
-    )
-
-
-class EnsembleSimulatePostRequest(BaseModel):
-    engine: Engine = Field(..., example="ciemss")
-    username: str = Field("not_provided", example="not_provided")
-    model_configs: List[ModelConfig] = Field(
-        [],
-        example=[],
-    )
-    timespan: Timespan
-
-    extra: EnsembleSimulateExtra = Field(
-        None,
-        description="optional extra system specific arguments for advanced use cases",
-    )
-
-
-class EnsembleCalibratePostRequest(BaseModel):
+class EnsembleCalibratePostRequest(OperationRequest):
     engine: Engine = Field(..., example="ciemss")
     username: str = Field("not_provided", example="not_provided")
     model_configs: List[ModelConfig] = Field(
@@ -185,6 +187,7 @@ class EnsembleCalibratePostRequest(BaseModel):
         description="optional extra system specific arguments for advanced use cases",
     )
 
+######################### API Response ############
 class JobResponse(BaseModel):
     simulation_id: Optional[str] = Field(
         None,

@@ -23,10 +23,11 @@ from rq import Queue
 from rq.exceptions import NoSuchJobError
 from rq.job import Job
 
-STANDALONE = os.getenv("STANDALONE_MODE")
-OUTPUT_FILENAME = os.getenv("PYCIEMSS_OUTPUT_FILEPATH")
+from settings import settings
+
+OUTPUT_FILENAME = settings.PYCIEMSS_OUTPUT_FILEPATH
 TDS_SIMULATIONS = "/simulations/"
-TDS_API = os.getenv("TDS_URL")
+TDS_URL = settings.TDS_URL
 
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
@@ -62,34 +63,33 @@ def create_job(operation_name: str, options: Optional[Dict[Any, Any]] = None):
     options["job_id"] = job_id
     job = q.fetch_job(job_id)
 
-    if STANDALONE:
-        logging.info(f"OPTIONS: {options}")
-        # TODO: Allow extras on payload and simply put full object here
-        ex_payload = {
-            "engine": "ciemss",
-            "model_config_id": options.get("model_config_id", "not_provided"),
-            "timespan": {
-                "start": options.get("start", 0),
-                "end": options.get("end", 1),
-            },
-            "extra": options.get("extra", None),
-        }
-        post_url = TDS_API + TDS_SIMULATIONS #+ job_id
-        payload = {
-            "id": job_id,
-            "execution_payload": ex_payload,
-            "result_files": [],
-            "type": "simulation",
-            "status": "queued",
-            "engine": "ciemss",
-            "workflow_id": job_id,
-        }
-        logging.info(payload)
-        sys.stdout.flush()
-        response = requests.post(post_url, json=payload)
-        if response.status_code >= 300:
-            raise Exception(f"Failed to create simulation on TDS (status: {response.status_code}): {json.dumps(payload)}")
-        logging.info(response.content)
+    logging.info(f"OPTIONS: {options}")
+    # TODO: Allow extras on payload and simply put full object here
+    ex_payload = {
+        "engine": "ciemss",
+        "model_config_id": options.get("model_config_id", "not_provided"),
+        "timespan": {
+            "start": options.get("start", 0),
+            "end": options.get("end", 1),
+        },
+        "extra": options.get("extra", None),
+    }
+    post_url = TDS_URL + TDS_SIMULATIONS #+ job_id
+    payload = {
+        "id": job_id,
+        "execution_payload": ex_payload,
+        "result_files": [],
+        "type": "simulation",
+        "status": "queued",
+        "engine": "ciemss",
+        "workflow_id": job_id,
+    }
+    logging.info(payload)
+    sys.stdout.flush()
+    response = requests.post(post_url, json=payload)
+    if response.status_code >= 300:
+        raise Exception(f"Failed to create simulation on TDS (status: {response.status_code}): {json.dumps(payload)}")
+    logging.info(response.content)
 
     if job and force_restart:
         job.cleanup(ttl=0)  # Cleanup/remove data immediately
@@ -163,7 +163,7 @@ def kill_job(job_id):
     else:
         job.cancel()
 
-        url = TDS_API + TDS_SIMULATIONS + str(job_id)
+        url = TDS_URL + TDS_SIMULATIONS + str(job_id)
         tds_payload = requests.get(url).json()
         tds_payload["status"] = "cancelled"
         requests.put(url, json=json.loads(json.dumps(tds_payload, default=str)))
