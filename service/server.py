@@ -14,6 +14,8 @@ from models import (
     StatusSimulationIdGetResponse,
 )
 
+from utils.rq_helpers import create_job, fetch_job_status, kill_job
+
 
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
@@ -55,8 +57,6 @@ def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
     """
     Retrieve the status of a simulation
     """
-    from utils import fetch_job_status
-
     status = fetch_job_status(simulation_id)
     logging.info(status)
     if not isinstance(status, str):
@@ -69,8 +69,6 @@ def cancel_job(simulation_id: str) -> StatusSimulationIdGetResponse:
     """
     Cancel a simulation
     """
-    from utils import kill_job
-
     status = kill_job(simulation_id)
     logging.info(status)
     if not isinstance(status, str):
@@ -85,7 +83,6 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
     """
     Perform a simulation
     """
-    from utils import create_job
     # Parse request body
     engine = str(body.engine.value).lower()
     model_config_id = body.model_config_id
@@ -123,7 +120,6 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     """
     Calibrate a model
     """
-    from utils import create_job
 
     # Parse request body
     logging.info(body)
@@ -159,7 +155,6 @@ def create_simulate_ensemble(body: EnsembleSimulatePostRequest) -> JobResponse:
     """
     Perform ensemble simulate
     """
-    from utils import create_job
 
     # Parse request body
     engine = str(body.engine).lower()
@@ -193,7 +188,6 @@ def create_calibrate_ensemble(body: EnsembleCalibratePostRequest) -> JobResponse
     """
     Perform ensemble simulate
     """
-    from utils import create_job
 
     # Parse request body
     engine = str(body.engine).lower()

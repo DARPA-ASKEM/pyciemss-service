@@ -7,14 +7,8 @@ import logging
 import numpy as np
 import requests
 from settings import settings
-from utils import (
-    make_job_dir,
-    update_tds_status,
-    fetch_dataset,
-    fetch_model,
-    attach_files,
-    catch_job_status
-)
+from utils.rq_helpers import make_job_dir, catch_job_status
+from utils.tds import update_tds_status, fetch_datset, fetch_model, attach_files
 
 from pyciemss.PetriNetODE.interfaces import (
     load_and_calibrate_and_sample_petri_model,

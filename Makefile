@@ -15,7 +15,7 @@ init:
 # Environment file copy
 envfile:
 ifeq ($(wildcard envfile),)
-	cp api.env.sample api.env; \
+	cp env.sample .env; \
 	echo -e "\nDon't forget to update 'envfile' with all your secrets!";
 endif
 
