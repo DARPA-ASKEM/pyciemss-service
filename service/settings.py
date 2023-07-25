@@ -13,8 +13,6 @@ class Settings(BaseSettings):
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
     TDS_URL: str = "http://data-service-api:8000"
-    PYCIEMSS_OUTPUT_FILEPATH: str = "result.csv"
-    EVAL_OUTPUT_FILENAME: str = "eval.csv"
 
 
 settings = Settings()

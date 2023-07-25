@@ -22,8 +22,6 @@ from pyciemss.Ensemble.interfaces import (
 
 TDS_CONFIGURATIONS = "/model_configurations/"
 TDS_SIMULATIONS = "/simulations/"
-OUTPUT_FILENAME = settings.PYCIEMSS_OUTPUT_FILEPATH
-EVAL_OUTPUT_FILENAME = settings.EVAL_OUTPUT_FILENAME
 TDS_URL = settings.TDS_URL
 
 logging.basicConfig()
