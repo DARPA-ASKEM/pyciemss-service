@@ -4,21 +4,21 @@ networks:
     driver: bridge
     name: pyciemss
   data-api:
-    #TODO Remove in production
     external: true
 services:
   api:
     container_name: pyciemss-api
     build:
-      context: ./
-      dockerfile: api/Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: uvicorn server:app --reload --host 0.0.0.0 --port 8000
     ports:
       - "8010:8000"
     env_file:
-      - api.env
+      - ../.env
     networks:
       - pyciemss
-      - data-api # TODO Remove in production
+      - data-api
     depends_on:
       - redis
     volumes:
@@ -35,12 +35,13 @@ services:
   rqworker:
     container_name: pyciemss-worker
     build:
-      context: ./
-      dockerfile: workers/Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
     env_file:
-      - api.env
+      - ../.env
     depends_on:
       - redis
+      - api
     networks:
-      - pyciemss
       - data-api
+      - pyciemss

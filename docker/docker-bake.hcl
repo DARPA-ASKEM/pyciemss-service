@@ -28,11 +28,11 @@ function "check_suffix" {
 # ----------------------------------------------------------------------------------------------------------------------
 
 group "prod" {
-  targets = ["pyciemss-api", "pyciemss-worker"]
+  targets = ["pyciemss-service"]
 }
 
 group "default" {
-  targets = ["pyciemss-api-base", "pyciemss-worker-base"]
+  targets = ["pyciemss-service-base"]
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -41,22 +41,12 @@ target "_platforms" {
   platforms = ["linux/amd64", "linux/arm64"]
 }
 
-target "pyciemss-api-base" {
-  context = "."
-  tags = tag("pyciemss-api", "", "")
-  dockerfile = "api/Dockerfile"
+target "pyciemss-service-base" {
+  context = ".."
+  tags = tag("pyciemss-service", "", "")
+  dockerfile = "docker/Dockerfile"
 }
 
-target "pyciemss-api" {
+target "pyciemss-service" {
   inherits = ["_platforms", "pyciemss-api-base"]
-}
-
-target "pyciemss-worker-base" {
-  context = "."
-  tags = tag("pyciemss-worker", "", "")
-  dockerfile = "workers/Dockerfile"
-}
-
-target "pyciemss-worker" {
-  inherits = ["_platforms", "pyciemss-worker-base"]
 }
