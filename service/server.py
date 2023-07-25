@@ -45,12 +45,13 @@ def build_api(*args) -> FastAPI:
 app = build_api()
 
 
-@app.get("/ping")
+@app.get("/ping") # NOT IN SPEC
 def get_ping():
     """
     Retrieve the status of a simulation
     """
     return {"status": "ok"}
+
 
 @app.get("/status/{simulation_id}", response_model=StatusSimulationIdGetResponse)
 def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
@@ -64,7 +65,8 @@ def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
 
     return {"status": Status.from_rq(status)}
 
-@app.get("/cancel/{simulation_id}", response_model=StatusSimulationIdGetResponse)
+
+@app.get("/cancel/{simulation_id}", response_model=StatusSimulationIdGetResponse) # NOT IN SPEC
 def cancel_job(simulation_id: str) -> StatusSimulationIdGetResponse:
     """
     Cancel a simulation
@@ -84,9 +86,7 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
     Perform a simulation
     """
     resp = create_job("operations.simulate", body, "simulate")
-
     response = {"simulation_id": resp["id"]}
-
     return response
 
 
@@ -96,9 +96,7 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     Calibrate a model
     """
     resp = create_job("operations.calibrate_then_simulate", body, "calibrate")
-
     response = {"simulation_id": resp["id"]}
-
     return response
 
 
@@ -108,9 +106,7 @@ def create_simulate_ensemble(body: EnsembleSimulatePostRequest) -> JobResponse:
     Perform ensemble simulate
     """
     resp = create_job("operations.ensemble_simulate", body, "ensemble-simulate")
-
     response = {"simulation_id": resp["id"]}
-
     return response
 
 
@@ -120,9 +116,6 @@ def create_calibrate_ensemble(body: EnsembleCalibratePostRequest) -> JobResponse
     Perform ensemble simulate
     """
     resp = create_job("operations.ensemble_calibrate", body, "ensemble-calibrate")
-
     response = {"simulation_id": resp["id"]}
-
     return response
-
 

@@ -9,6 +9,7 @@ import time
 import uuid
 import json
 import sys
+import shutil
 import requests
 from ast import Dict
 from typing import Any, Optional
@@ -18,6 +19,7 @@ from datetime import datetime
 import pandas
 import numpy as np
 from fastapi import Response, status
+from pydantic import BaseModel
 from redis import Redis
 from rq import Queue
 from rq.exceptions import NoSuchJobError
@@ -26,7 +28,6 @@ from rq.job import Job
 from settings import settings
 from utils.tds import update_tds_status
 
-OUTPUT_FILENAME = settings.PYCIEMSS_OUTPUT_FILEPATH
 TDS_SIMULATIONS = "/simulations/"
 TDS_URL = settings.TDS_URL
 
@@ -41,10 +42,6 @@ redis = Redis(
 )
 q = Queue(connection=redis, default_timeout=-1)
 
-def make_job_dir(job_id):
-    path = os.path.join("/tmp", str(job_id))    
-    os.makedirs(path)
-    return path
 
 def create_job(operation_name: str, request_payload, sim_type: str):
     random_id = str(uuid.uuid4())
@@ -135,7 +132,7 @@ def kill_job(job_id):
         return result
 
 
-def catch_job_status(function):
+def update_status_on_job_fail(function):
     """
     decorator that catches failed wrapped rq jobs and make sure the simulation status is set in tds.
     """

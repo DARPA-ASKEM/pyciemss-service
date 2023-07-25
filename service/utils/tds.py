@@ -9,6 +9,7 @@ import urllib
 import os
 import time
 import uuid
+import shutil
 import json
 import sys
 import requests
@@ -24,7 +25,6 @@ from fastapi import HTTPException, Response, status
 
 from settings import settings
 
-OUTPUT_FILENAME = settings.PYCIEMSS_OUTPUT_FILEPATH
 TDS_SIMULATIONS = "/simulations/"
 TDS_URL = settings.TDS_URL
 
@@ -50,7 +50,19 @@ def update_tds_status(url, status, result_files=[], start=False, finish=False):
     return update_response
 
 
-def fetch_model(model_config_id, tds_api, config_endpoint, job_dir):
+def get_job_dir(job_id):
+    path = os.path.join("/tmp", str(job_id))    
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
+def cleanup_job_dir(job_id):
+    path = get_job_dir(job_id)
+    shutil.rmtree(path)
+
+
+def fetch_model(model_config_id, tds_api, config_endpoint, job_id):
+    job_dir = get_job_dir(job_id)
     logging.debug(f"Fetching model {model_config_id}")
     url_components = [tds_api, config_endpoint, model_config_id]
     model_url = ""
@@ -65,7 +77,8 @@ def fetch_model(model_config_id, tds_api, config_endpoint, job_dir):
     return amr_path
 
 
-def fetch_dataset(dataset: dict, tds_api, job_dir):
+def fetch_dataset(dataset: dict, tds_api, job_id):
+    job_dir = get_job_dir(job_id)
     logging.debug(f"Fetching dataset {dataset['id']}")
     dataset_url = f"{tds_api}/datasets/{dataset['id']}/download-url?filename={dataset['filename']}"
     response = requests.get(dataset_url)
@@ -79,8 +92,21 @@ def fetch_dataset(dataset: dict, tds_api, job_dir):
     return dataset_path
 
 
-def attach_files(files: dict, tds_api, simulation_endpoint, job_id, status='complete'):
+def attach_files(output: dict, tds_api, simulation_endpoint, job_id, status='complete'):
     sim_results_url = tds_api + simulation_endpoint + job_id
+    job_dir = get_job_dir(job_id)
+    
+    output_filename = os.path.join(job_dir, "./result.csv")
+    eval_output_filename = os.path.join(job_dir, "./eval.csv")
+    visualization_filename = os.path.join(job_dir, "./visualization.json")
+    samples = output.get('data')
+    schema = output.get('visual')
+    with open(visualization_filename, "w") as f:
+        json.dump(schema, f, indent=2)
+    samples.to_csv(output_filename, index=False)
+    eval = output.get('quantiles')
+    eval.to_csv(eval_output_filename, index=False)
+    files = {output_filename: "result.csv", visualization_filename: "visualization.json", eval_output_filename: "eval.csv"}
 
     if status!="error":
         for (location, handle) in files.items():   
@@ -96,6 +122,7 @@ def attach_files(files: dict, tds_api, simulation_endpoint, job_id, status='comp
     update_tds_status(
         sim_results_url, status=status, result_files=list(files.values()), finish=True
     )
+    logging.info("uploaded files to %s", job_id)
 
 
 

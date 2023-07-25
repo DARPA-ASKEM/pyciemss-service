@@ -12,9 +12,12 @@ in order to pull the PyCIEMSS repository in as a submodule and set up the enviro
 
 to start the containers and the API. The API url will be `http://localhost:8010` without any additional configuration changes.
 
-## Endpoints
+## Notes
 
-WIP
+Every operation returns 3 files
+- `result.csv`
+- `eval.csv`
+- `visualization.json`
 
 
 ## License
