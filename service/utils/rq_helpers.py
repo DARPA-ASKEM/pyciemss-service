@@ -141,11 +141,6 @@ def update_status_on_job_fail(function):
             start_time = time.perf_counter()
             result = function(request, job_id=job_id)
             end_time = time.perf_counter()
-            logging.info(
-                "Elapsed time for %s for %s: %f",
-                function.__name__, request.username, end_time - start_time
-                )
-            return result
         except Exception as e:
 
             log_message = f"""
@@ -159,6 +154,14 @@ def update_status_on_job_fail(function):
 
                 ################################
             """
+            update_tds_status(TDS_URL + TDS_SIMULATIONS + str(job_id), "error")
             logging.exception(log_message)
             raise e
+        else:
+            logging.info(
+                "Elapsed time for %s for %s: %f",
+                function.__name__, request.username, end_time - start_time
+                )
+            return result
+            
     return wrapped

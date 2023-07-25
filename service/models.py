@@ -175,7 +175,6 @@ class EnsembleCalibrateExtra(BaseModel):
     )
 
 class EnsembleCalibratePostRequest(OperationRequest):
-    engine: Engine = Field(..., example="ciemss")
     username: str = Field("not_provided", example="not_provided")
     model_configs: List[ModelConfig] = Field(
         [],

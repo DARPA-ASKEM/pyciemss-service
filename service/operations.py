@@ -96,7 +96,6 @@ def ensemble_simulate(request, *, job_id):
     logging.debug(f"{job_id} (username - {request.username}): start ensemble simulate")
 
     sim_results_url = TDS_URL + TDS_SIMULATIONS + job_id
-    paths = get_output_paths(job_id)
 
     update_tds_status(sim_results_url, status="running", start=True)
 
@@ -109,7 +108,7 @@ def ensemble_simulate(request, *, job_id):
     timepoints=[step for step in range(1,time_count+1)]
 
     output = load_and_sample_petri_ensemble(
-        petri_models_or_paths=amr_paths,
+        petri_model_or_paths=amr_paths,
         weights=weights,
         solution_mappings=solution_mappings,
         timepoints=timepoints,
@@ -118,17 +117,16 @@ def ensemble_simulate(request, *, job_id):
     )
     attach_files(output, TDS_URL, TDS_SIMULATIONS, job_id)
     cleanup_job_dir(job_id)
-    logging.debug(f"{job_id} (username - {username}): finish ensemble simulate")
+    logging.debug(f"{job_id} (username - {request.username}): finish ensemble simulate")
 
 
 @update_status_on_job_fail
 def ensemble_calibrate(request, *, job_id):
     extra = request.extra.dict()
     num_samples = extra.pop("num_samples")
-    logging.debug(f"{job_id} (username - {username}): start ensemble calibrate")
+    logging.debug(f"{job_id} (username - {request.username}): start ensemble calibrate")
 
     sim_results_url = TDS_URL + TDS_SIMULATIONS + job_id
-    paths = get_output_paths(job_id)
 
     update_tds_status(sim_results_url, status="running", start=True)
 
@@ -153,4 +151,4 @@ def ensemble_calibrate(request, *, job_id):
     )
     attach_files(output, TDS_URL, TDS_SIMULATIONS, job_id)
     cleanup_job_dir(job_id)
-    logging.debug(f"{job_id} (username - {username}): finish ensemble calibrate")
+    logging.debug(f"{job_id} (username - {request.username}): finish ensemble calibrate")

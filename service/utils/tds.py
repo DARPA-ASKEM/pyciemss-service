@@ -82,7 +82,7 @@ def fetch_dataset(dataset: dict, tds_api, job_id):
     logging.debug(f"Fetching dataset {dataset['id']}")
     dataset_url = f"{tds_api}/datasets/{dataset['id']}/download-url?filename={dataset['filename']}"
     response = requests.get(dataset_url)
-    if model_response.status_code >= 300:
+    if response.status_code >= 300:
         raise HTTPException(status_code=400, detail="Unable to retrieve dataset")
     df = pandas.read_csv(response.json()["url"])
     df = df.rename(columns=dataset["mappings"])
