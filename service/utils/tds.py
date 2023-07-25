@@ -19,7 +19,7 @@ from datetime import datetime
 
 import pandas
 import numpy as np
-from fastapi import Response, status
+from fastapi import HTTPException, Response, status
 
 
 from settings import settings
@@ -57,6 +57,8 @@ def fetch_model(model_config_id, tds_api, config_endpoint, job_dir):
     for component in url_components:
         model_url = urllib.parse.urljoin(model_url, component)
     model_response = requests.get(model_url)
+    if model_response.status_code == 404:
+        raise HTTPException(status_code=404, detail="Model not found")
     amr_path = os.path.join(job_dir, f"./{model_config_id}.json")
     with open(amr_path, "w") as file:
         json.dump(model_response.json()["configuration"], file)
@@ -67,6 +69,8 @@ def fetch_dataset(dataset: dict, tds_api, job_dir):
     logging.debug(f"Fetching dataset {dataset['id']}")
     dataset_url = f"{tds_api}/datasets/{dataset['id']}/download-url?filename={dataset['filename']}"
     response = requests.get(dataset_url)
+    if model_response.status_code >= 300:
+        raise HTTPException(status_code=400, detail="Unable to retrieve dataset")
     df = pandas.read_csv(response.json()["url"])
     df = df.rename(columns=dataset["mappings"])
     dataset_path = os.path.join(job_dir, "./temp.json")

@@ -8,7 +8,7 @@ import numpy as np
 import requests
 from settings import settings
 from utils.rq_helpers import make_job_dir, catch_job_status
-from utils.tds import update_tds_status, fetch_datset, fetch_model, attach_files
+from utils.tds import update_tds_status, fetch_dataset, fetch_model, attach_files
 
 from pyciemss.PetriNetODE.interfaces import (
     load_and_calibrate_and_sample_petri_model,
@@ -31,15 +31,6 @@ logging.getLogger().setLevel(logging.DEBUG)
 
 @catch_job_status
 def simulate(request, *, job_id):
-    extra = request.dict()
-    num_samples = extra.pop("num_samples")
-    if len(request.interventions) > 0:
-        interventions = [
-            (intervention.timestep, intervention.name, intervention.value) for intervention in body.interventions 
-        ]
-    else:
-        intervention = []
-
     logging.debug(f"{job_id} (username - {request.username}): start simulate")
 
     sim_results_url = TDS_URL + TDS_SIMULATIONS + job_id
@@ -52,18 +43,24 @@ def simulate(request, *, job_id):
 
     # Get model from TDS
     amr_path = fetch_model(request.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_dir)
+    
+    if len(request.interventions) > 0:
+        interventions = [
+            (intervention.timestep, intervention.name, intervention.value) for intervention in request.interventions 
+        ]
+    else:
+        intervention = []
 
     # Generate timepoints
-    time_count = request.end - request.start
-    timepoints=[x for x in range(1,time_count+1)]
+    time_count = request.timespan.end - request.timespan.start
+    timepoints=[step for step in range(1,time_count+1)]
 
     output = load_and_sample_petri_model(
-        amr_path, 
-        num_samples, 
+        petri_model_or_path=amr_path, 
         timepoints=timepoints, 
         interventions=interventions,
         visual_options=True, 
-        **extra
+        **request.extra.dict()
     )
     samples = output.get('data')
     schema = output.get('visual')
@@ -79,7 +76,6 @@ def simulate(request, *, job_id):
 
 @catch_job_status
 def calibrate_then_simulate(request, *, job_id):
-    extra = request.extra.dict()
     logging.debug(f"{job_id} (username - {request.username}): start calibrate")
     sim_results_url = TDS_URL + TDS_SIMULATIONS + job_id
     job_dir = make_job_dir(job_id)
@@ -90,19 +86,19 @@ def calibrate_then_simulate(request, *, job_id):
     update_tds_status(sim_results_url, status="running", start=True)
 
     amr_path = fetch_model(request.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_dir)
-
+    
     # Generate timepoints
-    time_count = request.end - request.start
-    timepoints=[x for x in range(1,time_count+1)]
+    time_count = request.timespan.end - request.timespan.start
+    timepoints=[step for step in range(1,time_count+1)]
 
     dataset_path = fetch_dataset(request.dataset.dict(), TDS_URL, job_dir)
 
     output = load_and_calibrate_and_sample_petri_model(
-        amr_path,
-        dataset_path,
+        petri_model_or_path=amr_path,
         timepoints=timepoints,
+        data_path=dataset_path,
         visual_options=True,
-        **extra
+        **request.extra.dict()
     )
     samples = output.get('data')
     schema = output.get('visual')
@@ -120,8 +116,6 @@ def calibrate_then_simulate(request, *, job_id):
 
 @catch_job_status
 def ensemble_simulate(request, *, job_id):
-    extra = request.dict()
-    num_samples = extra.pop("num_samples")
     logging.debug(f"{job_id} (username - {request.username}): start ensemble simulate")
 
     sim_results_url = TDS_URL + TDS_SIMULATIONS + job_id
@@ -135,19 +129,18 @@ def ensemble_simulate(request, *, job_id):
     weights = [config.weight for config in request.model_configs]
     solution_mappings = [config.solution_mappings for config in request.model_configs]
     amr_paths = [fetch_model(config.id, TDS_URL, TDS_CONFIGURATIONS, job_dir) for config in request.model_configs]
-
+    
     # Generate timepoints
-    time_count = request.end - request.start
-    timepoints=[x for x in range(1,time_count+1)]
+    time_count = request.timespan.end - request.timespan.start
+    timepoints=[step for step in range(1,time_count+1)]
 
     output = load_and_sample_petri_ensemble(
-        amr_paths,
-        weights,
-        solution_mappings,
-        num_samples,
-        timepoints,
+        petri_models_or_paths=amr_paths,
+        weights=weights,
+        solution_mappings=solution_mappings,
+        timepoints=timepoints,
         visual_options=True,
-        **extra
+        **request.extra.dict()
     )
     samples = output.get('data')
     schema = output.get('visual')
@@ -182,18 +175,17 @@ def ensemble_calibrate(request, *, job_id):
     dataset_path = fetch_dataset(request.dataset.dict(), TDS_URL, job_dir)
 
     # Generate timepoints
-    time_count = request.end - request.start
-    timepoints=[x for x in range(1,time_count+1)]
+    time_count = request.timespan.end - request.timespan.start
+    timepoints=[step for step in range(1,time_count+1)]
 
     output = load_and_calibrate_and_sample_ensemble_model(
-        amr_paths,
-        dataset_path,
-        weights,
-        solution_mappings,
-        num_samples,
-        timepoints,
+        petri_model_or_paths=amr_paths,
+        weights=weights,
+        solution_mappings=solution_mappings,
+        timepoints=timepoints,
+        data_path=dataset_path,
         visual_options=True,
-        **request.extra
+        **request.extra.dict()
     )
     samples = output.get('data')
     schema = output.get('visual')

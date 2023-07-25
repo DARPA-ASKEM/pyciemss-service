@@ -139,14 +139,14 @@ def catch_job_status(function):
     """
     decorator that catches failed wrapped rq jobs and make sure the simulation status is set in tds.
     """
-    def wrapped(*args, **kwargs):
+    def wrapped(request, *, job_id):
         try:
             start_time = time.perf_counter()
-            result = function(*args, **kwargs)
+            result = function(request, job_id=job_id)
             end_time = time.perf_counter()
             logging.info(
                 "Elapsed time for %s for %s: %f",
-                function.__name__, kwargs['username'], end_time - start_time
+                function.__name__, request.username, end_time - start_time
                 )
             return result
         except Exception as e:
@@ -158,7 +158,7 @@ def catch_job_status(function):
                 
                 Error occured in function: {function.__name__}
 
-                Username: {kwargs['username']}
+                Username: {request.username}
 
                 ################################
             """
