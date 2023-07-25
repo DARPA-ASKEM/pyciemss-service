@@ -5,7 +5,7 @@ RUN pip install --no-cache-dir poetry==1.5.1
 COPY pyproject.toml pyproject.toml
 COPY poetry.lock poetry.lock
 RUN poetry config virtualenvs.create false && \
-    poetry install --no-root --no-cache
+    poetry install --no-root --no-cache --extras worker
 
 RUN pip install --no-cache-dir git+https://github.com/ciemss/pyciemss.git
 COPY service service
