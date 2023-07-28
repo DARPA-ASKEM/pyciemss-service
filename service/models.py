@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, Extra as ExtraEnum
+from pydantic import BaseModel, Field
 
 
 class Timespan(BaseModel):
@@ -70,9 +70,6 @@ class OperationRequest(BaseModel):
 
 ######################### `simulate` Operation ############
 class SimulateExtra(BaseModel):
-    class Config:
-        extra = ExtraEnum.allow
-
     num_samples: int = Field(
         100, description="number of samples for a CIEMSS simulation", example=100
     )
@@ -90,9 +87,6 @@ class SimulatePostRequest(OperationRequest):
 
 ######################### `calibrate` Operation ############
 class CalibrateExtra(BaseModel):
-    class Config:
-        extra = ExtraEnum.allow
-
     num_samples: int = Field(
         100,  description="number of samples for a CIEMSS simulation", example=100
     )
@@ -133,9 +127,6 @@ class CalibratePostRequest(OperationRequest):
 
 ######################### `ensemble-simulate` Operation ############
 class EnsembleSimulateExtra(BaseModel):
-    class Config:
-        extra = ExtraEnum.allow
-
     num_samples: int = Field(
         100, description="number of samples for a CIEMSS simulation", example=100
     )
@@ -155,9 +146,6 @@ class EnsembleSimulatePostRequest(OperationRequest):
 
 ######################### `ensemble-calibrate` Operation ############
 class EnsembleCalibrateExtra(BaseModel):
-    class Config:
-        extra = ExtraEnum.allow
-
     num_samples: int = Field(
         100, description="number of samples for a CIEMSS simulation", example=100
     )

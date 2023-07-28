@@ -18,8 +18,6 @@ from typing import Any, Optional
 from copy import deepcopy
 from datetime import datetime
 
-import pandas
-import numpy as np
 from fastapi import HTTPException, Response, status
 
 
@@ -78,13 +76,15 @@ def fetch_model(model_config_id, tds_api, config_endpoint, job_id):
 
 
 def fetch_dataset(dataset: dict, tds_api, job_id):
+    import pandas as pd
+
     job_dir = get_job_dir(job_id)
     logging.debug(f"Fetching dataset {dataset['id']}")
     dataset_url = f"{tds_api}/datasets/{dataset['id']}/download-url?filename={dataset['filename']}"
     response = requests.get(dataset_url)
     if response.status_code >= 300:
         raise HTTPException(status_code=400, detail="Unable to retrieve dataset")
-    df = pandas.read_csv(response.json()["url"])
+    df = pd.read_csv(response.json()["url"])
     df = df.rename(columns=dataset["mappings"])
     dataset_path = os.path.join(job_dir, "./temp.json")
     with open(dataset_path, "w") as file:

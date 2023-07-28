@@ -16,8 +16,6 @@ from typing import Any, Optional
 from copy import deepcopy
 from datetime import datetime
 
-import pandas
-import numpy as np
 from fastapi import Response, status
 from pydantic import BaseModel
 from redis import Redis
