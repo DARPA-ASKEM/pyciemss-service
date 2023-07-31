@@ -38,13 +38,12 @@ def simulate(request, *, job_id):
     # Get model from TDS
     amr_path = fetch_model(request.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id)
     
+    interventions = []
     if len(request.interventions) > 0:
         interventions = [
             (intervention.timestep, intervention.name, intervention.value) 
             for intervention in request.interventions 
         ]
-    else:
-        intervention = []
 
     # Generate timepoints
     time_count = request.timespan.end - request.timespan.start
