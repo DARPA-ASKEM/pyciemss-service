@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from fastapi import FastAPI, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -7,8 +8,9 @@ from models import (
     Status,
     JobResponse,
     CalibratePostRequest,
-    EnsemblePostRequest,
     SimulatePostRequest,
+    EnsembleSimulatePostRequest,
+    EnsembleCalibratePostRequest,
     StatusSimulationIdGetResponse,
 )
 from pika_service import pika_service
@@ -18,8 +20,11 @@ import sys
 from threading import Thread
 import time
 
-REDIS = os.getenv("REDIS_HOST")
-r = redis.Redis(host=REDIS, port=6379, decode_responses=True)
+from utils.rq_helpers import create_job, fetch_job_status, kill_job
+
+
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
 
 def build_api(*args) -> FastAPI:
 
@@ -46,20 +51,39 @@ def build_api(*args) -> FastAPI:
 app = build_api()
 
 
+@app.get("/ping") # NOT IN SPEC
+def get_ping():
+    """
+    Retrieve the status of a simulation
+    """
+    return {"status": "ok"}
+
+
 @app.get("/status/{simulation_id}", response_model=StatusSimulationIdGetResponse)
 def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
     """
     Retrieve the status of a simulation
     """
-    from utils import fetch_job_status
-
     status = fetch_job_status(simulation_id)
-    progress = r.get(simulation_id)
-
+    logging.info(status)
     if not isinstance(status, str):
         return status
 
-    return {"status": Status.from_rq(status), "progress":progress}
+    return {"status": Status.from_rq(status)} #, "progress":progress}
+
+
+@app.get("/cancel/{simulation_id}", response_model=StatusSimulationIdGetResponse) # NOT IN SPEC
+def cancel_job(simulation_id: str) -> StatusSimulationIdGetResponse:
+    """
+    Cancel a simulation
+    """
+    status = kill_job(simulation_id)
+    logging.info(status)
+    if not isinstance(status, str):
+        return status
+
+    return {"status": Status.from_rq(status)}
+
 
 import logging
 @app.post("/simulate", response_model=JobResponse)
@@ -67,27 +91,8 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
     """
     Perform a simulation
     """
-    from utils import create_job
-    # Parse request body
-    engine = str(body.engine.value).lower()
-    model_config_id = body.model_config_id
-    start = body.timespan.start
-    end = body.timespan.end
-
-    operation_name = "operations.simulate"
-    options = {
-        "engine": engine,
-        "model_config_id": model_config_id,
-        "start": start,
-        "end": end,
-        "extra": body.extra.dict(),
-        "visual_options": True
-    }
-
-    resp = create_job(operation_name=operation_name, options=options)
-
+    resp = create_job("operations.simulate", body, "simulate")
     response = {"simulation_id": resp["id"]}
-
     return response
 
 
@@ -96,45 +101,29 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     """
     Calibrate a model
     """
-    from utils import create_job
-
-    # Parse request body
-    engine = str(body.engine).lower()
-    model_config_id = body.model_config_id
-    dataset = body.dataset
-    start = body.timespan.start
-    end = body.timespan.end
-    extra = body.extra.dict()
-
-
-    operation_name = "operations.calibrate_then_simulate"
-    options = {
-        "engine": engine,
-        "model_config_id": model_config_id,
-        "start": start,
-        "end": end,
-        "dataset": dataset.dict(),
-        "extra": extra,
-        "visual_options": True
-    }
-
-    resp = create_job(operation_name=operation_name, options=options)
-
+    resp = create_job("operations.calibrate_then_simulate", body, "calibrate")
     response = {"simulation_id": resp["id"]}
-
     return response
 
 
-@app.post("/ensemble", response_model=JobResponse)
-def create_ensemble(body: EnsemblePostRequest) -> JobResponse:
+@app.post("/ensemble-simulate", response_model=JobResponse)
+def create_simulate_ensemble(body: EnsembleSimulatePostRequest) -> JobResponse:
     """
-    Perform an ensemble simulation
+    Perform ensemble simulate
     """
-    return Response(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        content="Ensemble is not yet implemented",
-    )
+    resp = create_job("operations.ensemble_simulate", body, "ensemble-simulate")
+    response = {"simulation_id": resp["id"]}
+    return response
 
+
+@app.post("/ensemble-calibrate", response_model=JobResponse)
+def create_calibrate_ensemble(body: EnsembleCalibratePostRequest) -> JobResponse:
+    """
+    Perform ensemble simulate
+    """
+    resp = create_job("operations.ensemble_calibrate", body, "ensemble-calibrate")
+    response = {"simulation_id": resp["id"]}
+    return response
 
 time.sleep(10)
 thread = Thread(target = pika_service)

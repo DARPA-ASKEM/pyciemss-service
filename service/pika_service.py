@@ -11,7 +11,7 @@ def pika_service():
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=PIKA_HOST))
     channel = connection.channel()
 
-    channel.queue_declare(queue='terarium')
+    channel.queue_declare(queue='simulation-status')
 
     def callback(ch, method, properties, body):
         print(" [x] Received %r" % body)

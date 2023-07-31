@@ -4,21 +4,20 @@ networks:
     driver: bridge
     name: pyciemss
   data-api:
-    #TODO Remove in production
     external: true
 services:
   api:
     container_name: pyciemss-api
     build:
-      context: ./
-      dockerfile: api/Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile.api
     ports:
       - "8010:8000"
     env_file:
-      - api.env
+      - ../.env
     networks:
       - pyciemss
-      - data-api # TODO Remove in production
+      - data-api
     depends_on:
       - redis
       - pika
@@ -36,22 +35,21 @@ services:
   rqworker:
     container_name: pyciemss-worker
     build:
-      context: ./
-      dockerfile: workers/Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile.worker
     env_file:
-      - api.env
+      - ../.env
     depends_on:
       - redis
+      - api
     networks:
-      - pyciemss
       - data-api
+      - pyciemss
   pika:
     container_name: pika_service
     hostname: my_rabit
     image: 'rabbitmq:3'
     ports:
       - "5672:5672"
-    env_file:
-      - api.env
     networks:
       - pyciemss

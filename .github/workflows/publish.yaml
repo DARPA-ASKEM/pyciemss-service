@@ -26,9 +26,10 @@ jobs:
       - tag-generator
     uses: darpa-askem/.github/.github/workflows/bake-publish.yml@main
     with:
-      file: 'docker-bake.hcl'
+      file: 'docker/docker-bake.hcl'
       group: 'prod'
       registry: 'ghcr.io'
+      no-cache: true
       organization: ${{ github.repository_owner }}
       tag: ${{ needs.tag-generator.outputs.tag }}
     secrets:
