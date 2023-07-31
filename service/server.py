@@ -13,7 +13,6 @@ from models import (
     EnsembleCalibratePostRequest,
     StatusSimulationIdGetResponse,
 )
-from pika_service import pika_service
 import os
 import redis
 import sys
@@ -21,6 +20,7 @@ from threading import Thread
 import time
 
 from utils.rq_helpers import create_job, fetch_job_status, kill_job
+from utils.rabbitmq import mock_rabbitmq_service
 
 
 logging.basicConfig()
@@ -69,7 +69,7 @@ def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
     if not isinstance(status, str):
         return status
 
-    return {"status": Status.from_rq(status)} #, "progress":progress}
+    return {"status": Status.from_rq(status)}
 
 
 @app.get("/cancel/{simulation_id}", response_model=StatusSimulationIdGetResponse) # NOT IN SPEC
@@ -85,7 +85,6 @@ def cancel_job(simulation_id: str) -> StatusSimulationIdGetResponse:
     return {"status": Status.from_rq(status)}
 
 
-import logging
 @app.post("/simulate", response_model=JobResponse)
 def simulate_model(body: SimulatePostRequest) -> JobResponse:
     """
@@ -126,5 +125,5 @@ def create_calibrate_ensemble(body: EnsembleCalibratePostRequest) -> JobResponse
     return response
 
 time.sleep(10)
-thread = Thread(target = pika_service)
+thread = Thread(target = mock_rabbitmq_service)
 thread.start()

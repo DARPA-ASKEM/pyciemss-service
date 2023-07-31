@@ -20,7 +20,7 @@ services:
       - data-api
     depends_on:
       - redis
-      - pika
+      - rabbitmq
     volumes:
       - $PWD/api:/api
     extra_hosts:
@@ -45,9 +45,9 @@ services:
     networks:
       - data-api
       - pyciemss
-  pika:
-    container_name: pika_service
-    hostname: my_rabit
+  rabbitmq:
+    container_name: rabbitmq
+    hostname: rabbitmq
     image: 'rabbitmq:3'
     ports:
       - "5672:5672"

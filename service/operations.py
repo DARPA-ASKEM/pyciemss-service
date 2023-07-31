@@ -9,6 +9,7 @@ import requests
 from settings import settings
 from utils.rq_helpers import update_status_on_job_fail
 from utils.tds import update_tds_status, cleanup_job_dir, fetch_dataset, fetch_model, attach_files
+from utils.rabbitmq import gen_rabbitmq_hook
 
 from pyciemss.PetriNetODE.interfaces import (
     load_and_calibrate_and_sample_petri_model,
@@ -80,6 +81,7 @@ def calibrate_then_simulate(request, *, job_id):
         petri_model_or_path=amr_path,
         timepoints=timepoints,
         data_path=dataset_path,
+        progress_hook=gen_rabbitmq_hook(job_id)
         visual_options=True,
         **request.extra.dict()
     )
