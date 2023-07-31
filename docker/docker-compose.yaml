@@ -22,7 +22,7 @@ services:
       - redis
       - rabbitmq
     volumes:
-      - $PWD/api:/api
+      - $PWD/service:/service
     extra_hosts:
       - "host.docker.internal:host-gateway"
   redis:
@@ -53,3 +53,15 @@ services:
       - "5672:5672"
     networks:
       - pyciemss
+  rabbitmq-mock-consumer:
+    container_name: rabbitmq-mock-consumer
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    command: poetry run mockrabbitmq 
+    env_file:
+      - ../.env
+    networks:
+      - pyciemss
+    depends_on:
+      - rabbitmq

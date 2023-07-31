@@ -229,7 +229,7 @@ test = ["anyio[trio] (>=3.2.1,<4.0.0)", "black (==23.1.0)", "coverage[toml] (>=6
 name = "filelock"
 version = "3.12.2"
 description = "A platform independent file lock."
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "filelock-3.12.2-py3-none-any.whl", hash = "sha256:cbb791cdea2a72f23da6ac5b5269ab0a0d161e9ef0100e653b69049a7706d1ec"},
@@ -804,4 +804,4 @@ worker = ["numpy", "torch"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "eff1966a0a5b5bac18ab4d98faf96519c6350bb8a8d573fd26f53fbd1943d562"
+content-hash = "206fdfe1f074b9f815006821d223ffda6f29b7be5923d5dcc4010fd9e4f96f26"

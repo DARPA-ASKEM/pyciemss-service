@@ -123,7 +123,3 @@ def create_calibrate_ensemble(body: EnsembleCalibratePostRequest) -> JobResponse
     resp = create_job("operations.ensemble_calibrate", body, "ensemble-calibrate")
     response = {"simulation_id": resp["id"]}
     return response
-
-time.sleep(10)
-thread = Thread(target = mock_rabbitmq_consumer)
-thread.start()

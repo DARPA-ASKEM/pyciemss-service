@@ -6,24 +6,22 @@ import logging
 
 from settings import settings
 
-r = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, decode_responses=True)
-
-
 def mock_rabbitmq_consumer():
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.DEBUG)
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=settings.RABBITMQ_HOST))
     channel = connection.channel()
 
     channel.queue_declare(queue='simulation-status')
 
     def callback(ch, method, properties, body):
-        print(" [x] Received %r" % body)
         resp = json.loads(body)
-        r.set(resp.get('job_id'), resp.get('progress'))
+        logging.info("job_id:%s; progress:%s", resp['job_id'], resp['progress'])
 
 
     channel.basic_consume(queue='simulation-status', on_message_callback=callback, auto_ack=True)
 
-    print(' [*] Waiting for messages. To exit press CTRL+C')
+    logging.info(' [*] Waiting for messages. To exit press CTRL+C')
     channel.start_consuming()
 
 
