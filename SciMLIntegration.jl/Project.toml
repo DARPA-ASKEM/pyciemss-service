@@ -1,0 +1,17 @@
+name = "SciMLIntegration"
+uuid = "1314dac9-3b21-4510-aa38-a476b20ad705"
+authors = ["Five Grant <5@fivegrant.com>"]
+version = "0.1.0"
+
+[deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+EasyModelAnalysis = "ef4b24a4-a090-4686-a932-e7e56a5a83bd"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+MathML = "abcecc63-2b08-419c-80c4-c63dca6fa478"
+ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
+SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+StructTypes = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
+SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
+Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
+UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
