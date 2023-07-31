@@ -81,7 +81,7 @@ def calibrate_then_simulate(request, *, job_id):
         petri_model_or_path=amr_path,
         timepoints=timepoints,
         data_path=dataset_path,
-        progress_hook=gen_rabbitmq_hook(job_id)
+        progress_hook=gen_rabbitmq_hook(job_id),
         visual_options=True,
         **request.extra.dict()
     )

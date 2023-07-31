@@ -20,7 +20,7 @@ from threading import Thread
 import time
 
 from utils.rq_helpers import create_job, fetch_job_status, kill_job
-from utils.rabbitmq import mock_rabbitmq_service
+from utils.rabbitmq import mock_rabbitmq_consumer
 
 
 logging.basicConfig()
@@ -125,5 +125,5 @@ def create_calibrate_ensemble(body: EnsembleCalibratePostRequest) -> JobResponse
     return response
 
 time.sleep(10)
-thread = Thread(target = mock_rabbitmq_service)
+thread = Thread(target = mock_rabbitmq_consumer)
 thread.start()

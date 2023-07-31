@@ -6,7 +6,7 @@ import logging
 
 from settings import settings
 
-r = redis.Redis(host=settings.REDIS, port=6379, decode_responses=True)
+r = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, decode_responses=True)
 
 
 def mock_rabbitmq_consumer():
