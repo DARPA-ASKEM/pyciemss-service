@@ -6,10 +6,15 @@ import logging
 
 from settings import settings
 
+conn_config = pika.ConnectionParameters(host=settings.RABBITMQ_HOST, port=settings.RABBITMQ_PORT)
+
+
 def mock_rabbitmq_consumer():
     logging.basicConfig()
     logging.getLogger().setLevel(logging.DEBUG)
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=settings.RABBITMQ_HOST))
+    # TODO: Conditionally start on status of rabbitmq
+    time.sleep(10)
+    connection = pika.BlockingConnection(conn_config)
     channel = connection.channel()
 
     channel.queue_declare(queue='simulation-status')
@@ -26,7 +31,7 @@ def mock_rabbitmq_consumer():
 
 
 def gen_rabbitmq_hook(job_id):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=settings.RABBITMQ_HOST))
+    connection = pika.BlockingConnection(conn_config)
     channel = connection.channel()
 
     def hook(progress):
