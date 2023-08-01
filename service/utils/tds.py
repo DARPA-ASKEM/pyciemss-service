@@ -101,20 +101,20 @@ def attach_files(output: dict, tds_api, simulation_endpoint, job_id, status='com
     data_result = output.get('data', None)
     if data_result is not None:
         data_result.to_csv(output_filename, index=False)
-        files[output_filename] = "result.csv",
+        files[output_filename] = "result.csv"
 
     eval_output_filename = os.path.join(job_dir, "./eval.csv")
     eval_result = output.get('quantiles', None)
     if eval_result is not None:
         eval_result.to_csv(eval_output_filename, index=False)
-        files[eval_output_filename] = "eval.csv",
+        files[eval_output_filename] = "eval.csv"
 
     visualization_filename = os.path.join(job_dir, "./visualization.json")
     viz_result = output.get('visual', None)
     if viz_result is not None:
         with open(visualization_filename, "w") as f:
             json.dump(viz_result, f, indent=2)
-        files[visualization_filename] = "visualization.json",
+        files[visualization_filename] = "visualization.json"
         
 
     if status!="error":
