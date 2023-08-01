@@ -17,10 +17,19 @@ in order to pull the PyCIEMSS repository in as a submodule and set up the enviro
 to start the containers and the API. The API url will be `http://localhost:8010` by default 
 
 ## Notes
+
+### Result Files
 Every operation saves 3 files to S3
 - `result.csv`
 - `eval.csv`
 - `visualization.json`
+
+### RabbitMQ
+Only the `calibrate` operation reports progress to RabbitMQ. This is to 
+the `simulation-status` queue with a payload that looks like `{"job_id": "some string", "progress": "float between 0 and 1"}`.
+
+The Docker Compose starts rabbitmq AND a mock consumer for the messages. The 
+mock consumer is only helpful for testing without the full stack. 
 
 
 ## License
