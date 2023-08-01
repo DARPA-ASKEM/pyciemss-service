@@ -6,7 +6,7 @@ RUN tar -xzf "julia.tar.gz" && mv julia-1.9.2 /opt/julia && \
 
 WORKDIR /
 
-RUN julia -e 'using Pkg; Pkg.add(url="https://github.com/jataware/SciMLIntegration.jl", rev="main")'
+RUN julia -e 'using Pkg; Pkg.add(url="https://github.com/jataware/SciMLIntegration.jl", rev="main"); Pkg.precompile()'
 
 RUN pip install --no-cache-dir poetry==1.5.1
 COPY pyproject.toml pyproject.toml
@@ -14,7 +14,7 @@ COPY poetry.lock poetry.lock
 RUN poetry config virtualenvs.create false && \
     poetry install --no-root --no-cache --extras worker
 
-RUN pip install --no-cache-dir git+https://github.com/fivegrant/pyciemss.git@fg/remove-pika
+RUN pip install --no-cache-dir git+https://github.com/ciemss/pyciemss.git
 COPY service service
 COPY README.md README.md
 
