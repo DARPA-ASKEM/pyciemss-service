@@ -13,8 +13,14 @@ from models import (
     EnsembleCalibratePostRequest,
     StatusSimulationIdGetResponse,
 )
+import os
+import redis
+import sys
+from threading import Thread
+import time
 
 from utils.rq_helpers import create_job, fetch_job_status, kill_job
+from utils.rabbitmq import mock_rabbitmq_consumer
 
 
 logging.basicConfig()
@@ -79,7 +85,6 @@ def cancel_job(simulation_id: str) -> StatusSimulationIdGetResponse:
     return {"status": Status.from_rq(status)}
 
 
-import logging
 @app.post("/simulate", response_model=JobResponse)
 def simulate_model(body: SimulatePostRequest) -> JobResponse:
     """
@@ -118,4 +123,3 @@ def create_calibrate_ensemble(body: EnsembleCalibratePostRequest) -> JobResponse
     resp = create_job("operations.ensemble_calibrate", body, "ensemble-calibrate")
     response = {"simulation_id": resp["id"]}
     return response
-
