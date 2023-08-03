@@ -4,6 +4,8 @@ The service is a light wrapper service around [pyciemss](https://github.com/ciem
 Both a FastAPI and RQ tasks are provided so jobs can be run asynchronously for long periods
 of time. The service must also [conform to this spec](https://github.com/DARPA-ASKEM/simulation-api-spec).
 
+Experimental: `sciml` engine can be chosen for `simulate`.
+
 ## Startup
 
 To start the PyCIEMSS Simulation API, first run: 
@@ -21,8 +23,8 @@ to start the containers and the API. The API url will be `http://localhost:8010`
 ### Result Files
 Every operation saves 3 files to S3
 - `result.csv`
-- `eval.csv`
-- `visualization.json`
+- `eval.csv` (if pyciemss engine is used)
+- `visualization.json` (if pyciemss engine is used)
 
 ### RabbitMQ
 Only the `calibrate` operation reports progress to RabbitMQ. This is to 
