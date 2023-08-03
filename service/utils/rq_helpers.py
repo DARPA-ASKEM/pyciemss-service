@@ -38,13 +38,14 @@ redis = Redis(
     settings.REDIS_HOST,
     settings.REDIS_PORT
 )
-q = Queue(connection=redis, default_timeout=-1)
+queue = Queue(connection=redis, default_timeout=-1)
 
 
 def create_job(operation_name: str, request_payload, sim_type: str):
     random_id = str(uuid.uuid4())
     job_id = f"ciemss-{random_id}"
-    job = q.fetch_job(job_id)
+    job = queue.fetch_job(job_id)
+    operation = f"operations.{request_payload.engine}.{operation_name}"
 
     post_url = TDS_URL + TDS_SIMULATIONS #+ job_id
     payload = {
@@ -53,7 +54,7 @@ def create_job(operation_name: str, request_payload, sim_type: str):
         "result_files": [],
         "type": sim_type,
         "status": "queued",
-        "engine": "ciemss",
+        "engine": request_payload.engine,
         "workflow_id": job_id,
     }
     logging.info(payload)
@@ -63,7 +64,7 @@ def create_job(operation_name: str, request_payload, sim_type: str):
         raise Exception(f"Failed to create simulation on TDS (status: {response.status_code}): {json.dumps(payload)}")
     logging.info(response.content)
 
-    job = q.enqueue_call(func=operation_name, args=[request_payload], kwargs={"job_id": job_id}, job_id=job_id)
+    job = queue.enqueue_call(func=operation, args=[request_payload], kwargs={"job_id": job_id}, job_id=job_id)
 
     status = job.get_status()
     if status in ("finished", "failed"):

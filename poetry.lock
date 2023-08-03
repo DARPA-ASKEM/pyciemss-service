@@ -34,17 +34,17 @@ files = [
 
 [[package]]
 name = "boto3"
-version = "1.28.15"
+version = "1.28.16"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "boto3-1.28.15-py3-none-any.whl", hash = "sha256:84b7952858e9319968b0348d9894a91a6bb5f31e81a45c68044d040a12362abe"},
-    {file = "boto3-1.28.15.tar.gz", hash = "sha256:a6e711e0b6960c3a5b789bd30c5a18eea7263f2a59fc07f85efa5e04804e49d2"},
+    {file = "boto3-1.28.16-py3-none-any.whl", hash = "sha256:d8e31f69fb919025a5961f8fbeb51fe92e2f753beb37fc1853138667a231cdaa"},
+    {file = "boto3-1.28.16.tar.gz", hash = "sha256:aea48aedf3e8676e598e3202e732295064a4fcad5f2d2d2a699368b8c3ab492c"},
 ]
 
 [package.dependencies]
-botocore = ">=1.31.15,<1.32.0"
+botocore = ">=1.31.16,<1.32.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -53,13 +53,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.31.15"
+version = "1.31.16"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "botocore-1.31.15-py3-none-any.whl", hash = "sha256:b3a0f787f275711875476cbe12a0123b2e6570b2f505e2fa509dcec3c5410b57"},
-    {file = "botocore-1.31.15.tar.gz", hash = "sha256:b46d1ce4e0cf42d28fdf61ce0c999904645d38b51cb809817a361c0cec16d487"},
+    {file = "botocore-1.31.16-py3-none-any.whl", hash = "sha256:92b240e2cb7b3afae5361651d2f48ee582f45d2dab53aef76eef7eec1d3ce582"},
+    {file = "botocore-1.31.16.tar.gz", hash = "sha256:563e15979e763b93d78de58d0fc065f8615be12f41bab42f5ad9f412b6a224b3"},
 ]
 
 [package.dependencies]
@@ -289,6 +289,34 @@ files = [
     {file = "jmespath-1.0.1-py3-none-any.whl", hash = "sha256:02e2e4cc71b5bcab88332eebf907519190dd9e6e82107fa7f83b1003a6252980"},
     {file = "jmespath-1.0.1.tar.gz", hash = "sha256:90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe"},
 ]
+
+[[package]]
+name = "juliacall"
+version = "0.9.14"
+description = "Julia and Python in seamless harmony"
+optional = true
+python-versions = "~=3.7"
+files = [
+    {file = "juliacall-0.9.14-py3-none-any.whl", hash = "sha256:663339bfca454fe02aa8024f918db4e24007bb4d583cad371ace78baff39c4b3"},
+    {file = "juliacall-0.9.14.tar.gz", hash = "sha256:65aa489280ac7e92f4e309cccec1994bdcffbb37f423d1b351f3f52bb35d5514"},
+]
+
+[package.dependencies]
+juliapkg = ">=0.1.8,<0.2.0"
+
+[[package]]
+name = "juliapkg"
+version = "0.1.10"
+description = "Julia version manager and package manager"
+optional = true
+python-versions = "*"
+files = [
+    {file = "juliapkg-0.1.10-py3-none-any.whl", hash = "sha256:716a4e665bd3c9cc9321d45712d60ba624c50d64ec73b04a7f0ee962649c8f1b"},
+    {file = "juliapkg-0.1.10.tar.gz", hash = "sha256:70507318d51ac8663e856f56048764e49f5a0c4c90d81a3712d039a316369505"},
+]
+
+[package.dependencies]
+semantic-version = ">=2.9,<3.0"
 
 [[package]]
 name = "markupsafe"
@@ -650,6 +678,21 @@ botocore = ">=1.12.36,<2.0a.0"
 crt = ["botocore[crt] (>=1.20.29,<2.0a.0)"]
 
 [[package]]
+name = "semantic-version"
+version = "2.10.0"
+description = "A library implementing the 'SemVer' scheme."
+optional = true
+python-versions = ">=2.7"
+files = [
+    {file = "semantic_version-2.10.0-py2.py3-none-any.whl", hash = "sha256:de78a3b8e0feda74cabc54aab2da702113e33ac9d9eb9d2389bcf1f58b7d9177"},
+    {file = "semantic_version-2.10.0.tar.gz", hash = "sha256:bdabb6d336998cbb378d4b9db3a4b56a1e3235701dc05ea2690d9a997ed5041c"},
+]
+
+[package.extras]
+dev = ["Django (>=1.11)", "check-manifest", "colorama (<=0.4.1)", "coverage", "flake8", "nose2", "readme-renderer (<25.0)", "tox", "wheel", "zest.releaser[recommended]"]
+doc = ["Sphinx", "sphinx-rtd-theme"]
+
+[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -799,9 +842,9 @@ h11 = ">=0.8"
 standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)", "pyyaml (>=5.1)", "uvloop (>=0.14.0,!=0.15.0,!=0.15.1)", "watchfiles (>=0.13)", "websockets (>=10.4)"]
 
 [extras]
-worker = ["numpy", "torch"]
+worker = ["juliacall", "numpy", "torch"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "206fdfe1f074b9f815006821d223ffda6f29b7be5923d5dcc4010fd9e4f96f26"
+content-hash = "87fad367f66cd06d28816f742c0cda9b8a61540283523e3a0af90e3e75f9d231"

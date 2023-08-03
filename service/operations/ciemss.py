@@ -28,6 +28,7 @@ TDS_URL = settings.TDS_URL
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
 
+
 @update_status_on_job_fail
 def simulate(request, *, job_id):
     logging.debug(f"{job_id} (username - {request.username}): start simulate")
