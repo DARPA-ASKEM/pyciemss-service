@@ -2,9 +2,17 @@ from __future__ import annotations
 
 from enum import Enum
 from typing import Any, Dict, List, Optional
-
 from pydantic import BaseModel, Field
 
+
+
+from utils.tds import fetch_dataset, fetch_model
+from utils.rabbitmq import gen_rabbitmq_hook
+from settings import settings
+
+TDS_CONFIGURATIONS = "/model_configurations/"
+TDS_SIMULATIONS = "/simulations/"
+TDS_URL = settings.TDS_URL
 
 class Timespan(BaseModel):
     start: int = Field(..., example=0)
@@ -58,8 +66,18 @@ class InterventionObject(BaseModel):
 
 ######################### Base operation request ############
 class OperationRequest(BaseModel):
+    pyciemss_lib_function: ClassVar[str] = ""
     engine: str = Field("ciemss", example="ciemss")
     username: str = Field("not_provided", example="not_provided")
+
+
+    def gen_pyciemss_args(self, job_id):
+        raise NotImplementedError("PyCIEMSS cannot handle this operation")
+
+
+    def run_sciml_operation(self, job_id, julia_context):
+        raise NotImplementedError("SciML cannot handle this operation")
+
 
     # @field_validator("engine")
     # def must_be_ciemss(cls, engine_choice):
@@ -76,6 +94,7 @@ class SimulateExtra(BaseModel):
 
 
 class SimulatePostRequest(OperationRequest):
+    pyciemss_lib_function: ClassVar[str] = "load_and_sample_petri_model"
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan
     interventions: List[InterventionObject] = Field(default_factory=list, example=[{"timestep":1,"name":"beta","value":.4}])
@@ -83,6 +102,38 @@ class SimulatePostRequest(OperationRequest):
         None,
         description="optional extra system specific arguments for advanced use cases",
     )
+
+
+    def gen_pyciemss_args(self, job_id):
+        # Get model from TDS
+        amr_path = fetch_model(self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id)
+    
+        interventions = []
+        if len(self.interventions) > 0:
+            interventions = [
+                (intervention.timestep, intervention.name, intervention.value) 
+                for intervention in self.interventions 
+            ]
+
+        # Generate timepoints
+        time_count = self.timespan.end - self.timespan.start
+        timepoints=[step for step in range(1,time_count+1)]
+
+        return {
+            "petri_model_or_path": amr_path, 
+            "timepoints": timepoints, 
+            "interventions": interventions,
+            "visual_options": True, 
+            **self.extra.dict()
+        }
+        
+
+    def run_sciml_operation(self, job_id, julia_context):
+        amr_path = fetch_model(self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id)
+        with open(amr_path, "r") as file:
+            amr = file.read()
+        result = jl.pytable(jl.simulate(amr, self.timespan.start, self.timespan.end))
+        return {"data": result}
 
 
 ######################### `calibrate` Operation ############
@@ -116,6 +167,7 @@ class CalibrateExtra(BaseModel):
 
 
 class CalibratePostRequest(OperationRequest):
+    pyciemss_lib_function: ClassVar[str] = "load_and_calibrate_and_sample_petri_model"
     model_config_id: str = Field(..., example="c1cd941a-047d-11ee-be56")
     dataset: Dataset = None
     timespan: Optional[Timespan] = None
@@ -123,6 +175,25 @@ class CalibratePostRequest(OperationRequest):
         None,
         description="optional extra system specific arguments for advanced use cases",
     )
+    
+
+    def gen_pyciemss_args(self, job_id):
+        amr_path = fetch_model(self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id)
+    
+        # Generate timepoints
+        time_count = self.timespan.end - self.timespan.start
+        timepoints=[step for step in range(1, time_count+1)]
+
+        dataset_path = fetch_dataset(self.dataset.dict(), TDS_URL, job_id)
+
+        return {
+            "petri_model_or_path": amr_path,
+            "timepoints": timepoints,
+            "data_path": dataset_path,
+            "progress_hook": gen_rabbitmq_hook(job_id),
+            "visual_options": True,
+            **self.extra.dict()
+        }
 
 
 ######################### `ensemble-simulate` Operation ############
@@ -133,6 +204,7 @@ class EnsembleSimulateExtra(BaseModel):
 
 
 class EnsembleSimulatePostRequest(OperationRequest):
+    pyciemss_lib_function: ClassVar[str] = "load_and_sample_petri_ensemble"
     model_configs: List[ModelConfig] = Field(
         [],
         example=[],
@@ -143,6 +215,26 @@ class EnsembleSimulatePostRequest(OperationRequest):
         None,
         description="optional extra system specific arguments for advanced use cases",
     )
+
+    
+    def gen_pyciemss_args(self, job_id):
+        weights = [config.weight for config in self.model_configs]
+        solution_mappings = [config.solution_mappings for config in self.model_configs]
+        amr_paths = [fetch_model(config.id, TDS_URL, TDS_CONFIGURATIONS, job_id) for config in self.model_configs]
+    
+        # Generate timepoints
+        time_count = self.timespan.end - self.timespan.start
+        timepoints=[step for step in range(1,time_count+1)]
+
+        
+        return {
+            "petri_model_or_paths": amr_paths,
+            "weights": weights,
+            "solution_mappings": solution_mappings,
+            "timepoints": timepoints,
+            "visual_options": True,
+            **self.extra.dict()
+        }
 
 ######################### `ensemble-calibrate` Operation ############
 class EnsembleCalibrateExtra(BaseModel):
@@ -163,6 +255,7 @@ class EnsembleCalibrateExtra(BaseModel):
     )
 
 class EnsembleCalibratePostRequest(OperationRequest):
+    pyciemss_lib_function: ClassVar[str] = "load_and_calibrate_and_sample_ensemble_model"
     username: str = Field("not_provided", example="not_provided")
     model_configs: List[ModelConfig] = Field(
         [],
@@ -174,6 +267,29 @@ class EnsembleCalibratePostRequest(OperationRequest):
         None,
         description="optional extra system specific arguments for advanced use cases",
     )
+
+    
+    def gen_pyciemss_args(self, job_id):
+        weights = [config.weight for config in self.model_configs]
+        solution_mappings = [config.solution_mappings for config in self.model_configs]
+        amr_paths = [fetch_model(config.id, TDS_URL, TDS_CONFIGURATIONS, job_id) for config in self.model_configs]
+
+        dataset_path = fetch_dataset(self.dataset.dict(), TDS_URL, job_id)
+
+        # Generate timepoints
+        time_count = self.timespan.end - self.timespan.start
+        timepoints=[step for step in range(1, time_count+1)]
+
+        output = load_and_calibrate_and_sample_ensemble_model(
+            petri_model_or_paths=amr_paths,
+            weights=weights,
+            solution_mappings=solution_mappings,
+            timepoints=timepoints,
+            data_path=dataset_path,
+            visual_options=True,
+            **self.extra.dict()
+        )
+
 
 ######################### API Response ############
 class JobResponse(BaseModel):

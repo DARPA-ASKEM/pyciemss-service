@@ -41,11 +41,24 @@ redis = Redis(
 queue = Queue(connection=redis, default_timeout=-1)
 
 
-def create_job(operation_name: str, request_payload, sim_type: str):
+def update_status_on_job_fail(job, connection, etype, value, traceback):
+    update_tds_status(TDS_URL + TDS_SIMULATIONS + str(job.id), "error")
+    log_message = f"""
+        ###############################
+
+        There was an exception in CIEMSS Service
+    
+        job: {job.id}
+        {etype}: {value} 
+        ################################
+    """
+    logging.exception(log_message)
+
+
+def create_job(request_payload, sim_type):
     random_id = str(uuid.uuid4())
     job_id = f"ciemss-{random_id}"
     job = queue.fetch_job(job_id)
-    operation = f"operations.{request_payload.engine}.{operation_name}"
 
     post_url = TDS_URL + TDS_SIMULATIONS #+ job_id
     payload = {
@@ -64,7 +77,7 @@ def create_job(operation_name: str, request_payload, sim_type: str):
         raise Exception(f"Failed to create simulation on TDS (status: {response.status_code}): {json.dumps(payload)}")
     logging.info(response.content)
 
-    job = queue.enqueue_call(func=operation, args=[request_payload], kwargs={"job_id": job_id}, job_id=job_id)
+    job = queue.enqueue_call(func="execute.run", args=[request_payload], kwargs={"job_id": job_id}, job_id=job_id, on_failure=update_status_on_job_fail)
 
     status = job.get_status()
     if status in ("finished", "failed"):
@@ -75,16 +88,16 @@ def create_job(operation_name: str, request_payload, sim_type: str):
         job_result = None
         job_error = None
 
-    response = {
-        "id": job_id,
-        "created_at": job.created_at,
-        "enqueued_at": job.enqueued_at,
-        "started_at": job.started_at,
-        "status": status,
-        "simulation_error": job_error,
-        "result": job_result,
-    }
-    return response
+    # response = {
+    #     "id": job_id,
+    #     "created_at": job.created_at,
+    #     "enqueued_at": job.enqueued_at,
+    #     "started_at": job.started_at,
+    #     "status": status,
+    #     "simulation_error": job_error,
+    #     "result": job_result,
+    # }
+    return {"simulation_id": job_id}
 
 
 def fetch_job_status(job_id):
@@ -130,37 +143,3 @@ def kill_job(job_id):
         result = job.get_status()
         return result
 
-
-def update_status_on_job_fail(function):
-    """
-    decorator that catches failed wrapped rq jobs and make sure the simulation status is set in tds.
-    """
-    def wrapped(request, *, job_id):
-        try:
-            start_time = time.perf_counter()
-            result = function(request, job_id=job_id)
-            end_time = time.perf_counter()
-        except Exception as e:
-
-            log_message = f"""
-                ###############################
-
-                There was an exception in CIEMSS Service
-                
-                Error occured in function: {function.__name__}
-
-                Username: {request.username}
-
-                ################################
-            """
-            update_tds_status(TDS_URL + TDS_SIMULATIONS + str(job_id), "error")
-            logging.exception(log_message)
-            raise e
-        else:
-            logging.info(
-                "Elapsed time for %s for %s: %f",
-                function.__name__, request.username, end_time - start_time
-                )
-            return result
-            
-    return wrapped

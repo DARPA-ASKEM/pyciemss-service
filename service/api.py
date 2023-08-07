@@ -90,9 +90,7 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
     """
     Perform a simulation
     """
-    resp = create_job("simulate", body, "simulate")
-    response = {"simulation_id": resp["id"]}
-    return response
+    return create_job(body, "simulate")
 
 
 @app.post("/calibrate", response_model=JobResponse)
@@ -100,9 +98,7 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
     """
     Calibrate a model
     """
-    resp = create_job("calibrate_then_simulate", body, "calibrate")
-    response = {"simulation_id": resp["id"]}
-    return response
+    return create_job(body, "calibrate")
 
 
 @app.post("/ensemble-simulate", response_model=JobResponse)
@@ -110,9 +106,7 @@ def create_simulate_ensemble(body: EnsembleSimulatePostRequest) -> JobResponse:
     """
     Perform ensemble simulate
     """
-    resp = create_job("ensemble_simulate", body, "ensemble-simulate")
-    response = {"simulation_id": resp["id"]}
-    return response
+    return create_job(body, "ensemble-simulate")
 
 
 @app.post("/ensemble-calibrate", response_model=JobResponse)
@@ -120,6 +114,4 @@ def create_calibrate_ensemble(body: EnsembleCalibratePostRequest) -> JobResponse
     """
     Perform ensemble simulate
     """
-    resp = create_job("ensemble_calibrate", body, "ensemble-calibrate")
-    response = {"simulation_id": resp["id"]}
-    return response
+    return create_job(body, "ensemble-calibrate")
