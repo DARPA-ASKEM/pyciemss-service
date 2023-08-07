@@ -4,21 +4,14 @@ Module used to interact with the Terarium Data Service (TDS)
 from __future__ import annotations
 
 import logging
-import csv
 import urllib
 import os
-import time
-import uuid
 import shutil
 import json
-import sys
 import requests
-from ast import Dict
-from typing import Any, Optional
-from copy import deepcopy
 from datetime import datetime
 
-from fastapi import HTTPException, Response, status
+from fastapi import HTTPException
 
 
 from settings import settings
@@ -28,7 +21,14 @@ TDS_URL = settings.TDS_URL
 
 
 def update_tds_status(url, status, result_files=[], start=False, finish=False):
-    logging.debug(f"Updating simulation `{url}` -- {status} start: {start}; finish: {finish}; result_files: {result_files}")
+    logging.debug(
+        "Updating simulation `%s` -- %s start: %s; finish: %s; result_files: %s",
+        url,
+        status,
+        start,
+        finish,
+        result_files,
+    )
     tds_payload = requests.get(url)
     tds_payload = tds_payload.json()
 
@@ -49,7 +49,7 @@ def update_tds_status(url, status, result_files=[], start=False, finish=False):
 
 
 def get_job_dir(job_id):
-    path = os.path.join("/tmp", str(job_id))    
+    path = os.path.join("/tmp", str(job_id))
     os.makedirs(path, exist_ok=True)
     return path
 
@@ -80,7 +80,10 @@ def fetch_dataset(dataset: dict, tds_api, job_id):
 
     job_dir = get_job_dir(job_id)
     logging.debug(f"Fetching dataset {dataset['id']}")
-    dataset_url = f"{tds_api}/datasets/{dataset['id']}/download-url?filename={dataset['filename']}"
+    dataset_url = (
+        f"{tds_api}/datasets/{dataset['id']}/"
+        f"download-url?filename={dataset['filename']}"
+    )
     response = requests.get(dataset_url)
     if response.status_code >= 300:
         raise HTTPException(status_code=400, detail="Unable to retrieve dataset")
@@ -92,33 +95,32 @@ def fetch_dataset(dataset: dict, tds_api, job_id):
     return dataset_path
 
 
-def attach_files(output: dict, tds_api, simulation_endpoint, job_id, status='complete'):
+def attach_files(output: dict, tds_api, simulation_endpoint, job_id, status="complete"):
     sim_results_url = tds_api + simulation_endpoint + job_id
     job_dir = get_job_dir(job_id)
     files = {}
-    
+
     output_filename = os.path.join(job_dir, "./result.csv")
-    data_result = output.get('data', None)
+    data_result = output.get("data", None)
     if data_result is not None:
         data_result.to_csv(output_filename, index=False)
         files[output_filename] = "result.csv"
 
     eval_output_filename = os.path.join(job_dir, "./eval.csv")
-    eval_result = output.get('quantiles', None)
+    eval_result = output.get("quantiles", None)
     if eval_result is not None:
         eval_result.to_csv(eval_output_filename, index=False)
         files[eval_output_filename] = "eval.csv"
 
     visualization_filename = os.path.join(job_dir, "./visualization.json")
-    viz_result = output.get('visual', None)
+    viz_result = output.get("visual", None)
     if viz_result is not None:
         with open(visualization_filename, "w") as f:
             json.dump(viz_result, f, indent=2)
         files[visualization_filename] = "visualization.json"
-        
 
-    if status!="error":
-        for (location, handle) in files.items():   
+    if status != "error":
+        for location, handle in files.items():
             upload_url = f"{sim_results_url}/upload-url?filename={handle}"
             upload_response = requests.get(upload_url)
             presigned_upload_url = upload_response.json()["url"]
@@ -132,6 +134,3 @@ def attach_files(output: dict, tds_api, simulation_endpoint, job_id, status='com
         sim_results_url, status=status, result_files=list(files.values()), finish=True
     )
     logging.info("uploaded files to %s", job_id)
-
-
-

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from fastapi import FastAPI, Response, status
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from models import (
@@ -13,21 +13,15 @@ from models import (
     EnsembleCalibratePostRequest,
     StatusSimulationIdGetResponse,
 )
-import os
-import redis
-import sys
-from threading import Thread
-import time
 
 from utils.rq_helpers import create_job, fetch_job_status, kill_job
-from utils.rabbitmq import mock_rabbitmq_consumer
 
 
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
 
-def build_api(*args) -> FastAPI:
 
+def build_api(*args) -> FastAPI:
     api = FastAPI(
         title="CIEMSS Service",
         description="Service for running CIEMSS simulations",
@@ -51,7 +45,7 @@ def build_api(*args) -> FastAPI:
 app = build_api()
 
 
-@app.get("/ping") # NOT IN SPEC
+@app.get("/ping")  # NOT IN SPEC
 def get_ping():
     """
     Retrieve the status of a simulation
@@ -72,7 +66,9 @@ def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
     return {"status": Status.from_rq(status)}
 
 
-@app.get("/cancel/{simulation_id}", response_model=StatusSimulationIdGetResponse) # NOT IN SPEC
+@app.get(
+    "/cancel/{simulation_id}", response_model=StatusSimulationIdGetResponse
+)  # NOT IN SPEC
 def cancel_job(simulation_id: str) -> StatusSimulationIdGetResponse:
     """
     Cancel a simulation

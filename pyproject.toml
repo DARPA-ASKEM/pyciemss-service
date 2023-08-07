@@ -28,6 +28,12 @@ worker = ["torch", "numpy", "juliacall"]
 mockrabbitmq = "service.utils.rabbitmq:mock_rabbitmq_consumer"
 
 
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+ruff = "^0.0.282"
+pytest = "^7.4.0"
+pre-commit = "^3.3.3"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

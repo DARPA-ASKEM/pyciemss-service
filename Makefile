@@ -10,7 +10,14 @@ export LANG
 .PHONY:init
 init:
 	make envfile; \
+	poetry run pre-commit install; \
 	git submodule update --init; \
+
+
+.PHONY:tidy
+tidy: 
+	poetry run pre-commit run;
+	#poetry run pytest
 
 # Environment file copy
 envfile:
