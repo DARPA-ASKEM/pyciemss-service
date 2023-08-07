@@ -4,7 +4,7 @@ version = "1.6.0"
 description = "PyCIEMSS simulation service to run CIEMSS simulations"
 authors = ["Powell Fendley", "Five Grant"]
 readme = "README.md"
-packages = [{include = "service"}]
+packages = [{include = "service"}, {include = "tests"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -33,6 +33,11 @@ black = "^23.7.0"
 ruff = "^0.0.282"
 pytest = "^7.4.0"
 pre-commit = "^3.3.3"
+requests-mock = "^1.11.0"
+
+[tool.pytest.ini_options]
+python_files = ["tests/operators.py"]
+markers = ["operation"]
 
 [build-system]
 requires = ["poetry-core"]

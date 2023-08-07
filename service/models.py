@@ -5,9 +5,9 @@ from typing import ClassVar, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 
-from utils.tds import fetch_dataset, fetch_model
-from utils.rabbitmq import gen_rabbitmq_hook
-from settings import settings
+from service.utils.tds import fetch_dataset, fetch_model
+from service.utils.rabbitmq import gen_rabbitmq_hook
+from service.settings import settings
 
 TDS_CONFIGURATIONS = "/model_configurations/"
 TDS_SIMULATIONS = "/simulations/"
@@ -98,7 +98,7 @@ class SimulateExtra(BaseModel):
     )
 
 
-class SimulatePostRequest(OperationRequest):
+class Simulate(OperationRequest):
     pyciemss_lib_function: ClassVar[str] = "load_and_sample_petri_model"
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan
@@ -175,7 +175,7 @@ class CalibrateExtra(BaseModel):
     )
 
 
-class CalibratePostRequest(OperationRequest):
+class Calibrate(OperationRequest):
     pyciemss_lib_function: ClassVar[str] = "load_and_calibrate_and_sample_petri_model"
     model_config_id: str = Field(..., example="c1cd941a-047d-11ee-be56")
     dataset: Dataset = None
@@ -213,7 +213,7 @@ class EnsembleSimulateExtra(BaseModel):
     )
 
 
-class EnsembleSimulatePostRequest(OperationRequest):
+class EnsembleSimulate(OperationRequest):
     pyciemss_lib_function: ClassVar[str] = "load_and_sample_petri_ensemble"
     model_configs: List[ModelConfig] = Field(
         [],
@@ -263,7 +263,7 @@ class EnsembleCalibrateExtra(BaseModel):
     )
 
 
-class EnsembleCalibratePostRequest(OperationRequest):
+class EnsembleCalibrate(OperationRequest):
     pyciemss_lib_function: ClassVar[
         str
     ] = "load_and_calibrate_and_sample_ensemble_model"

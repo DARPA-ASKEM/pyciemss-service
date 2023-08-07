@@ -16,8 +16,8 @@ init:
 
 .PHONY:tidy
 tidy: 
-	poetry run pre-commit run;
-	#poetry run pytest
+	poetry run pre-commit run; \
+	poetry run pytest
 
 # Environment file copy
 envfile:

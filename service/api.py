@@ -4,13 +4,13 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from models import (
+from service.models import (
     Status,
     JobResponse,
-    CalibratePostRequest,
-    SimulatePostRequest,
-    EnsembleSimulatePostRequest,
-    EnsembleCalibratePostRequest,
+    Calibrate,
+    Simulate,
+    EnsembleSimulate,
+    EnsembleCalibrate,
     StatusSimulationIdGetResponse,
 )
 
@@ -82,7 +82,7 @@ def cancel_job(simulation_id: str) -> StatusSimulationIdGetResponse:
 
 
 @app.post("/simulate", response_model=JobResponse)
-def simulate_model(body: SimulatePostRequest) -> JobResponse:
+def simulate_model(body: Simulate) -> JobResponse:
     """
     Perform a simulation
     """
@@ -90,7 +90,7 @@ def simulate_model(body: SimulatePostRequest) -> JobResponse:
 
 
 @app.post("/calibrate", response_model=JobResponse)
-def calibrate_model(body: CalibratePostRequest) -> JobResponse:
+def calibrate_model(body: Calibrate) -> JobResponse:
     """
     Calibrate a model
     """
@@ -98,7 +98,7 @@ def calibrate_model(body: CalibratePostRequest) -> JobResponse:
 
 
 @app.post("/ensemble-simulate", response_model=JobResponse)
-def create_simulate_ensemble(body: EnsembleSimulatePostRequest) -> JobResponse:
+def create_simulate_ensemble(body: EnsembleSimulate) -> JobResponse:
     """
     Perform ensemble simulate
     """
@@ -106,7 +106,7 @@ def create_simulate_ensemble(body: EnsembleSimulatePostRequest) -> JobResponse:
 
 
 @app.post("/ensemble-calibrate", response_model=JobResponse)
-def create_calibrate_ensemble(body: EnsembleCalibratePostRequest) -> JobResponse:
+def create_calibrate_ensemble(body: EnsembleCalibrate) -> JobResponse:
     """
     Perform ensemble simulate
     """

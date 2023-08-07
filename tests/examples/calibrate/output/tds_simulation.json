@@ -1,0 +1,45 @@
+{
+  "id": "ciemss-0478a0f7-21b3-4241-afa2-252e1c1992d8",
+  "name": null,
+  "description": null,
+  "timestamp": "2023-08-03T21:39:12",
+  "engine": "ciemss",
+  "type": "calibrate",
+  "status": "complete",
+  "execution_payload": {
+    "engine": "ciemss",
+    "username": "not_provided",
+    "model_config_id": "0da53e71-52c4-49fd-b957-2219af712fdd",
+    "dataset": {
+      "id": "cc52e71f-c744-4883-9412-0858d8455754",
+      "filename": "test.csv",
+      "mappings": {
+        "tstep": "Timestamp",
+        "S": "Susceptible"
+      }
+    },
+    "timespan": {
+      "start": 0,
+      "end": 90
+    },
+    "extra": {
+      "num_samples": 100,
+      "start_time": -1e-10,
+      "num_iterations": 1000,
+      "lr": 0.03,
+      "verbose": false,
+      "num_particles": 1,
+      "method": "dopri5"
+    }
+  },
+  "start_time": "2023-08-03T21:37:44.918532",
+  "completed_time": "2023-08-03T21:39:12.343505",
+  "workflow_id": "ciemss-0478a0f7-21b3-4241-afa2-252e1c1992d8",
+  "user_id": null,
+  "project_id": null,
+  "result_files": [
+    "result.csv",
+    "visualization.json",
+    "eval.csv"
+  ]
+}

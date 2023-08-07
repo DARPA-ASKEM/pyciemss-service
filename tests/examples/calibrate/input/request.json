@@ -1,0 +1,26 @@
+{
+  "engine": "ciemss",
+  "username": "not_provided",
+  "model_config_id": "0da53e71-52c4-49fd-b957-2219af712fdd",
+  "dataset": {
+    "id": "cc52e71f-c744-4883-9412-0858d8455754",
+    "filename": "test.csv",
+    "mappings": {
+      "tstep": "Timestamp",
+      "S": "Susceptible"
+    }
+  },
+  "timespan": {
+    "start": 0,
+    "end": 90
+  },
+  "extra": {
+    "num_samples": 100,
+    "start_time": -1e-10,
+    "num_iterations": 1000,
+    "lr": 0.03,
+    "verbose": false,
+    "num_particles": 1,
+    "method": "dopri5"
+  }
+}
