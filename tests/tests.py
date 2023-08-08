@@ -20,11 +20,14 @@ def operation_context(request):
     with open(f"{path_prefix}/output/tds_simulation.json", "r") as file:
         ctx["tds_simulation"] = json.load(file)
 
-    def fetch(handle):
+    def fetch(handle, return_path=False):
         io_dir = (
             "input" if os.path.exists(f"{path_prefix}/input/{handle}") else "output"
         )
-        with open(f"./tests/examples/{chosen}/{io_dir}/{handle}", "r") as file:
+        path = f"{path_prefix}/{io_dir}/{handle}"
+        if return_path:
+            return os.path.abspath(path)
+        with open(path, "r") as file:
             return file.read()
 
     ctx["fetch"] = fetch
@@ -59,13 +62,12 @@ class TestCalibrate:
 
         dataset_id = operation_context["request"]["dataset"]["id"]
         filename = operation_context["request"]["dataset"]["filename"]
-        dataset = operation_context["fetch"](filename)
-        dataset_loc = {"method": "GET", "url": "http://dataset"}
+        dataset = operation_context["fetch"](filename, True)
+        dataset_loc = {"method": "GET", "url": dataset}
         requests_mock.get(
             f"{TDS_URL}/datasets/{dataset_id}/download-url?filename={filename}",
             json=dataset_loc,
         )
-        requests_mock.get("http://dataset", text=dataset)
 
         ### Act and Assert
 
@@ -110,8 +112,8 @@ class TestEnsembleCalibrate:
 
         dataset_id = operation_context["request"]["dataset"]["id"]
         filename = operation_context["request"]["dataset"]["filename"]
-        dataset = operation_context["fetch"](filename)
-        dataset_loc = {"method": "GET", "url": "http://dataset"}
+        dataset = operation_context["fetch"](filename, True)
+        dataset_loc = {"method": "GET", "url": dataset}
         requests_mock.get(
             f"{TDS_URL}/datasets/{dataset_id}/download-url?filename={filename}",
             json=dataset_loc,
