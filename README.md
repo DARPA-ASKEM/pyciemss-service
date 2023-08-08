@@ -18,6 +18,10 @@ in order to pull the PyCIEMSS repository in as a submodule and set up the enviro
 
 to start the containers and the API. The API url will be `http://localhost:8010` by default 
 
+## Testing
+
+`poetry run pytest` executes tests. Run `make tidy` to execute the code formatter, tests, etc.
+
 ## Notes
 
 ### Result Files
