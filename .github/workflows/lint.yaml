@@ -1,5 +1,4 @@
 ---
-# This workflow will lint all YAML and Docker files
 name: Global File Linting
 # yamllint disable-line rule:truthy
 on:
@@ -13,7 +12,7 @@ on:
     paths:
       - '**.yaml'
       - '**.yml'
-    branches: ['main']
+    branches: ['main', 'dev/*']
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
