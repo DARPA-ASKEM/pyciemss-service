@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from service.models import (
@@ -16,6 +16,7 @@ from service.models import (
 
 from utils.rq_helpers import create_job, fetch_job_status, kill_job
 
+Operation = Simulate | Calibrate | EnsembleSimulate | EnsembleCalibrate
 
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
@@ -81,33 +82,25 @@ def cancel_job(simulation_id: str) -> StatusSimulationIdGetResponse:
     return {"status": Status.from_rq(status)}
 
 
-@app.post("/simulate", response_model=JobResponse)
-def simulate_model(body: Simulate) -> JobResponse:
-    """
-    Perform a simulation
-    """
-    return create_job(body, "simulate")
+@app.post("/{operation}", response_model=JobResponse)
+def operate(operation: str, body: Operation) -> JobResponse:
+    def check(otype):
+        if isinstance(body, otype):
+            return None
+        else:
+            raise HTTPException(
+                status_code=400, detail="Payload does not match operation"
+            )
 
-
-@app.post("/calibrate", response_model=JobResponse)
-def calibrate_model(body: Calibrate) -> JobResponse:
-    """
-    Calibrate a model
-    """
-    return create_job(body, "calibrate")
-
-
-@app.post("/ensemble-simulate", response_model=JobResponse)
-def create_simulate_ensemble(body: EnsembleSimulate) -> JobResponse:
-    """
-    Perform ensemble simulate
-    """
-    return create_job(body, "ensemble-simulate")
-
-
-@app.post("/ensemble-calibrate", response_model=JobResponse)
-def create_calibrate_ensemble(body: EnsembleCalibrate) -> JobResponse:
-    """
-    Perform ensemble simulate
-    """
-    return create_job(body, "ensemble-calibrate")
+    match operation:
+        case "simulate":
+            check(Simulate)
+        case "calibrate":
+            check(Calibrate)
+        case "ensemble-simulate":
+            check(EnsembleSimulate)
+        case "ensemble-calibrate":
+            check(EnsembleCalibrate)
+        case _:
+            raise HTTPException(status_code=404, detail="Operation not found")
+    return create_job(body, operation)

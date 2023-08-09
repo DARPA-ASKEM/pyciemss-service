@@ -8,6 +8,7 @@ RUN poetry config virtualenvs.create false && \
     poetry install --no-root --no-cache
 
 COPY service service
+COPY tests tests
 COPY README.md README.md
 
 RUN poetry install
