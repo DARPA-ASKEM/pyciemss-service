@@ -2,22 +2,11 @@
 from __future__ import annotations
 
 import logging
-import csv
-import urllib
-import os
-import time
 import uuid
 import json
-import sys
-import shutil
 import requests
-from ast import Dict
-from typing import Any, Optional
-from copy import deepcopy
-from datetime import datetime
 
 from fastapi import Response, status
-from pydantic import BaseModel
 from redis import Redis
 from rq import Queue
 from rq.exceptions import NoSuchJobError
@@ -34,20 +23,29 @@ logging.getLogger().setLevel(logging.DEBUG)
 
 
 # REDIS CONNECTION AND QUEUE OBJECTS
-redis = Redis(
-    settings.REDIS_HOST,
-    settings.REDIS_PORT
-)
+redis = Redis(settings.REDIS_HOST, settings.REDIS_PORT)
 queue = Queue(connection=redis, default_timeout=-1)
 
 
-def create_job(operation_name: str, request_payload, sim_type: str):
+def update_status_on_job_fail(job, connection, etype, value, traceback):
+    update_tds_status(TDS_URL + TDS_SIMULATIONS + str(job.id), "error")
+    log_message = f"""
+        ###############################
+
+        There was an exception in CIEMSS Service
+    
+        job: {job.id}
+        {etype}: {value} 
+        ################################
+    """
+    logging.exception(log_message)
+
+
+def create_job(request_payload, sim_type):
     random_id = str(uuid.uuid4())
     job_id = f"ciemss-{random_id}"
-    job = queue.fetch_job(job_id)
-    operation = f"operations.{request_payload.engine}.{operation_name}"
 
-    post_url = TDS_URL + TDS_SIMULATIONS #+ job_id
+    post_url = TDS_URL + TDS_SIMULATIONS
     payload = {
         "id": job_id,
         "execution_payload": request_payload.dict(),
@@ -58,40 +56,32 @@ def create_job(operation_name: str, request_payload, sim_type: str):
         "workflow_id": job_id,
     }
     logging.info(payload)
-    sys.stdout.flush()
     response = requests.post(post_url, json=payload)
     if response.status_code >= 300:
-        raise Exception(f"Failed to create simulation on TDS (status: {response.status_code}): {json.dumps(payload)}")
+        raise Exception(
+            (
+                "Failed to create simulation on TDS "
+                f"(status: {response.status_code}): {json.dumps(payload)}"
+            )
+        )
     logging.info(response.content)
 
-    job = queue.enqueue_call(func=operation, args=[request_payload], kwargs={"job_id": job_id}, job_id=job_id)
+    queue.enqueue_call(
+        func="execute.run",
+        args=[request_payload],
+        kwargs={"job_id": job_id},
+        job_id=job_id,
+        on_failure=update_status_on_job_fail,
+    )
 
-    status = job.get_status()
-    if status in ("finished", "failed"):
-        job_result = job.result
-        job_error = job.exc_info
-        job.cleanup(ttl=0)  # Cleanup/remove data immediately
-    else:
-        job_result = None
-        job_error = None
-
-    response = {
-        "id": job_id,
-        "created_at": job.created_at,
-        "enqueued_at": job.enqueued_at,
-        "started_at": job.started_at,
-        "status": status,
-        "simulation_error": job_error,
-        "result": job_result,
-    }
-    return response
+    return {"simulation_id": job_id}
 
 
 def fetch_job_status(job_id):
     """Fetch a job's results from RQ.
 
     Args:
-        job_id (str): The id of the job being run in RQ. Comes from the job/enqueue/{operation_name} endpoint.
+        job_id (str): The id of the job being run in RQ.
 
     Returns:
         Response:
@@ -107,9 +97,9 @@ def fetch_job_status(job_id):
     except NoSuchJobError:
         return Response(
             status_code=status.HTTP_404_NOT_FOUND,
-            content=f"Simulation job with id = {job_id} not found",
+            content=f"Simulation {job_id} not found",
         )
-    
+
 
 def kill_job(job_id):
     try:
@@ -129,38 +119,3 @@ def kill_job(job_id):
 
         result = job.get_status()
         return result
-
-
-def update_status_on_job_fail(function):
-    """
-    decorator that catches failed wrapped rq jobs and make sure the simulation status is set in tds.
-    """
-    def wrapped(request, *, job_id):
-        try:
-            start_time = time.perf_counter()
-            result = function(request, job_id=job_id)
-            end_time = time.perf_counter()
-        except Exception as e:
-
-            log_message = f"""
-                ###############################
-
-                There was an exception in CIEMSS Service
-                
-                Error occured in function: {function.__name__}
-
-                Username: {request.username}
-
-                ################################
-            """
-            update_tds_status(TDS_URL + TDS_SIMULATIONS + str(job_id), "error")
-            logging.exception(log_message)
-            raise e
-        else:
-            logging.info(
-                "Elapsed time for %s for %s: %f",
-                function.__name__, request.username, end_time - start_time
-                )
-            return result
-            
-    return wrapped

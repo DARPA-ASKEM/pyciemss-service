@@ -1,33 +1,28 @@
 from __future__ import annotations
 
 import logging
-from fastapi import FastAPI, Response, status
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from models import (
     Status,
     JobResponse,
-    CalibratePostRequest,
-    SimulatePostRequest,
-    EnsembleSimulatePostRequest,
-    EnsembleCalibratePostRequest,
+    Calibrate,
+    Simulate,
+    EnsembleSimulate,
+    EnsembleCalibrate,
     StatusSimulationIdGetResponse,
 )
-import os
-import redis
-import sys
-from threading import Thread
-import time
 
 from utils.rq_helpers import create_job, fetch_job_status, kill_job
-from utils.rabbitmq import mock_rabbitmq_consumer
 
+Operation = Simulate | Calibrate | EnsembleSimulate | EnsembleCalibrate
 
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
 
-def build_api(*args) -> FastAPI:
 
+def build_api(*args) -> FastAPI:
     api = FastAPI(
         title="CIEMSS Service",
         description="Service for running CIEMSS simulations",
@@ -51,7 +46,7 @@ def build_api(*args) -> FastAPI:
 app = build_api()
 
 
-@app.get("/ping") # NOT IN SPEC
+@app.get("/ping")  # NOT IN SPEC
 def get_ping():
     """
     Retrieve the status of a simulation
@@ -72,7 +67,9 @@ def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
     return {"status": Status.from_rq(status)}
 
 
-@app.get("/cancel/{simulation_id}", response_model=StatusSimulationIdGetResponse) # NOT IN SPEC
+@app.get(
+    "/cancel/{simulation_id}", response_model=StatusSimulationIdGetResponse
+)  # NOT IN SPEC
 def cancel_job(simulation_id: str) -> StatusSimulationIdGetResponse:
     """
     Cancel a simulation
@@ -85,41 +82,25 @@ def cancel_job(simulation_id: str) -> StatusSimulationIdGetResponse:
     return {"status": Status.from_rq(status)}
 
 
-@app.post("/simulate", response_model=JobResponse)
-def simulate_model(body: SimulatePostRequest) -> JobResponse:
-    """
-    Perform a simulation
-    """
-    resp = create_job("simulate", body, "simulate")
-    response = {"simulation_id": resp["id"]}
-    return response
+@app.post("/{operation}", response_model=JobResponse)
+def operate(operation: str, body: Operation) -> JobResponse:
+    def check(otype):
+        if isinstance(body, otype):
+            return None
+        else:
+            raise HTTPException(
+                status_code=400, detail="Payload does not match operation"
+            )
 
-
-@app.post("/calibrate", response_model=JobResponse)
-def calibrate_model(body: CalibratePostRequest) -> JobResponse:
-    """
-    Calibrate a model
-    """
-    resp = create_job("calibrate_then_simulate", body, "calibrate")
-    response = {"simulation_id": resp["id"]}
-    return response
-
-
-@app.post("/ensemble-simulate", response_model=JobResponse)
-def create_simulate_ensemble(body: EnsembleSimulatePostRequest) -> JobResponse:
-    """
-    Perform ensemble simulate
-    """
-    resp = create_job("ensemble_simulate", body, "ensemble-simulate")
-    response = {"simulation_id": resp["id"]}
-    return response
-
-
-@app.post("/ensemble-calibrate", response_model=JobResponse)
-def create_calibrate_ensemble(body: EnsembleCalibratePostRequest) -> JobResponse:
-    """
-    Perform ensemble simulate
-    """
-    resp = create_job("ensemble_calibrate", body, "ensemble-calibrate")
-    response = {"simulation_id": resp["id"]}
-    return response
+    match operation:
+        case "simulate":
+            check(Simulate)
+        case "calibrate":
+            check(Calibrate)
+        case "ensemble-simulate":
+            check(EnsembleSimulate)
+        case "ensemble-calibrate":
+            check(EnsembleCalibrate)
+        case _:
+            raise HTTPException(status_code=404, detail="Operation not found")
+    return create_job(body, operation)
