@@ -12,8 +12,8 @@ from rq import Queue
 from rq.exceptions import NoSuchJobError
 from rq.job import Job
 
-from service.settings import settings
-from service.utils.tds import update_tds_status
+from settings import settings
+from utils.tds import update_tds_status
 
 TDS_SIMULATIONS = "/simulations/"
 TDS_URL = settings.TDS_URL

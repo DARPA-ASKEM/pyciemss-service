@@ -14,7 +14,7 @@ from datetime import datetime
 from fastapi import HTTPException
 
 
-from service.settings import settings
+from settings import settings
 
 TDS_SIMULATIONS = "/simulations/"
 TDS_URL = settings.TDS_URL

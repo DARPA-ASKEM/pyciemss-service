@@ -1,10 +1,20 @@
 import logging
 from juliacall import newmodule
-from service.settings import settings
-from service.utils.tds import (
+from settings import settings
+from utils.tds import (
     update_tds_status,
     cleanup_job_dir,
     attach_files,
+)
+
+from pyciemss.PetriNetODE.interfaces import (  # noqa: F401
+    load_and_calibrate_and_sample_petri_model,
+    load_and_sample_petri_model,
+)
+
+from pyciemss.Ensemble.interfaces import (  # noqa: F401
+    load_and_sample_petri_ensemble,
+    load_and_calibrate_and_sample_ensemble_model,
 )
 
 

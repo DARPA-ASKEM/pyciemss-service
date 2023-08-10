@@ -3,7 +3,7 @@ import json
 import time
 import logging
 
-from service.settings import settings
+from settings import settings
 
 conn_config = pika.ConnectionParameters(
     host=settings.RABBITMQ_HOST, port=settings.RABBITMQ_PORT

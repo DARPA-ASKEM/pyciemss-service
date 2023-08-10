@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from enum import Enum
 from typing import ClassVar, Dict, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, Extra
 
 
-from service.utils.tds import fetch_dataset, fetch_model
-from service.utils.rabbitmq import gen_rabbitmq_hook
-from service.settings import settings
+from utils.tds import fetch_dataset, fetch_model
+from utils.rabbitmq import gen_rabbitmq_hook
+from settings import settings
 
 TDS_CONFIGURATIONS = "/model_configurations/"
 TDS_SIMULATIONS = "/simulations/"
@@ -144,6 +144,9 @@ class Simulate(OperationRequest):
         result = julia_context.simulate(amr, self.timespan.start, self.timespan.end)
         return {"data": julia_context.pytable(result)}
 
+    class Config:
+        extra = Extra.forbid
+
 
 ######################### `calibrate` Operation ############
 class CalibrateExtra(BaseModel):
@@ -205,6 +208,9 @@ class Calibrate(OperationRequest):
             **self.extra.dict(),
         }
 
+    class Config:
+        extra = Extra.forbid
+
 
 ######################### `ensemble-simulate` Operation ############
 class EnsembleSimulateExtra(BaseModel):
@@ -246,6 +252,9 @@ class EnsembleSimulate(OperationRequest):
             "visual_options": True,
             **self.extra.dict(),
         }
+
+    class Config:
+        extra = Extra.forbid
 
 
 ######################### `ensemble-calibrate` Operation ############
@@ -302,6 +311,9 @@ class EnsembleCalibrate(OperationRequest):
             "visual_options": True,
             **self.extra.dict(),
         }
+
+    class Config:
+        extra = Extra.forbid
 
 
 ######################### API Response ############
