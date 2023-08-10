@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "pyciemss-service"
-version = "1.6.0"
+version = "1.7.0"
 description = "PyCIEMSS simulation service to run CIEMSS simulations"
 authors = ["Powell Fendley", "Five Grant"]
 readme = "README.md"
-packages = [{include = "service"}]
+packages = [{include = "service"}, {include = "tests"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -26,6 +26,20 @@ worker = ["torch", "numpy", "juliacall"]
 
 [tool.poetry.scripts]
 mockrabbitmq = "service.utils.rabbitmq:mock_rabbitmq_consumer"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+ruff = "^0.0.282"
+pytest = "^7.4.0"
+pre-commit = "^3.3.3"
+requests-mock = "^1.11.0"
+mock = "^5.1.0"
+
+[tool.pytest.ini_options]
+python_files = ["tests/tests.py"]
+markers = ["operation"]
+pythonpath = "service"
 
 
 [build-system]

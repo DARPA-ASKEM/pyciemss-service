@@ -16,6 +16,7 @@ RUN poetry config virtualenvs.create false && \
 
 RUN pip install --no-cache-dir git+https://github.com/ciemss/pyciemss.git
 COPY service service
+COPY tests tests
 COPY README.md README.md
 
 ENV REDIS_HOST redis
