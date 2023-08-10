@@ -39,6 +39,8 @@ mock = "^5.1.0"
 [tool.pytest.ini_options]
 python_files = ["tests/tests.py"]
 markers = ["operation"]
+pythonpath = "service"
+
 
 [build-system]
 requires = ["poetry-core"]
