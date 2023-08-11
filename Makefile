@@ -8,10 +8,10 @@ export LANG
 
 # Initializes submodules and copies environment file sample to env file.
 .PHONY:init
-init:
-	make envfile; \
-	poetry run pre-commit install; \
-	git submodule update --init; \
+init: .env
+	poetry install 
+	poetry run pre-commit install
+	poetry run poe install-pyciemss 
 
 
 .PHONY:tidy
@@ -20,7 +20,7 @@ tidy:
 	poetry run pytest
 
 # Environment file copy
-envfile:
+.env:
 ifeq ($(wildcard envfile),)
 	cp env.sample .env; \
 	echo -e "\nDon't forget to update 'envfile' with all your secrets!";
