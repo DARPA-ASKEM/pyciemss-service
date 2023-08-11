@@ -1,13 +1,39 @@
 import json
 import os
+from inspect import signature
 
 from mock import patch
 import pytest
+
+from pyciemss.PetriNetODE.interfaces import (  # noqa: F401
+    load_and_calibrate_and_sample_petri_model,
+    load_and_sample_petri_model,
+)
+
+from pyciemss.Ensemble.interfaces import (  # noqa: F401
+    load_and_sample_petri_ensemble,
+    load_and_calibrate_and_sample_ensemble_model,
+)
 
 from service.models import Simulate, Calibrate, EnsembleSimulate, EnsembleCalibrate
 from service.settings import settings
 
 TDS_URL = settings.TDS_URL
+
+
+def is_satisfactory(kwargs, f):
+    parameters = signature(f).parameters
+    for key, value in kwargs.items():
+        if key in parameters:
+            # TODO: Check types as well
+            # param = parameters[key]
+            # if param.annotation != Signature.empty and not isinstance(
+            #     value, param.annotation
+            # ):
+            #     return False
+            continue
+        return False
+    return True
 
 
 @pytest.fixture
@@ -49,6 +75,7 @@ class TestSimulate:
         kwargs = operation_request.gen_pyciemss_args(job_id)
 
         assert kwargs.get("visual_options", False)
+        assert is_satisfactory(kwargs, load_and_sample_petri_model)
 
 
 class TestCalibrate:
@@ -76,6 +103,7 @@ class TestCalibrate:
             kwargs = operation_request.gen_pyciemss_args(job_id)
 
         assert kwargs.get("visual_options", False)
+        assert is_satisfactory(kwargs, load_and_calibrate_and_sample_petri_model)
 
 
 class TestEnsembleSimulate:
@@ -96,6 +124,7 @@ class TestEnsembleSimulate:
         kwargs = operation_request.gen_pyciemss_args(job_id)
 
         assert kwargs.get("visual_options", False)
+        assert is_satisfactory(kwargs, load_and_sample_petri_ensemble)
 
 
 class TestEnsembleCalibrate:
@@ -126,3 +155,4 @@ class TestEnsembleCalibrate:
         kwargs = operation_request.gen_pyciemss_args(job_id)
 
         assert kwargs.get("visual_options", False)
+        assert is_satisfactory(kwargs, load_and_calibrate_and_sample_ensemble_model)

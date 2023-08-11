@@ -21,5 +21,7 @@ jobs:
           poetry-version: 1.5.1
       - name: Create environment
         run: poetry install
+      - name: Install pyciemss
+        run: poetry run poe install-pyciemss
       - name: Pytest
         run: poetry run pytest
