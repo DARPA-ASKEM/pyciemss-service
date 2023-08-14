@@ -42,7 +42,7 @@ target "_platforms" {
 }
 
 target "pyciemss-api-base" {
-  context = ".."
+  context = "."
   tags = tag("pyciemss-api", "", "")
   dockerfile = "docker/Dockerfile.api"
 }
@@ -52,7 +52,7 @@ target "pyciemss-api" {
 }
 
 target "pyciemss-worker-base" {
-  context = ".."
+  context = "."
   tags = tag("pyciemss-worker", "", "")
   dockerfile = "docker/Dockerfile.worker"
 }

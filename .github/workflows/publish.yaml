@@ -3,7 +3,6 @@
 # Container Registry using HCL Bake file.
 
 name: Build Docker Images
-# yamllint disable-line rule:truthy
 on:
   workflow_dispatch:
   push:
@@ -11,10 +10,6 @@ on:
     tags: ['*']
 
 jobs:
-  # Call the Lint & Format workflow before publishing
-  verify:
-    uses: ./.github/workflows/lint.yaml
-
   # Call the Tag Generator to generate an image tag to use
   tag-generator:
     uses: darpa-askem/.github/.github/workflows/tag-generator.yaml@main
@@ -22,7 +17,6 @@ jobs:
   # Build and Publish all targets associated with specified group
   bake:
     needs:
-      - verify
       - tag-generator
     uses: darpa-askem/.github/.github/workflows/bake-publish.yml@main
     with:
