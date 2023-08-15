@@ -1,36 +1,31 @@
-from mock import patch
-from uuid import UUID
 import pytest
 
+from rq import SimpleWorker, Queue
 from fastapi.testclient import TestClient
 from fakeredis import FakeStrictRedis
 
-from service.api import app
+from service.api import app, get_redis
 
 
 @pytest.fixture
-def redis(environment, autouse=True):
-    if environment.MOCK_REDIS:
-        with patch("service.utils.get_redis", return_value=FakeStrictRedis()):
-            yield
+def redis(environment):
+    if not environment.LIVE_REDIS:
+        return FakeStrictRedis()
     else:
-        yield
+        return None
 
 
 @pytest.fixture
-def patch_uuid(request, autouse=True):
-    if "example_context" in request.fixturenames:
-        context = request.getfixturevalue("example_context")
-        job_id = context["tds_simulation"]["id"]
-        with patch(
-            "uuid.uuid4",
-            return_value=UUID(job_id.strip("ciemss-")),
-        ):
-            yield
-    else:
-        yield
+def worker(redis):
+    if redis is not None:
+        queue = Queue(connection=redis, default_timeout=-1)
+        return SimpleWorker([queue], connection=redis)
+    return None
 
 
 @pytest.fixture
-def client():
-    return TestClient(app)
+def client(redis):
+    if redis is not None:
+        app.dependency_overrides[get_redis] = lambda: redis
+    yield TestClient(app)
+    app.dependency_overrides[get_redis] = get_redis

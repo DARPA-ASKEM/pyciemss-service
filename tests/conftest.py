@@ -6,8 +6,8 @@ from pydantic import BaseSettings
 
 
 class Environment(BaseSettings):
-    MOCK_REDIS: bool = True
-    MOCK_PYCIEMSS: bool = True
+    LIVE_REDIS: bool = False
+    LIVE_PYCIEMSS: bool = False
 
 
 @pytest.fixture

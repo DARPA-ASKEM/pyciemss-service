@@ -126,6 +126,13 @@ def attach_files(output: dict, tds_api, simulation_endpoint, job_id, status="com
             presigned_upload_url = upload_response.json()["url"]
             with open(location, "rb") as f:
                 upload_response = requests.put(presigned_upload_url, f)
+                if upload_response.status_code >= 300:
+                    raise Exception(
+                        (
+                            "Failed to upload file to TDS "
+                            f"(status: {upload_response.status_code}): {handle}"
+                        )
+                    )
     else:
         logging.error(f"{job_id} ran into error")
 
