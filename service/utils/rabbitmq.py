@@ -1,4 +1,5 @@
 import pika
+from pika.credentials import PlainCredentials
 import json
 import time
 import logging
@@ -33,7 +34,12 @@ def mock_rabbitmq_consumer():
 
 
 def gen_rabbitmq_hook(job_id):
-    connection = pika.BlockingConnection(conn_config)
+    connection = pika.BlockingConnection(
+        conn_config,
+        credentials=PlainCredentials(
+            username=settings.RABBITMQ_USERNAME, password=settings.RABBITMQ_PASSWORD
+        ),
+    )
     channel = connection.channel()
 
     def hook(progress):
