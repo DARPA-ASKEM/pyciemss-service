@@ -2,32 +2,17 @@ import json
 import os
 
 import pytest
-from fastapi.testclient import TestClient
 from pydantic import BaseSettings
-from fakeredis import FakeStrictRedis
-from rq import Queue
-
-
-from service.api import app
-
-
-@pytest.fixture
-def client():
-    return TestClient(app)
 
 
 class Environment(BaseSettings):
-    IS_LIVE: bool = False
+    MOCK_REDIS: bool = True
+    MOCK_PYCIEMSS: bool = True
 
 
 @pytest.fixture
 def environment():
     return Environment()
-
-
-@pytest.fixture
-def redis_queue():
-    return Queue(is_async=False, connection=FakeStrictRedis())
 
 
 @pytest.fixture

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from models import (
@@ -14,7 +14,7 @@ from models import (
     StatusSimulationIdGetResponse,
 )
 
-from utils.rq_helpers import create_job, fetch_job_status, kill_job
+from utils.rq_helpers import get_redis, create_job, fetch_job_status, kill_job
 
 Operation = Simulate | Calibrate | EnsembleSimulate | EnsembleCalibrate
 
@@ -55,11 +55,13 @@ def get_ping():
 
 
 @app.get("/status/{simulation_id}", response_model=StatusSimulationIdGetResponse)
-def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
+def get_status(
+    simulation_id: str, redis_conn=Depends(get_redis)
+) -> StatusSimulationIdGetResponse:
     """
     Retrieve the status of a simulation
     """
-    status = fetch_job_status(simulation_id)
+    status = fetch_job_status(simulation_id, redis_conn)
     logging.info(status)
     if not isinstance(status, str):
         return status
@@ -70,11 +72,13 @@ def get_status(simulation_id: str) -> StatusSimulationIdGetResponse:
 @app.get(
     "/cancel/{simulation_id}", response_model=StatusSimulationIdGetResponse
 )  # NOT IN SPEC
-def cancel_job(simulation_id: str) -> StatusSimulationIdGetResponse:
+def cancel_job(
+    simulation_id: str, redis_conn=Depends(get_redis)
+) -> StatusSimulationIdGetResponse:
     """
     Cancel a simulation
     """
-    status = kill_job(simulation_id)
+    status = kill_job(simulation_id, redis_conn)
     logging.info(status)
     if not isinstance(status, str):
         return status
@@ -83,7 +87,9 @@ def cancel_job(simulation_id: str) -> StatusSimulationIdGetResponse:
 
 
 @app.post("/{operation}", response_model=JobResponse)
-def operate(operation: str, body: Operation) -> JobResponse:
+def operate(
+    operation: str, body: Operation, redis_conn=Depends(get_redis)
+) -> JobResponse:
     def check(otype):
         if isinstance(body, otype):
             return None
@@ -103,4 +109,4 @@ def operate(operation: str, body: Operation) -> JobResponse:
             check(EnsembleCalibrate)
         case _:
             raise HTTPException(status_code=404, detail="Operation not found")
-    return create_job(body, operation)
+    return create_job(body, operation, redis_conn)
