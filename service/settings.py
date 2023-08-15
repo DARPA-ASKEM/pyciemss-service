@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     REDIS_PORT: int = 6379
     RABBITMQ_HOST: str = "rabbitmq.pyciemss"
     RABBITMQ_PORT: int = 5672
-    RABBITMQ_USERNAME: str = "terarium"
-    RABBITMQ_PASSWORD: str = "terarium123"
+    RABBITMQ_USERNAME: str = "guest"
+    RABBITMQ_PASSWORD: str = "guest"
 
 
 settings = Settings()

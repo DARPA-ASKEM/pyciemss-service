@@ -42,12 +42,12 @@ services:
     depends_on:
       - redis
       - api
-      - rabbitmq
     networks:
       - data-api
       - pyciemss
   rabbitmq:
     container_name: rabbitmq
+    profiles: ["standalone"]
     hostname: rabbitmq
     image: 'rabbitmq:3'
     healthcheck:
@@ -57,10 +57,12 @@ services:
       retries: 5
     ports:
       - "5672:5672"
+      - "15672:15672"
     networks:
       - pyciemss
   rabbitmq-mock-consumer:
     container_name: rabbitmq-mock-consumer
+    profiles: ["standalone"]
     build:
       context: ..
       dockerfile: docker/Dockerfile.api

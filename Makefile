@@ -29,22 +29,22 @@ endif
 # Turn project on
 .PHONY:up
 up:docker/docker-compose.yaml
-	$(DOCKER_COMPOSE) compose --file $(DOCKER_COMPOSE_YAML) up -d
+	$(DOCKER_COMPOSE) compose --profile standalone --file $(DOCKER_COMPOSE_YAML) up -d
 
 # Rebuild all containers and turn project on
 .PHONY:up-rebuild
 up-rebuild:$(DOCKER_COMPOSE_YAML)
-	$(DOCKER_COMPOSE) compose --file $(DOCKER_COMPOSE_YAML) up --build -d
+	$(DOCKER_COMPOSE) compose --profile standalone --file $(DOCKER_COMPOSE_YAML) up --build -d
 
 # Rebuild the docker image from scratch
-.PHONY:up-rebuild
+.PHONY:force-rebuild
 force-rebuild:$(DOCKER_COMPOSE_YAML)
 	$(DOCKER_COMPOSE) compose --file $(DOCKER_COMPOSE_YAML) build --no-cache
 
 # Turn project off
 .PHONY:down
 down:$(DOCKER_COMPOSE_YAML)
-	$(DOCKER_COMPOSE) compose --file $(DOCKER_COMPOSE_YAML) down
+	$(DOCKER_COMPOSE) compose --profile standalone --file $(DOCKER_COMPOSE_YAML) down
 
 # Restart project
 .PHONY:restart
