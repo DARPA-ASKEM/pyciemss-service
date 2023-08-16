@@ -42,11 +42,11 @@ def file_storage():
 
     def get_loc(request, _):
         filename = get_filename(request.url)
-        return {"url": f"filesave?filename={filename}"}
+        return {"url": f"https://filesave?filename={filename}"}
 
     def save(request, context):
-        # filename = get_filename(request.url)
-        # storage[filename] = context
+        filename = get_filename(request.url)
+        storage[filename] = request.body.read()
         return {"status": "success"}
 
     def retrieve(filename):
