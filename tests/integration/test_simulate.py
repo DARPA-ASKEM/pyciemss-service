@@ -1,5 +1,4 @@
 import json
-import re
 
 import pytest
 
@@ -36,11 +35,6 @@ def test_simulate_example(example_context, client, worker, file_storage, request
         f"{TDS_URL}/simulations/{simulation_id}", json={"status": "success"}
     )
     requests_mock.get(f"{TDS_URL}/model_configurations/{config_id}", json=model)
-    # TODO: Save files to locations where we can check against them
-    get_upload_url = re.compile("upload-url")
-    requests_mock.get(get_upload_url, json=file_storage.get_loc)
-    upload_url = re.compile("filesave")
-    requests_mock.put(upload_url, json=file_storage.save)
 
     # TODO: Mock PyCIEMSS lib
     worker.work(burst=True)

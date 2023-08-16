@@ -1,5 +1,5 @@
-from collections import namedtuple
 from urllib.parse import urlparse, parse_qs
+import re
 import pytest
 
 from rq import SimpleWorker, Queue
@@ -34,7 +34,7 @@ def client(redis):
 
 
 @pytest.fixture
-def file_storage():
+def file_storage(requests_mock):
     storage = {}
 
     def get_filename(url):
@@ -50,7 +50,11 @@ def file_storage():
         return {"status": "success"}
 
     def retrieve(filename):
-        return storage[filename]
+        return storage.get(filename, storage)
 
-    Storage = namedtuple("Storage", ["get_loc", "save", "retrieve"])
-    yield Storage(get_loc, save, retrieve)
+    get_upload_url = re.compile("upload-url")
+    requests_mock.get(get_upload_url, json=get_loc)
+    upload_url = re.compile("filesave")
+    requests_mock.put(upload_url, json=save)
+
+    yield retrieve
