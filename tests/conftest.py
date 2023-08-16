@@ -2,17 +2,6 @@ import json
 import os
 
 import pytest
-from pydantic import BaseSettings
-
-
-class Environment(BaseSettings):
-    LIVE_REDIS: bool = False
-    LIVE_PYCIEMSS: bool = False
-
-
-@pytest.fixture
-def environment():
-    return Environment()
 
 
 @pytest.fixture
