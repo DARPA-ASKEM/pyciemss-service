@@ -33,7 +33,7 @@ mock = "^5.1.0"
 poethepoet = "^0.21.1"
 
 [tool.poe.tasks]
-install-pyciemss = "pip install git+https://github.com/ciemss/pyciemss.git#c54cff8e301aa53239a9f0e789c8618c3c75569b" 
+install-pyciemss = "pip install --no-cache git+https://github.com/ciemss/pyciemss.git@v0.0.1" 
 
 [tool.pytest.ini_options]
 python_files = ["tests/tests.py"]
