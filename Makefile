@@ -39,7 +39,7 @@ up-rebuild:$(DOCKER_COMPOSE_YAML)
 # Rebuild the docker image from scratch
 .PHONY:force-rebuild
 force-rebuild:$(DOCKER_COMPOSE_YAML)
-	$(DOCKER_COMPOSE) compose --file $(DOCKER_COMPOSE_YAML) build --no-cache
+	$(DOCKER_COMPOSE) compose --profile standalone --file $(DOCKER_COMPOSE_YAML) build --no-cache
 
 # Turn project off
 .PHONY:down
