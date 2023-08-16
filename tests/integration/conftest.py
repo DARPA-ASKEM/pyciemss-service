@@ -45,8 +45,8 @@ def file_storage():
         return {"url": f"filesave?filename={filename}"}
 
     def save(request, context):
-        filename = get_filename(request.url)
-        storage[filename] = context
+        # filename = get_filename(request.url)
+        # storage[filename] = context
         return {"status": "success"}
 
     def retrieve(filename):
