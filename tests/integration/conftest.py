@@ -1,3 +1,5 @@
+from collections import namedtuple
+from urllib.parse import urlparse, parse_qs
 import pytest
 
 from rq import SimpleWorker, Queue
@@ -29,3 +31,26 @@ def client(redis):
         app.dependency_overrides[get_redis] = lambda: redis
     yield TestClient(app)
     app.dependency_overrides[get_redis] = get_redis
+
+
+@pytest.fixture
+def file_storage():
+    storage = {}
+
+    def get_filename(url):
+        return parse_qs(urlparse(url).query)["filename"][0]
+
+    def get_loc(request, _):
+        filename = get_filename(request.url)
+        return {"url": f"filesave?filename={filename}"}
+
+    def save(request, context):
+        filename = get_filename(request.url)
+        storage[filename] = context
+        return {"status": "success"}
+
+    def retrieve(filename):
+        return storage[filename]
+
+    Storage = namedtuple("Storage", ["get_loc", "save", "retrieve"])
+    yield Storage(get_loc, save, retrieve)

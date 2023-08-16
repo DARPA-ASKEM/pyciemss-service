@@ -9,7 +9,7 @@ TDS_URL = settings.TDS_URL
 
 
 @pytest.mark.example_dir("simulate")
-def test_simulate_example(example_context, client, worker, requests_mock):
+def test_simulate_example(example_context, client, worker, file_storage, requests_mock):
     request = example_context["request"]
     config_id = request["model_config_id"]
     model = json.loads(example_context["fetch"](config_id + ".json"))
@@ -38,7 +38,7 @@ def test_simulate_example(example_context, client, worker, requests_mock):
     requests_mock.get(f"{TDS_URL}/model_configurations/{config_id}", json=model)
     # TODO: Save files to locations where we can check against them
     upload_url = re.compile("upload-url")
-    requests_mock.get(upload_url, json={"url": "http://WONTWORK"})
+    requests_mock.get(upload_url, json=file_storage.get_loc)
     requests_mock.put("http://WONTWORK", json={"url": "WONTWORK"})
 
     # TODO: Mock PyCIEMSS lib
