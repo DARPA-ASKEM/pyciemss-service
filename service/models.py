@@ -1,12 +1,14 @@
 from __future__ import annotations
+import socket
+import logging
 
 from enum import Enum
 from typing import ClassVar, Dict, List, Optional
 from pydantic import BaseModel, Field, Extra
 
 
-from utils.tds import fetch_dataset, fetch_model
 from utils.rabbitmq import gen_rabbitmq_hook
+from utils.tds import fetch_dataset, fetch_model
 from settings import settings
 
 TDS_CONFIGURATIONS = "/model_configurations/"
@@ -199,11 +201,22 @@ class Calibrate(OperationRequest):
 
         dataset_path = fetch_dataset(self.dataset.dict(), TDS_URL, job_id)
 
+        # TODO: Test RabbitMQ
+        try:
+            hook = gen_rabbitmq_hook(job_id)
+        except socket.gaierror:
+            logging.warning(
+                "%s: Failed to connect to RabbitMQ. Unable to log progress", job_id
+            )
+
+            def hook(_):
+                return None
+
         return {
             "petri_model_or_path": amr_path,
             "timepoints": timepoints,
             "data_path": dataset_path,
-            "progress_hook": gen_rabbitmq_hook(job_id),
+            "progress_hook": hook,
             "visual_options": True,
             **self.extra.dict(),
         }

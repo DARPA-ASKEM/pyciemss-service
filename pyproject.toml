@@ -17,6 +17,7 @@ uvicorn = "^0.22.0"
 pika = "1.3.2"
 pandas = "^2.0.0"
 filelock = "^3.12.2"
+poethepoet = "^0.21.1"
 # juliacall = { version="^0.9.14", optional = true }
 
 [tool.poetry.scripts]
@@ -30,14 +31,14 @@ pytest = "^7.4.0"
 pre-commit = "^3.3.3"
 requests-mock = "^1.11.0"
 mock = "^5.1.0"
-poethepoet = "^0.21.1"
+fakeredis = "^2.17.0"
+httpx = "^0.24.1"
 
 [tool.poe.tasks]
 install-pyciemss = "pip install --no-cache git+https://github.com/ciemss/pyciemss.git@v0.0.1" 
 
 [tool.pytest.ini_options]
-python_files = ["tests/tests.py"]
-markers = ["operation"]
+markers = ["example_dir"]
 pythonpath = "service"
 
 

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-import uuid
+from uuid import uuid4
 import json
 import requests
 
@@ -22,9 +22,8 @@ logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
 
 
-# REDIS CONNECTION AND QUEUE OBJECTS
-redis = Redis(settings.REDIS_HOST, settings.REDIS_PORT)
-queue = Queue(connection=redis, default_timeout=-1)
+def get_redis():
+    return Redis(settings.REDIS_HOST, settings.REDIS_PORT)
 
 
 def update_status_on_job_fail(job, connection, etype, value, traceback):
@@ -41,9 +40,8 @@ def update_status_on_job_fail(job, connection, etype, value, traceback):
     logging.exception(log_message)
 
 
-def create_job(request_payload, sim_type):
-    random_id = str(uuid.uuid4())
-    job_id = f"ciemss-{random_id}"
+def create_job(request_payload, sim_type, redis_conn):
+    job_id = f"ciemss-{uuid4()}"
 
     post_url = TDS_URL + TDS_SIMULATIONS
     payload = {
@@ -66,6 +64,7 @@ def create_job(request_payload, sim_type):
         )
     logging.info(response.content)
 
+    queue = Queue(connection=redis_conn, default_timeout=-1)
     queue.enqueue_call(
         func="execute.run",
         args=[request_payload],
@@ -77,7 +76,7 @@ def create_job(request_payload, sim_type):
     return {"simulation_id": job_id}
 
 
-def fetch_job_status(job_id):
+def fetch_job_status(job_id, redis_conn):
     """Fetch a job's results from RQ.
 
     Args:
@@ -89,7 +88,7 @@ def fetch_job_status(job_id):
             content: contains the job's results.
     """
     try:
-        job = Job.fetch(job_id, connection=redis)
+        job = Job.fetch(job_id, connection=redis_conn)
         # r = job.latest_result()
         # string_res = r.return_value
         result = job.get_status()
@@ -101,9 +100,9 @@ def fetch_job_status(job_id):
         )
 
 
-def kill_job(job_id):
+def kill_job(job_id, redis_conn):
     try:
-        job = Job.fetch(job_id, connection=redis)
+        job = Job.fetch(job_id, connection=redis_conn)
     except NoSuchJobError:
         return Response(
             status_code=status.HTTP_404_NOT_FOUND,
