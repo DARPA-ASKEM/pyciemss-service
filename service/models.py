@@ -1,10 +1,13 @@
 from __future__ import annotations
+import socket
+import logging
 
 from enum import Enum
 from typing import ClassVar, Dict, List, Optional
 from pydantic import BaseModel, Field, Extra
 
 
+from utils.rabbitmq import gen_rabbitmq_hook
 from utils.tds import fetch_dataset, fetch_model
 from settings import settings
 
@@ -77,7 +80,7 @@ class OperationRequest(BaseModel):
     engine: str = Field("ciemss", example="ciemss")
     username: str = Field("not_provided", example="not_provided")
 
-    def gen_pyciemss_args(self, job_id, **_):
+    def gen_pyciemss_args(self, job_id):
         raise NotImplementedError("PyCIEMSS cannot handle this operation")
 
     def run_sciml_operation(self, job_id, julia_context):
@@ -109,7 +112,7 @@ class Simulate(OperationRequest):
         description="optional extra system specific arguments for advanced use cases",
     )
 
-    def gen_pyciemss_args(self, job_id, **_):
+    def gen_pyciemss_args(self, job_id):
         # Get model from TDS
         amr_path = fetch_model(
             self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
@@ -187,7 +190,7 @@ class Calibrate(OperationRequest):
         description="optional extra system specific arguments for advanced use cases",
     )
 
-    def gen_pyciemss_args(self, job_id, *, progress_hook=lambda _: None):
+    def gen_pyciemss_args(self, job_id):
         amr_path = fetch_model(
             self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
         )
@@ -198,11 +201,22 @@ class Calibrate(OperationRequest):
 
         dataset_path = fetch_dataset(self.dataset.dict(), TDS_URL, job_id)
 
+        # TODO: Test RabbitMQ
+        try:
+            hook = gen_rabbitmq_hook(job_id)
+        except socket.gaierror:
+            logging.warning(
+                "%s: Failed to connect to RabbitMQ. Unable to log progress", job_id
+            )
+
+            def hook(_):
+                return None
+
         return {
             "petri_model_or_path": amr_path,
             "timepoints": timepoints,
             "data_path": dataset_path,
-            "progress_hook": progress_hook,
+            "progress_hook": hook,
             "visual_options": True,
             **self.extra.dict(),
         }
@@ -231,7 +245,7 @@ class EnsembleSimulate(OperationRequest):
         description="optional extra system specific arguments for advanced use cases",
     )
 
-    def gen_pyciemss_args(self, job_id, **_):
+    def gen_pyciemss_args(self, job_id):
         weights = [config.weight for config in self.model_configs]
         solution_mappings = [config.solution_mappings for config in self.model_configs]
         amr_paths = [
@@ -287,7 +301,7 @@ class EnsembleCalibrate(OperationRequest):
         description="optional extra system specific arguments for advanced use cases",
     )
 
-    def gen_pyciemss_args(self, job_id, **_):
+    def gen_pyciemss_args(self, job_id):
         weights = [config.weight for config in self.model_configs]
         solution_mappings = [config.solution_mappings for config in self.model_configs]
         amr_paths = [

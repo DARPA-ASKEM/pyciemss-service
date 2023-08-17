@@ -9,7 +9,7 @@ from rq import SimpleWorker, Queue
 from fastapi.testclient import TestClient
 from fakeredis import FakeStrictRedis
 
-from service.api import app, get_redis, enable_progress
+from service.api import app, get_redis
 
 
 @pytest.fixture
@@ -26,10 +26,8 @@ def worker(redis):
 @pytest.fixture
 def client(redis):
     app.dependency_overrides[get_redis] = lambda: redis
-    app.dependency_overrides[enable_progress] = lambda: False
     yield TestClient(app)
     app.dependency_overrides[get_redis] = get_redis
-    app.dependency_overrides[enable_progress] = enable_progress
 
 
 @pytest.fixture

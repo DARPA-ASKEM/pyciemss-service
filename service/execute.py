@@ -2,7 +2,6 @@ import logging
 
 # from juliacall import newmodule
 from settings import settings
-from utils.rabbitmq import gen_rabbitmq_hook
 from utils.tds import (
     update_tds_status,
     cleanup_job_dir,
@@ -30,19 +29,14 @@ logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
 
 
-def run(request, *, job_id, progress_enabled):
+def run(request, *, job_id):
     logging.debug(f"STARTED {job_id} (username: {request.username})")
     sim_results_url = TDS_URL + TDS_SIMULATIONS + job_id
     update_tds_status(sim_results_url, status="running", start=True)
 
     # if request.engine == "ciemss":
     operation_name = request.__class__.pyciemss_lib_function
-    if progress_enabled:
-        kwargs = request.gen_pyciemss_args(
-            job_id, progress_hook=gen_rabbitmq_hook(job_id)
-        )
-    else:
-        kwargs = request.gen_pyciemss_args(job_id)
+    kwargs = request.gen_pyciemss_args(job_id)
     if len(operation_name) == 0:
         raise Exception("No operation provided in request")
     else:
