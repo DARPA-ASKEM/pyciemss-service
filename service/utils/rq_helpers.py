@@ -40,7 +40,7 @@ def update_status_on_job_fail(job, connection, etype, value, traceback):
     logging.exception(log_message)
 
 
-def create_job(request_payload, sim_type, redis_conn):
+def create_job(request_payload, sim_type, redis_conn, progress_enabled=False):
     job_id = f"ciemss-{uuid4()}"
 
     post_url = TDS_URL + TDS_SIMULATIONS
@@ -68,7 +68,7 @@ def create_job(request_payload, sim_type, redis_conn):
     queue.enqueue_call(
         func="execute.run",
         args=[request_payload],
-        kwargs={"job_id": job_id},
+        kwargs={"job_id": job_id, "progress_enabled": progress_enabled},
         job_id=job_id,
         on_failure=update_status_on_job_fail,
     )

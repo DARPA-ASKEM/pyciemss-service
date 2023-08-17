@@ -22,6 +22,10 @@ logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
 
 
+def enable_progress():
+    return True
+
+
 def build_api(*args) -> FastAPI:
     api = FastAPI(
         title="CIEMSS Service",
@@ -88,7 +92,10 @@ def cancel_job(
 
 @app.post("/{operation}", response_model=JobResponse)
 def operate(
-    operation: str, body: Operation, redis_conn=Depends(get_redis)
+    operation: str,
+    body: Operation,
+    redis_conn=Depends(get_redis),
+    progress_enabled=Depends(enable_progress),
 ) -> JobResponse:
     def check(otype):
         if isinstance(body, otype):
@@ -109,4 +116,4 @@ def operate(
             check(EnsembleCalibrate)
         case _:
             raise HTTPException(status_code=404, detail="Operation not found")
-    return create_job(body, operation, redis_conn)
+    return create_job(body, operation, redis_conn, progress_enabled)

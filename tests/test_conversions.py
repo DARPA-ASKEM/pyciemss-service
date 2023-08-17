@@ -1,7 +1,6 @@
 import json
 from inspect import signature
 
-from mock import patch
 import pytest
 
 from pyciemss.PetriNetODE.interfaces import (  # noqa: F401
@@ -72,10 +71,8 @@ class TestCalibrate:
         )
 
         ### Act and Assert
-
-        with patch("service.models.gen_rabbitmq_hook", return_value=lambda _: None):
-            operation_request = Calibrate(**example_context["request"])
-            kwargs = operation_request.gen_pyciemss_args(job_id)
+        operation_request = Calibrate(**example_context["request"])
+        kwargs = operation_request.gen_pyciemss_args(job_id)
 
         assert kwargs.get("visual_options", False)
         assert is_satisfactory(kwargs, load_and_calibrate_and_sample_petri_model)

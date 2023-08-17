@@ -6,7 +6,6 @@ from pydantic import BaseModel, Field, Extra
 
 
 from utils.tds import fetch_dataset, fetch_model
-from utils.rabbitmq import gen_rabbitmq_hook
 from settings import settings
 
 TDS_CONFIGURATIONS = "/model_configurations/"
@@ -78,7 +77,7 @@ class OperationRequest(BaseModel):
     engine: str = Field("ciemss", example="ciemss")
     username: str = Field("not_provided", example="not_provided")
 
-    def gen_pyciemss_args(self, job_id):
+    def gen_pyciemss_args(self, job_id, **_):
         raise NotImplementedError("PyCIEMSS cannot handle this operation")
 
     def run_sciml_operation(self, job_id, julia_context):
@@ -110,7 +109,7 @@ class Simulate(OperationRequest):
         description="optional extra system specific arguments for advanced use cases",
     )
 
-    def gen_pyciemss_args(self, job_id):
+    def gen_pyciemss_args(self, job_id, **_):
         # Get model from TDS
         amr_path = fetch_model(
             self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
@@ -188,7 +187,7 @@ class Calibrate(OperationRequest):
         description="optional extra system specific arguments for advanced use cases",
     )
 
-    def gen_pyciemss_args(self, job_id):
+    def gen_pyciemss_args(self, job_id, *, progress_hook=lambda _: None):
         amr_path = fetch_model(
             self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
         )
@@ -203,7 +202,7 @@ class Calibrate(OperationRequest):
             "petri_model_or_path": amr_path,
             "timepoints": timepoints,
             "data_path": dataset_path,
-            "progress_hook": gen_rabbitmq_hook(job_id),
+            "progress_hook": progress_hook,
             "visual_options": True,
             **self.extra.dict(),
         }
@@ -232,7 +231,7 @@ class EnsembleSimulate(OperationRequest):
         description="optional extra system specific arguments for advanced use cases",
     )
 
-    def gen_pyciemss_args(self, job_id):
+    def gen_pyciemss_args(self, job_id, **_):
         weights = [config.weight for config in self.model_configs]
         solution_mappings = [config.solution_mappings for config in self.model_configs]
         amr_paths = [
@@ -288,7 +287,7 @@ class EnsembleCalibrate(OperationRequest):
         description="optional extra system specific arguments for advanced use cases",
     )
 
-    def gen_pyciemss_args(self, job_id):
+    def gen_pyciemss_args(self, job_id, **_):
         weights = [config.weight for config in self.model_configs]
         solution_mappings = [config.solution_mappings for config in self.model_configs]
         amr_paths = [
