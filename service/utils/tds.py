@@ -90,7 +90,7 @@ def fetch_dataset(dataset: dict, tds_api, job_id):
     df = pd.read_csv(response.json()["url"])
     df = df.rename(columns=dataset["mappings"])
     # drop columns that aren't being mapped
-    if len(df.columns) > len(dataset["mappings"]):
+    if len(df.columns) > len(dataset["mappings"]) and len(dataset["mappings"]) > 0:
         extra_columns = set(df.columns) - set(dataset["mappings"].values())
         df.drop(columns=list(extra_columns), inplace=True)
     dataset_path = os.path.join(job_dir, "./temp.json")
