@@ -5,6 +5,7 @@ import logging
 from enum import Enum
 from typing import ClassVar, Dict, List, Optional
 from pydantic import BaseModel, Field, Extra
+from pika.exceptions import AMQPConnectionError
 
 
 from utils.rabbitmq import gen_rabbitmq_hook
@@ -204,7 +205,7 @@ class Calibrate(OperationRequest):
         # TODO: Test RabbitMQ
         try:
             hook = gen_rabbitmq_hook(job_id)
-        except socket.gaierror:
+        except (socket.gaierror, AMQPConnectionError):
             logging.warning(
                 "%s: Failed to connect to RabbitMQ. Unable to log progress", job_id
             )
