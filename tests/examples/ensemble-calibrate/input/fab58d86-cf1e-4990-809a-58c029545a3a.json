@@ -5,12 +5,12 @@
   "timestamp": "2023-08-03T18:56:20",
   "model_id": "b4a38a62-16d9-4317-8cfc-510b37152776",
   "configuration": {
-    "name": "Model",
-    "schema": "https://raw.githubusercontent.com/DARPA-ASKEM/Model-Representations/petrinet_v0.5/petrinet/petrinet_schema.json",
-    "schema_name": "petrinet",
-    "description": "Model",
-    "model_version": "0.1",
-    "properties": {},
+    "header":{
+      "name": "Model",
+      "schema": "https://raw.githubusercontent.com/DARPA-ASKEM/Model-Representations/petrinet_v0.5/petrinet/petrinet_schema.json",
+      "description": "Model",
+      "model_version": "0.1"
+    },
     "model": {
       "states": [
         {

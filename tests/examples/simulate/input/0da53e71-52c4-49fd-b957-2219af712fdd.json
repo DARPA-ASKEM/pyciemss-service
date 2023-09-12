@@ -5,12 +5,12 @@
   "timestamp": "2023-08-03T18:00:40",
   "model_id": "b4a38a62-16d9-4317-8cfc-510b37152776",
   "configuration": {
-    "name": "Giordano2020 - SIDARTHE model of COVID-19 spread in Italy",
-    "schema": "https://raw.githubusercontent.com/DARPA-ASKEM/Model-Representations/petrinet_v0.5/petrinet/petrinet_schema.json",
-    "schema_name": "petrinet",
-    "description": "Giordano2020 - SIDARTHE model of COVID-19 spread in Italy",
-    "model_version": "0.1",
-    "properties": {},
+    "header": {
+      "name": "Giordano2020 - SIDARTHE model of COVID-19 spread in Italy",
+      "schema": "https://raw.githubusercontent.com/DARPA-ASKEM/Model-Representations/petrinet_v0.5/petrinet/petrinet_schema.json",
+      "description": "Giordano2020 - SIDARTHE model of COVID-19 spread in Italy",
+      "model_version": "0.1"
+    },
     "model": {
       "states": [
         {
