@@ -43,7 +43,10 @@ def file_storage(requests_mock):
 
     def save(request, context):
         filename = get_filename(request.url)
-        storage[filename] = request.body.read().decode("utf-8")
+        try:
+            storage[filename] = request.body.read().decode("utf-8")
+        except UnicodeDecodeError:
+            storage[filename] = request.body.read()
         return {"status": "success"}
 
     def retrieve(filename):
