@@ -19,6 +19,7 @@ pandas = "^2.0.0"
 filelock = "^3.12.2"
 poethepoet = "^0.21.1"
 # juliacall = { version="^0.9.14", optional = true }
+dill = "^0.3.7"
 
 [tool.poetry.scripts]
 mockrabbitmq = "service.utils.rabbitmq:mock_rabbitmq_consumer"
