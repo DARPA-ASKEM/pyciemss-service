@@ -84,7 +84,7 @@ class InterventionSelection(NamedTuple):
 class QuantityOfInterest(NamedTuple):
     function: str
     state: str
-    args: list
+    arg: float  # TODO: Make this a list of args?
 
 
 ######################### Base operation request ############
