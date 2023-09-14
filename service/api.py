@@ -9,6 +9,8 @@ from models import (
     JobResponse,
     Calibrate,
     Simulate,
+    OptimizeSimulate,
+    OptimizeCalibrate,
     EnsembleSimulate,
     EnsembleCalibrate,
     StatusSimulationIdGetResponse,
@@ -16,7 +18,14 @@ from models import (
 
 from utils.rq_helpers import get_redis, create_job, fetch_job_status, kill_job
 
-Operation = Simulate | Calibrate | EnsembleSimulate | EnsembleCalibrate
+Operation = (
+    Simulate
+    | Calibrate
+    | OptimizeSimulate
+    | OptimizeCalibrate
+    | EnsembleSimulate
+    | EnsembleCalibrate
+)
 
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
@@ -105,6 +114,10 @@ def operate(
             check(Simulate)
         case "calibrate":
             check(Calibrate)
+        case "optimize-simulate":
+            check(OptimizeSimulate)
+        case "optimize-calibrate":
+            check(OptimizeCalibrate)
         case "ensemble-simulate":
             check(EnsembleSimulate)
         case "ensemble-calibrate":

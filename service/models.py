@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import NamedTuple
 import socket
 import logging
 
@@ -69,10 +70,21 @@ class Dataset(BaseModel):
     )
 
 
-class InterventionObject(BaseModel):
+class InterventionObject(NamedTuple):
     timestep: float
     name: str
     value: float
+
+
+class InterventionSelection(NamedTuple):
+    timestep: float
+    name: str
+
+
+class QuantityOfInterest(NamedTuple):
+    function: str = "scenario2dec_nday_average"
+    state: str
+    args: list
 
 
 ######################### Base operation request ############
@@ -217,6 +229,171 @@ class Calibrate(OperationRequest):
             "petri_model_or_path": amr_path,
             "timepoints": timepoints,
             "data_path": dataset_path,
+            "progress_hook": hook,
+            "visual_options": True,
+            **self.extra.dict(),
+        }
+
+    class Config:
+        extra = Extra.forbid
+
+
+######################### `optimize-simulate` Operation ############
+class OptimizeSimulateExtra(BaseModel):
+    num_samples: int = Field(
+        100, description="number of samples for a CIEMSS simulation", example=100
+    )
+    n_samples_ouu: int = Field(100, example=100)
+    start_state: Optional[dict[str, float]] = None
+    start_time: float = Field(
+        -1e-10, description="Optional field for CIEMSS calibration", example=-1e-10
+    )
+    # autoguide: pyro.infer.autoguide.AutoLowRankMultivariateNormal
+    method: str = Field(
+        "dopri5", description="Optional field for CIEMSS calibration", example="dopri5"
+    )
+
+
+class OptimizeSimulate(OperationRequest):
+    pyciemss_lib_function: ClassVar[str] = "load_and_optimize_and_sample_petri_model"
+    model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
+    timespan: Timespan
+    interventions: List[InterventionSelection] = []
+    qoi: QuantityOfInterest
+    risk_bound: float
+    initial_guess: List[float]
+    bounds: List[List[float]]
+    # TODO: Figure out how to expose `objfun`
+    extra: OptimizeSimulateExtra = Field(
+        None,
+        description="optional extra system specific arguments for advanced use cases",
+    )
+
+    def gen_pyciemss_args(self, job_id):
+        # Get model from TDS
+        amr_path = fetch_model(
+            self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
+        )
+
+        interventions = []
+        if len(self.interventions) > 0:
+            interventions = [
+                (intervention.timestep, intervention.name)
+                for intervention in self.interventions
+            ]
+
+        # Generate timepoints
+        time_count = self.timespan.end - self.timespan.start
+        timepoints = [step for step in range(1, time_count + 1)]
+
+        return {
+            "petri_model_or_path": amr_path,
+            "timepoints": timepoints,
+            "interventions": interventions,
+            "qoi": self.qoi,
+            "risk_bound": self.risk_bound,
+            "initial_guess": self.initial_guess,
+            "bounds": self.bounds,
+            "visual_options": True,
+            **self.extra.dict(),
+        }
+
+    def run_sciml_operation(self, job_id, julia_context):
+        amr_path = fetch_model(
+            self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
+        )
+        with open(amr_path, "r") as file:
+            amr = file.read()
+        result = julia_context.simulate(amr, self.timespan.start, self.timespan.end)
+        return {"data": julia_context.pytable(result)}
+
+    class Config:
+        extra = Extra.forbid
+
+
+######################### `optimize-calibrate` Operation ############
+class OptimizeCalibrateExtra(BaseModel):
+    num_samples: int = Field(
+        100, description="number of samples for a CIEMSS simulation", example=100
+    )
+    n_samples_ouu: int = Field(100, example=100)
+    start_state: Optional[dict[str, float]] = None
+    start_time: float = Field(
+        -1e-10, description="Optional field for CIEMSS calibration", example=-1e-10
+    )
+    num_iterations: int = Field(
+        1000, description="Optional field for CIEMSS calibration", example=1000
+    )
+    lr: float = Field(
+        0.03, description="Optional field for CIEMSS calibration", example=0.03
+    )
+    verbose: bool = Field(
+        False, description="Optional field for CIEMSS calibration", example=False
+    )
+    num_particles: int = Field(
+        1, description="Optional field for CIEMSS calibration", example=1
+    )
+    # autoguide: pyro.infer.autoguide.AutoLowRankMultivariateNormal
+    method: str = Field(
+        "dopri5", description="Optional field for CIEMSS calibration", example="dopri5"
+    )
+
+
+class OptimizeCalibrate(OperationRequest):
+    pyciemss_lib_function: ClassVar[
+        str
+    ] = "load_and_calibrate_and_optimize_and_sample_petri_model"
+    model_config_id: str = Field(..., example="c1cd941a-047d-11ee-be56")
+    dataset: Dataset = None
+    timespan: Optional[Timespan] = None
+    interventions: List[InterventionSelection] = []
+    qoi: QuantityOfInterest
+    risk_bound: float
+    initial_guess: List[float]
+    bounds: List[List[float]]
+    extra: OptimizeCalibrateExtra = Field(
+        None,
+        description="optional extra system specific arguments for advanced use cases",
+    )
+
+    def gen_pyciemss_args(self, job_id):
+        amr_path = fetch_model(
+            self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
+        )
+
+        interventions = []
+        if len(self.interventions) > 0:
+            interventions = [
+                (intervention.timestep, intervention.name)
+                for intervention in self.interventions
+            ]
+
+        # Generate timepoints
+        time_count = self.timespan.end - self.timespan.start
+        timepoints = [step for step in range(1, time_count + 1)]
+
+        dataset_path = fetch_dataset(self.dataset.dict(), TDS_URL, job_id)
+
+        # TODO: Test RabbitMQ
+        try:
+            hook = gen_rabbitmq_hook(job_id)
+        except (socket.gaierror, AMQPConnectionError):
+            logging.warning(
+                "%s: Failed to connect to RabbitMQ. Unable to log progress", job_id
+            )
+
+            def hook(_):
+                return None
+
+        return {
+            "petri_model_or_path": amr_path,
+            "timepoints": timepoints,
+            "data_path": dataset_path,
+            "interventions": interventions,
+            "qoi": self.qoi,
+            "risk_bound": self.risk_bound,
+            "initial_guess": self.initial_guess,
+            "bounds": self.bounds,
             "progress_hook": hook,
             "visual_options": True,
             **self.extra.dict(),
