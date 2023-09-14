@@ -82,7 +82,7 @@ class InterventionSelection(NamedTuple):
 
 
 class QuantityOfInterest(NamedTuple):
-    function: str = "scenario2dec_nday_average"
+    function: str
     state: str
     args: list
 
