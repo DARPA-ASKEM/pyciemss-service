@@ -84,7 +84,7 @@ class InterventionSelection(BaseModel):
 class QuantityOfInterest(BaseModel):
     function: str
     state: str
-    arg: float  # TODO: Make this a list of args?
+    arg: int  # TODO: Make this a list of args?
 
 
 ######################### Base operation request ############
