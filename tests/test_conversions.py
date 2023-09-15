@@ -6,6 +6,8 @@ import pytest
 from pyciemss.PetriNetODE.interfaces import (  # noqa: F401
     load_and_calibrate_and_sample_petri_model,
     load_and_sample_petri_model,
+    load_and_optimize_and_sample_petri_model,
+    load_and_calibrate_and_optimize_and_sample_petri_model,
 )
 
 from pyciemss.Ensemble.interfaces import (  # noqa: F401
@@ -13,7 +15,14 @@ from pyciemss.Ensemble.interfaces import (  # noqa: F401
     load_and_calibrate_and_sample_ensemble_model,
 )
 
-from service.models import Simulate, Calibrate, EnsembleSimulate, EnsembleCalibrate
+from service.models import (
+    Simulate,
+    Calibrate,
+    OptimizeSimulate,
+    OptimizeCalibrate,
+    EnsembleSimulate,
+    EnsembleCalibrate,
+)
 from service.settings import settings
 
 TDS_URL = settings.TDS_URL
@@ -76,6 +85,52 @@ class TestCalibrate:
 
         assert kwargs.get("visual_options", False)
         assert is_satisfactory(kwargs, load_and_calibrate_and_sample_petri_model)
+
+
+class TestOptimizeSimulate:
+    @pytest.mark.example_dir("optimize-simulate")
+    def test_example_conversion(self, example_context, requests_mock):
+        job_id = example_context["tds_simulation"]["id"]
+
+        config_id = example_context["request"]["model_config_id"]
+        model = json.loads(example_context["fetch"](config_id + ".json"))
+        requests_mock.get(f"{TDS_URL}/model_configurations/{config_id}", json=model)
+
+        ### Act and Assert
+
+        operation_request = OptimizeSimulate(**example_context["request"])
+        kwargs = operation_request.gen_pyciemss_args(job_id)
+
+        assert kwargs.get("visual_options", False)
+        assert is_satisfactory(kwargs, load_and_optimize_and_sample_petri_model)
+
+
+class TestOptimizeCalibrate:
+    @pytest.mark.example_dir("optimize-calibrate")
+    def test_example_conversion(self, example_context, requests_mock):
+        job_id = example_context["tds_simulation"]["id"]
+
+        config_id = example_context["request"]["model_config_id"]
+        model = json.loads(example_context["fetch"](config_id + ".json"))
+        requests_mock.get(f"{TDS_URL}/model_configurations/{config_id}", json=model)
+
+        dataset_id = example_context["request"]["dataset"]["id"]
+        filename = example_context["request"]["dataset"]["filename"]
+        dataset = example_context["fetch"](filename, True)
+        dataset_loc = {"method": "GET", "url": dataset}
+        requests_mock.get(
+            f"{TDS_URL}/datasets/{dataset_id}/download-url?filename={filename}",
+            json=dataset_loc,
+        )
+
+        ### Act and Assert
+        operation_request = OptimizeCalibrate(**example_context["request"])
+        kwargs = operation_request.gen_pyciemss_args(job_id)
+
+        assert kwargs.get("visual_options", False)
+        assert is_satisfactory(
+            kwargs, load_and_calibrate_and_optimize_and_sample_petri_model
+        )
 
 
 class TestEnsembleSimulate:

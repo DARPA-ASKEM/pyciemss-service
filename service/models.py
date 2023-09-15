@@ -339,7 +339,7 @@ class OptimizeCalibrate(OperationRequest):
     interventions: List[InterventionSelection] = []
     qoi: QuantityOfInterest
     risk_bound: float
-    initial_guess: List[float]
+    initial_guess: float
     bounds: List[List[float]]
     extra: OptimizeCalibrateExtra = Field(
         None,
