@@ -9,6 +9,7 @@ import os
 import shutil
 import json
 import requests
+import dill
 from datetime import datetime
 
 from fastapi import HTTPException
@@ -115,6 +116,13 @@ def attach_files(output: dict, tds_api, simulation_endpoint, job_id, status="com
     if eval_result is not None:
         eval_result.to_csv(eval_output_filename, index=False)
         files[eval_output_filename] = "eval.csv"
+
+    params_filename = os.path.join(job_dir, "./parameters.dill")
+    params_result = output.get("inferred_parameters", None)
+    if params_result:
+        with open(params_filename, "wb") as file:
+            dill.dump(params_result, file)
+        files[params_filename] = "parameters.dill"
 
     visualization_filename = os.path.join(job_dir, "./visualization.json")
     viz_result = output.get("visual", None)
