@@ -40,9 +40,14 @@ def gen_rabbitmq_hook(job_id):
     channel = connection.channel()
 
     def hook(progress):
+        properties = pika.BasicProperties(
+            content_type="application/json", content_encoding="utf-8"
+        )
+
         channel.basic_publish(
             exchange="",
             routing_key="simulation-status",
+            properties=properties,
             body=json.dumps({"job_id": job_id, "progress": progress}),
         )
 
