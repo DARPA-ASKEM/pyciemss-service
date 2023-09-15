@@ -124,6 +124,13 @@ def attach_files(output: dict, tds_api, simulation_endpoint, job_id, status="com
             dill.dump(params_result, file)
         files[params_filename] = "parameters.dill"
 
+    policy_filename = os.path.join(job_dir, "./policy.dill")
+    policy = output.get("policy", None)
+    if policy is not None:
+        with open(policy_filename, "wb") as file:
+            dill.dump(params_result, file)
+        files[policy_filename] = "policy.dill"
+
     visualization_filename = os.path.join(job_dir, "./visualization.json")
     viz_result = output.get("visual", None)
     if viz_result is not None:

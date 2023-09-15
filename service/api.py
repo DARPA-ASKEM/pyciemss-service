@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from models import (
@@ -9,6 +9,8 @@ from models import (
     JobResponse,
     Calibrate,
     Simulate,
+    OptimizeSimulate,
+    OptimizeCalibrate,
     EnsembleSimulate,
     EnsembleCalibrate,
     StatusSimulationIdGetResponse,
@@ -16,7 +18,14 @@ from models import (
 
 from utils.rq_helpers import get_redis, create_job, fetch_job_status, kill_job
 
-Operation = Simulate | Calibrate | EnsembleSimulate | EnsembleCalibrate
+operations = {
+    "simulate": Simulate,
+    "calibrate": Calibrate,
+    "optimize-simulate": OptimizeSimulate,
+    "optimize-calibrate": OptimizeCalibrate,
+    "ensemble-simulate": EnsembleSimulate,
+    "ensemble-calibrate": EnsembleCalibrate,
+}
 
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
@@ -86,29 +95,13 @@ def cancel_job(
     return {"status": Status.from_rq(status)}
 
 
-@app.post("/{operation}", response_model=JobResponse)
-def operate(
-    operation: str,
-    body: Operation,
-    redis_conn=Depends(get_redis),
-) -> JobResponse:
-    def check(otype):
-        if isinstance(body, otype):
-            return None
-        else:
-            raise HTTPException(
-                status_code=400, detail="Payload does not match operation"
-            )
+for operation_name, schema in operations.items():
+    registrar = app.post(f"/{operation_name}", response_model=JobResponse)
 
-    match operation:
-        case "simulate":
-            check(Simulate)
-        case "calibrate":
-            check(Calibrate)
-        case "ensemble-simulate":
-            check(EnsembleSimulate)
-        case "ensemble-calibrate":
-            check(EnsembleCalibrate)
-        case _:
-            raise HTTPException(status_code=404, detail="Operation not found")
-    return create_job(body, operation, redis_conn)
+    def operate(
+        body: schema,
+        redis_conn=Depends(get_redis),
+    ) -> JobResponse:
+        return create_job(body, operation_name, redis_conn)
+
+    registrar(operate)

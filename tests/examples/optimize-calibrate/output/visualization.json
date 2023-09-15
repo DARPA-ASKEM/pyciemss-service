@@ -1,0 +1,3662 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "width": 500,
+  "height": 300,
+  "scales": [
+    {
+      "name": "xscale",
+      "type": "linear",
+      "range": "width",
+      "zero": false,
+      "domain": {
+        "fields": [
+          {
+            "data": "distributions",
+            "field": "timepoint"
+          },
+          {
+            "data": "traces",
+            "field": "timepoint"
+          },
+          {
+            "data": "points",
+            "field": "timepoint"
+          },
+          {
+            "data": "markers",
+            "field": "timepoint"
+          }
+        ]
+      }
+    },
+    {
+      "name": "yscale",
+      "type": "linear",
+      "range": "height",
+      "nice": true,
+      "zero": true,
+      "domain": {
+        "fields": [
+          {
+            "data": "distributions",
+            "field": "lower"
+          },
+          {
+            "data": "distributions",
+            "field": "upper"
+          },
+          {
+            "data": "traces",
+            "field": "value"
+          },
+          {
+            "data": "points",
+            "field": "value"
+          }
+        ]
+      }
+    },
+    {
+      "name": "color",
+      "type": "ordinal",
+      "range": "category",
+      "domain": {
+        "fields": [
+          {
+            "data": "distributions",
+            "field": "trajectory"
+          },
+          {
+            "data": "traces",
+            "field": "trajectory"
+          },
+          {
+            "data": "points",
+            "field": "trajectory"
+          }
+        ]
+      }
+    }
+  ],
+  "axes": [
+    {
+      "name": "x_axis",
+      "orient": "bottom",
+      "scale": "xscale",
+      "zindex": 100
+    },
+    {
+      "name": "y_axis",
+      "orient": "left",
+      "scale": "yscale",
+      "zindex": 100
+    }
+  ],
+  "signals": [
+    {
+      "name": "clear",
+      "value": true,
+      "on": [
+        {
+          "events": "mouseup[!event.item]",
+          "update": "true",
+          "force": true
+        }
+      ]
+    },
+    {
+      "name": "shift",
+      "value": false,
+      "on": [
+        {
+          "events": "@legendSymbol:click, @legendLabel:click",
+          "update": "event.shiftKey",
+          "force": true
+        }
+      ]
+    },
+    {
+      "name": "clicked",
+      "value": null,
+      "on": [
+        {
+          "events": "@legendSymbol:click, @legendLabel:click",
+          "update": "{value: datum.value}",
+          "force": true
+        }
+      ]
+    },
+    {
+      "name": "clearData",
+      "value": true,
+      "on": [
+        {
+          "events": "mouseup[!event.item]",
+          "update": "true",
+          "force": true
+        }
+      ]
+    },
+    {
+      "name": "clickedData",
+      "value": null,
+      "on": [
+        {
+          "events": "@area:click",
+          "update": "{value: datum.trajectory}",
+          "force": true
+        }
+      ]
+    }
+  ],
+  "legends": [
+    {
+      "name": "color_legend",
+      "stroke": "color",
+      "encode": {
+        "symbols": {
+          "name": "legendSymbol",
+          "interactive": true,
+          "update": {
+            "fill": {
+              "value": "transparent"
+            },
+            "strokeWidth": {
+              "value": 2
+            },
+            "opacity": [
+              {
+                "test": "!length(data('selected')) || indata('selected', 'value', datum.value) || indata('selectedData', 'value', datum.value)",
+                "value": 0.7
+              },
+              {
+                "value": 0.15
+              }
+            ],
+            "size": {
+              "value": 64
+            }
+          }
+        },
+        "labels": {
+          "name": "legendLabel",
+          "interactive": true,
+          "update": {
+            "opacity": [
+              {
+                "test": "!length(data('selectedData')) || indata('selectedData', 'value', datum.value)",
+                "value": 1
+              },
+              {
+                "value": 0.25
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "marks": [
+    {
+      "type": "group",
+      "zindex": 3,
+      "name": "_points",
+      "from": {
+        "facet": {
+          "name": "points_split",
+          "data": "points",
+          "groupby": "trajectory"
+        }
+      },
+      "marks": [
+        {
+          "type": "symbol",
+          "name": "_points_symbol",
+          "from": {
+            "data": "points_split"
+          },
+          "zindex": 3,
+          "encode": {
+            "update": {
+              "x": {
+                "scale": "xscale",
+                "field": "timepoint"
+              },
+              "y": {
+                "scale": "yscale",
+                "field": "value"
+              },
+              "size": {
+                "value": 10
+              },
+              "strokeWidth": {
+                "value": 2
+              },
+              "fill": {
+                "scale": "color",
+                "field": "trajectory"
+              },
+              "stroke": {
+                "scale": "color",
+                "field": "trajectory"
+              },
+              "fillOpacity": [
+                {
+                  "test": "!length(data('selected')) || indata('selected', 'value', datum.trajectory)",
+                  "value": 0.5
+                },
+                {
+                  "value": 0.15
+                }
+              ],
+              "strokeOpacity": [
+                {
+                  "test": "!length(data('selected')) || indata('selected', 'value', datum.trajectory)",
+                  "value": 0.75
+                },
+                {
+                  "value": 0.15
+                }
+              ],
+              "tooltip": {
+                "field": "value"
+              }
+            },
+            "hover": {
+              "fillOpacity": {
+                "value": 0.9
+              }
+            }
+          }
+        },
+        {
+          "type": "line",
+          "name": "_points_line",
+          "from": {
+            "data": "points_split"
+          },
+          "zindex": 3,
+          "encode": {
+            "update": {
+              "x": {
+                "scale": "xscale",
+                "field": "timepoint"
+              },
+              "y": {
+                "scale": "yscale",
+                "field": "value"
+              },
+              "strokeWidth": {
+                "value": 2
+              },
+              "stroke": {
+                "scale": "color",
+                "field": "trajectory"
+              },
+              "interpolate": {
+                "value": "linear"
+              },
+              "strokeOpacity": [
+                {
+                  "test": "!length(data('selected')) || indata('selected', 'value', datum.trajectory)",
+                  "value": 0.3
+                },
+                {
+                  "value": 0.1
+                }
+              ]
+            },
+            "hover": {
+              "fillOpacity": {
+                "value": 0.9
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "zindex": 2,
+      "name": "_traces",
+      "from": {
+        "facet": {
+          "name": "traces_split",
+          "data": "traces",
+          "groupby": "trajectory"
+        }
+      },
+      "marks": [
+        {
+          "type": "line",
+          "name": "_traces_lines",
+          "from": {
+            "data": "traces_split"
+          },
+          "encode": {
+            "update": {
+              "x": {
+                "scale": "xscale",
+                "field": "timepoint"
+              },
+              "y": {
+                "scale": "yscale",
+                "field": "value"
+              },
+              "strokeWidth": {
+                "value": 2
+              },
+              "stroke": {
+                "scale": "color",
+                "field": "trajectory"
+              },
+              "interpolate": {
+                "value": "linear"
+              },
+              "strokeOpacity": [
+                {
+                  "test": "!length(data('selected')) || indata('selected', 'value', datum.trajectory)",
+                  "value": 0.75
+                },
+                {
+                  "value": 0.15
+                }
+              ]
+            },
+            "hover": {
+              "fillOpacity": {
+                "value": 0.9
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "name": "_distributions",
+      "zindex": 1,
+      "from": {
+        "facet": {
+          "name": "trajectory_split",
+          "data": "distributions",
+          "groupby": "trajectory"
+        }
+      },
+      "marks": [
+        {
+          "type": "area",
+          "name": "area",
+          "interactive": true,
+          "from": {
+            "data": "trajectory_split"
+          },
+          "encode": {
+            "update": {
+              "x": {
+                "scale": "xscale",
+                "field": "timepoint"
+              },
+              "y": {
+                "scale": "yscale",
+                "field": "upper"
+              },
+              "y2": {
+                "scale": "yscale",
+                "field": "lower"
+              },
+              "interpolate": {
+                "value": "linear"
+              },
+              "strokeWidth": {
+                "value": 2
+              },
+              "fill": {
+                "scale": "color",
+                "field": "trajectory"
+              },
+              "stroke": {
+                "scale": "color",
+                "field": "trajectory"
+              },
+              "fillOpacity": [
+                {
+                  "test": "!length(data('selected')) || indata('selected', 'value', datum.trajectory)",
+                  "value": 0.5
+                },
+                {
+                  "value": 0.15
+                }
+              ],
+              "strokeOpacity": [
+                {
+                  "test": "!length(data('selected')) || indata('selected', 'value', datum.trajectory)",
+                  "value": 0.75
+                },
+                {
+                  "value": 0.15
+                }
+              ]
+            },
+            "hover": {
+              "fillOpacity": {
+                "value": 0.9
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "name": "_markers",
+      "marks": [
+        {
+          "type": "rule",
+          "name": "_marker text",
+          "from": {
+            "data": "markers"
+          },
+          "encode": {
+            "enter": {
+              "stroke": {
+                "value": "lightgray"
+              }
+            },
+            "update": {
+              "x": {
+                "scale": "xscale",
+                "field": "timepoint"
+              },
+              "y2": {
+                "value": 0
+              },
+              "y": {
+                "signal": "height"
+              },
+              "opacity": {
+                "value": 1
+              }
+            }
+          }
+        },
+        {
+          "type": "text",
+          "name": "_marker flags",
+          "from": {
+            "data": "_marker text"
+          },
+          "encode": {
+            "enter": {
+              "text": {
+                "field": "datum.label"
+              },
+              "y": {
+                "value": 0
+              },
+              "fontSize": {
+                "value": 8
+              }
+            }
+          },
+          "transform": [
+            {
+              "type": "label",
+              "lineAnchor": "start",
+              "as": [
+                "x",
+                "_y",
+                "opacity",
+                "align",
+                "baseline"
+              ],
+              "offset": [
+                1
+              ],
+              "size": {
+                "signal": "[width, height]"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "distributions",
+      "values": [
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 0,
+          "lower": 3.360472589974961e-07,
+          "upper": 4.6788742906755943e-07
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 1,
+          "lower": 6.377610930030642e-07,
+          "upper": 9.558491342431808e-07
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 2,
+          "lower": 9.465513130635373e-07,
+          "upper": 1.5655552715543307e-06
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 3,
+          "lower": 1.3091188975522527e-06,
+          "upper": 2.3995033416213116e-06
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 4,
+          "lower": 1.7615654996916419e-06,
+          "upper": 3.590501592043438e-06
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 5,
+          "lower": 2.345106577195111e-06,
+          "upper": 5.326921018422581e-06
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 6,
+          "lower": 3.1094945370568893e-06,
+          "upper": 7.882332192821194e-06
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 7,
+          "lower": 4.118017568544019e-06,
+          "upper": 1.1659772644634357e-05
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 8,
+          "lower": 5.454543315863702e-06,
+          "upper": 1.730913572828285e-05
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 9,
+          "lower": 7.229255606944207e-06,
+          "upper": 2.573940055299317e-05
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 10,
+          "lower": 9.531513933325187e-06,
+          "upper": 3.8284478068817404e-05
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 11,
+          "lower": 1.2510763190221041e-05,
+          "upper": 5.695753352483734e-05
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 12,
+          "lower": 1.642531788093038e-05,
+          "upper": 8.475517533952369e-05
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 13,
+          "lower": 2.156975242542103e-05,
+          "upper": 0.00012613505605258977
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 14,
+          "lower": 2.8331975772744045e-05,
+          "upper": 0.0001877221424365416
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 15,
+          "lower": 3.722177789313719e-05,
+          "upper": 0.0002793446023133583
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 16,
+          "lower": 4.890995332971215e-05,
+          "upper": 0.00041554417985025785
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 17,
+          "lower": 6.427880434785038e-05,
+          "upper": 0.0006177500501507893
+        },
+        {
+          "trajectory": "Ailing_sol",
+          "timepoint": 18,
+          "lower": 8.44876776682213e-05,
+          "upper": 0.0009173400641884653
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 0,
+          "lower": 9.90339053963396e-07,
+          "upper": 1.1432653472809307e-06
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 1,
+          "lower": 1.95289662912046e-06,
+          "upper": 2.25877327437729e-06
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 2,
+          "lower": 3.309952291630225e-06,
+          "upper": 3.870971755759456e-06
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 3,
+          "lower": 5.191930071646311e-06,
+          "upper": 6.355231292332064e-06
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 4,
+          "lower": 7.724985294998987e-06,
+          "upper": 1.0011925786557185e-05
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 5,
+          "lower": 1.0895015924461404e-05,
+          "upper": 1.5413610140058153e-05
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 6,
+          "lower": 1.507912314764326e-05,
+          "upper": 2.3440458107870654e-05
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 7,
+          "lower": 2.0611862635178112e-05,
+          "upper": 3.53195618799873e-05
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 8,
+          "lower": 2.774480460630002e-05,
+          "upper": 5.291421634865401e-05
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 9,
+          "lower": 3.700867798670515e-05,
+          "upper": 7.899467113929858e-05
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 10,
+          "lower": 4.913413554277213e-05,
+          "upper": 0.00011767942432925337
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 11,
+          "lower": 6.501253637907212e-05,
+          "upper": 0.00017509198578409267
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 12,
+          "lower": 8.581531892559724e-05,
+          "upper": 0.0002603372078738175
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 13,
+          "lower": 0.00011307853637845255,
+          "upper": 0.00038694862187185205
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 14,
+          "lower": 0.00014882078521623044,
+          "upper": 0.0005751442959081031
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 15,
+          "lower": 0.0001956904967300943,
+          "upper": 0.0008554265492421108
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 16,
+          "lower": 0.00025716540058056124,
+          "upper": 0.0012719282090984051
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 17,
+          "lower": 0.00033781115707824937,
+          "upper": 0.0018903962452895937
+        },
+        {
+          "trajectory": "Cases_obs",
+          "timepoint": 18,
+          "lower": 0.00044361993896018247,
+          "upper": 0.0028076091948605604
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 0,
+          "lower": 1.7125293544362207e-11,
+          "upper": 2.3542860022596203e-11
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 1,
+          "lower": 1.2952580952241276e-10,
+          "upper": 1.7857612888416695e-10
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 2,
+          "lower": 4.661227070990037e-10,
+          "upper": 6.405080354987547e-10
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 3,
+          "lower": 1.2127061799205307e-09,
+          "upper": 1.6698955329630395e-09
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 4,
+          "lower": 2.6278915932209656e-09,
+          "upper": 3.639636192431794e-09
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 5,
+          "lower": 5.069525688128351e-09,
+          "upper": 7.0780081351529135e-09
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 6,
+          "lower": 9.024970104576369e-09,
+          "upper": 1.2830582463152495e-08
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 7,
+          "lower": 1.5162773081556225e-08,
+          "upper": 2.222728383571848e-08
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 8,
+          "lower": 2.404823824520008e-08,
+          "upper": 3.703637645458002e-08
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 9,
+          "lower": 3.657674270129974e-08,
+          "upper": 5.995787901724726e-08
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 10,
+          "lower": 5.4172729591073224e-08,
+          "upper": 9.498945274799553e-08
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 11,
+          "lower": 7.855431363168464e-08,
+          "upper": 1.4805525836436572e-07
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 12,
+          "lower": 1.1199774974102183e-07,
+          "upper": 2.2794034180151356e-07
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 13,
+          "lower": 1.5751398052543664e-07,
+          "upper": 3.476797530765907e-07
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 14,
+          "lower": 2.188544158343575e-07,
+          "upper": 5.26621056451404e-07
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 15,
+          "lower": 2.995882766754221e-07,
+          "upper": 7.934880954962864e-07
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 16,
+          "lower": 4.0694409335628735e-07,
+          "upper": 1.190922557725571e-06
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 17,
+          "lower": 5.492669515660964e-07,
+          "upper": 1.7822074369178152e-06
+        },
+        {
+          "trajectory": "Deaths_obs",
+          "timepoint": 18,
+          "lower": 7.375002269327524e-07,
+          "upper": 2.661205530785082e-06
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 0,
+          "lower": 8.100800869215163e-07,
+          "upper": 9.406463277628063e-07
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 1,
+          "lower": 1.4179571053318795e-06,
+          "upper": 1.657457528381201e-06
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 2,
+          "lower": 2.1860868400835897e-06,
+          "upper": 2.6126837383344536e-06
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 3,
+          "lower": 3.2054121220426167e-06,
+          "upper": 4.054777764395112e-06
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 4,
+          "lower": 4.504704338614829e-06,
+          "upper": 6.150512308522593e-06
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 5,
+          "lower": 6.096602010075003e-06,
+          "upper": 9.222384869644884e-06
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 6,
+          "lower": 8.17899654066423e-06,
+          "upper": 1.3746779040957334e-05
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 7,
+          "lower": 1.0914683298324234e-05,
+          "upper": 2.0429743744898585e-05
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 8,
+          "lower": 1.438252438674681e-05,
+          "upper": 3.0319254801725037e-05
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 9,
+          "lower": 1.8911639563157225e-05,
+          "upper": 4.497214322327636e-05
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 10,
+          "lower": 2.4836064403643833e-05,
+          "upper": 6.670189031865448e-05
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 11,
+          "lower": 3.2593117066426205e-05,
+          "upper": 9.894706308841705e-05
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 12,
+          "lower": 4.2757172923302275e-05,
+          "upper": 0.00014681854954687876
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 13,
+          "lower": 5.608124192804098e-05,
+          "upper": 0.00021790974133182315
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 14,
+          "lower": 7.355487468885258e-05,
+          "upper": 0.00032349503890145566
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 15,
+          "lower": 9.64762642979622e-05,
+          "upper": 0.00048029170429799697
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 16,
+          "lower": 0.0001265501545276493,
+          "upper": 0.000713035266380757
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 17,
+          "lower": 0.00016601423849351704,
+          "upper": 0.0010582028713542967
+        },
+        {
+          "trajectory": "Diagnosed_sol",
+          "timepoint": 18,
+          "lower": 0.00021780518582090736,
+          "upper": 0.001569309702608734
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 0,
+          "lower": 1.7125293544362207e-11,
+          "upper": 2.3542860022596203e-11
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 1,
+          "lower": 1.2952580952241276e-10,
+          "upper": 1.7857612888416695e-10
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 2,
+          "lower": 4.661227070990037e-10,
+          "upper": 6.405080354987547e-10
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 3,
+          "lower": 1.2127061799205307e-09,
+          "upper": 1.6698955329630395e-09
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 4,
+          "lower": 2.6278915932209656e-09,
+          "upper": 3.639636192431794e-09
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 5,
+          "lower": 5.069525688128351e-09,
+          "upper": 7.0780081351529135e-09
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 6,
+          "lower": 9.024970104576369e-09,
+          "upper": 1.2830582463152495e-08
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 7,
+          "lower": 1.5162773081556225e-08,
+          "upper": 2.222728383571848e-08
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 8,
+          "lower": 2.404823824520008e-08,
+          "upper": 3.703637645458002e-08
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 9,
+          "lower": 3.657674270129974e-08,
+          "upper": 5.995787901724726e-08
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 10,
+          "lower": 5.4172729591073224e-08,
+          "upper": 9.498945274799553e-08
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 11,
+          "lower": 7.855431363168464e-08,
+          "upper": 1.4805525836436572e-07
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 12,
+          "lower": 1.1199774974102183e-07,
+          "upper": 2.2794034180151356e-07
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 13,
+          "lower": 1.5751398052543664e-07,
+          "upper": 3.476797530765907e-07
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 14,
+          "lower": 2.188544158343575e-07,
+          "upper": 5.26621056451404e-07
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 15,
+          "lower": 2.995882766754221e-07,
+          "upper": 7.934880954962864e-07
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 16,
+          "lower": 4.0694409335628735e-07,
+          "upper": 1.190922557725571e-06
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 17,
+          "lower": 5.492669515660964e-07,
+          "upper": 1.7822074369178152e-06
+        },
+        {
+          "trajectory": "Extinct_sol",
+          "timepoint": 18,
+          "lower": 7.375002269327524e-07,
+          "upper": 2.661205530785082e-06
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 0,
+          "lower": 1.4816216378221725e-07,
+          "upper": 1.7793156814605027e-07
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 1,
+          "lower": 3.7963962995490874e-07,
+          "upper": 4.367844610442262e-07
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 2,
+          "lower": 7.04643503013358e-07,
+          "upper": 8.117790230244281e-07
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 3,
+          "lower": 1.1389769042580157e-06,
+          "upper": 1.3589991112894495e-06
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 4,
+          "lower": 1.7133605297203757e-06,
+          "upper": 2.1437352643260966e-06
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 5,
+          "lower": 2.4784132165223126e-06,
+          "upper": 3.3534718568262177e-06
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 6,
+          "lower": 3.492289260975667e-06,
+          "upper": 5.1749788326560515e-06
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 7,
+          "lower": 4.831615115108434e-06,
+          "upper": 7.878668566263513e-06
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 8,
+          "lower": 6.59667384752538e-06,
+          "upper": 1.1888831068063155e-05
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 9,
+          "lower": 8.918846287997439e-06,
+          "upper": 1.7835219296102878e-05
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 10,
+          "lower": 1.1970796731475274e-05,
+          "upper": 2.6652740052668376e-05
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 11,
+          "lower": 1.597858172317501e-05,
+          "upper": 3.972967315348796e-05
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 12,
+          "lower": 2.1239126726868563e-05,
+          "upper": 5.912790220463648e-05
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 13,
+          "lower": 2.814142208080739e-05,
+          "upper": 8.790919891907833e-05
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 14,
+          "lower": 3.719638625625521e-05,
+          "upper": 0.00013061861536698414
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 15,
+          "lower": 4.9073697300627825e-05,
+          "upper": 0.0001939976689754985
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 16,
+          "lower": 6.465228798333556e-05,
+          "upper": 0.0002880908461520448
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 17,
+          "lower": 8.508506725775078e-05,
+          "upper": 0.00042800419032573695
+        },
+        {
+          "trajectory": "Healed_sol",
+          "timepoint": 18,
+          "lower": 0.00011188425705768167,
+          "upper": 0.0006354163400828837
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 0,
+          "lower": 1.7652739439100174e-07,
+          "upper": 2.0307231611838007e-07
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 1,
+          "lower": 5.192252494623517e-07,
+          "upper": 6.112765319699065e-07
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 2,
+          "lower": 1.0903298203857048e-06,
+          "upper": 1.2805761642198377e-06
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 3,
+          "lower": 1.9455864531892076e-06,
+          "upper": 2.32318057271641e-06
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 4,
+          "lower": 3.174694728613758e-06,
+          "upper": 3.923567527408523e-06
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 5,
+          "lower": 4.781231587003276e-06,
+          "upper": 6.301115337237206e-06
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 6,
+          "lower": 6.867789829811955e-06,
+          "upper": 9.816065767154213e-06
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 7,
+          "lower": 9.631358193473715e-06,
+          "upper": 1.5006082071522541e-05
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 8,
+          "lower": 1.3286022976899403e-05,
+          "upper": 2.2703690979142264e-05
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 9,
+          "lower": 1.809703842354793e-05,
+          "upper": 3.4213435583296814e-05
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 10,
+          "lower": 2.4298071139128297e-05,
+          "upper": 5.130356798872526e-05
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 11,
+          "lower": 3.2419419312645914e-05,
+          "upper": 7.668845018997671e-05
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 12,
+          "lower": 4.3058146002294964e-05,
+          "upper": 0.00011440625785326118
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 13,
+          "lower": 5.699729445041157e-05,
+          "upper": 0.00017046342290996105
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 14,
+          "lower": 7.526591052737785e-05,
+          "upper": 0.00025379154340043897
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 15,
+          "lower": 9.921423243213212e-05,
+          "upper": 0.0003776620644202921
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 16,
+          "lower": 0.00013061524605291198,
+          "upper": 0.0005617740356683498
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 17,
+          "lower": 0.00017179691858473233,
+          "upper": 0.0008353139332029967
+        },
+        {
+          "trajectory": "Hospitalizations_obs",
+          "timepoint": 18,
+          "lower": 0.00022581475313927514,
+          "upper": 0.0012414023680321405
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 0,
+          "lower": 4.103083301743027e-06,
+          "upper": 4.652445113606518e-06
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 1,
+          "lower": 5.209658138483064e-06,
+          "upper": 6.703700819343794e-06
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 2,
+          "lower": 6.7169889916840475e-06,
+          "upper": 9.80315489869099e-06
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 3,
+          "lower": 8.724344297661446e-06,
+          "upper": 1.4434175136557313e-05
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 4,
+          "lower": 1.1373419874871616e-05,
+          "upper": 2.1322986503946593e-05
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 5,
+          "lower": 1.4855760673526674e-05,
+          "upper": 3.1556006797472945e-05
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 6,
+          "lower": 1.942477647389751e-05,
+          "upper": 4.675075397244654e-05
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 7,
+          "lower": 2.541698340792209e-05,
+          "upper": 6.931392708793282e-05
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 8,
+          "lower": 3.327314261696302e-05,
+          "upper": 0.00010282627335982396
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 9,
+          "lower": 4.357267898740247e-05,
+          "upper": 0.0001526139152701944
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 10,
+          "lower": 5.70775184314698e-05,
+          "upper": 0.00022659818932879713
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 11,
+          "lower": 7.478638435713947e-05,
+          "upper": 0.00033655570587143297
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 12,
+          "lower": 9.801195992622524e-05,
+          "upper": 0.0004999852972105145
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 13,
+          "lower": 0.0001284753641812131,
+          "upper": 0.0007428615470416843
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 14,
+          "lower": 0.00016843827615957706,
+          "upper": 0.001103680650703609
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 15,
+          "lower": 0.00022086628014221786,
+          "upper": 0.0016393393860198555
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 16,
+          "lower": 0.0002896519494242966,
+          "upper": 0.0024335982976481313
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 17,
+          "lower": 0.0003798994701355696,
+          "upper": 0.0036089954432100054
+        },
+        {
+          "trajectory": "Infected_sol",
+          "timepoint": 18,
+          "lower": 0.0004982985556125641,
+          "upper": 0.00534309260547161
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 0,
+          "lower": 1.714375343908614e-07,
+          "upper": 1.976810210635449e-07
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 1,
+          "lower": 4.978818878953462e-07,
+          "upper": 5.8791747505893e-07
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 2,
+          "lower": 1.035764739754086e-06,
+          "upper": 1.218750844600436e-06
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 3,
+          "lower": 1.8333530761083238e-06,
+          "upper": 2.176835778300301e-06
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 4,
+          "lower": 2.970534978885553e-06,
+          "upper": 3.6532364447339203e-06
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 5,
+          "lower": 4.47630054623005e-06,
+          "upper": 5.835961474076612e-06
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 6,
+          "lower": 6.396736989700003e-06,
+          "upper": 9.051804681803333e-06
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 7,
+          "lower": 8.930499279813376e-06,
+          "upper": 1.3788889555144122e-05
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 8,
+          "lower": 1.2271465311641806e-05,
+          "upper": 2.0773768665094394e-05
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 9,
+          "lower": 1.6679458349244668e-05,
+          "upper": 3.1215243143378754e-05
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 10,
+          "lower": 2.235879437648691e-05,
+          "upper": 4.6734966963413166e-05
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 11,
+          "lower": 2.976535397465341e-05,
+          "upper": 6.977880402700975e-05
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 12,
+          "lower": 3.94600436266046e-05,
+          "upper": 0.00010401055697002447
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 13,
+          "lower": 5.2155200683046134e-05,
+          "upper": 0.00015487980854231862
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 14,
+          "lower": 6.878699932713061e-05,
+          "upper": 0.00023048992006806656
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 15,
+          "lower": 9.058388532139361e-05,
+          "upper": 0.00034288102178834377
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 16,
+          "lower": 0.00011915896320715546,
+          "upper": 0.0005099227448226883
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 17,
+          "lower": 0.00015663033118471504,
+          "upper": 0.0007580868492368608
+        },
+        {
+          "trajectory": "Recognized_sol",
+          "timepoint": 18,
+          "lower": 0.00020577809773385524,
+          "upper": 0.0011264730477705597
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 0,
+          "lower": 0.9999926328659058,
+          "upper": 0.9999941468238831
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 1,
+          "lower": 0.9999898910522461,
+          "upper": 0.9999917030334473
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 2,
+          "lower": 0.9999840021133423,
+          "upper": 0.9999893546104431
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 3,
+          "lower": 0.9999757766723633,
+          "upper": 0.9999831914901733
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 4,
+          "lower": 0.9999634981155395,
+          "upper": 0.9999768257141113
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 5,
+          "lower": 0.9999446511268616,
+          "upper": 0.9999691128730774
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 6,
+          "lower": 0.9999170184135437,
+          "upper": 0.9999585270881652
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 7,
+          "lower": 0.9998763799667358,
+          "upper": 0.9999449014663696
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 8,
+          "lower": 0.9998156309127808,
+          "upper": 0.9999267578125
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 9,
+          "lower": 0.9997254490852356,
+          "upper": 0.9999032735824585
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 10,
+          "lower": 0.9995916008949279,
+          "upper": 0.9998722195625305
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 11,
+          "lower": 0.9993924140930176,
+          "upper": 0.9998313665390015
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 12,
+          "lower": 0.9990964531898499,
+          "upper": 0.999778401851654
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 13,
+          "lower": 0.9986567258834839,
+          "upper": 0.9997088074684143
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 14,
+          "lower": 0.9980026006698608,
+          "upper": 0.9996169805526733
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 15,
+          "lower": 0.9970314025878906,
+          "upper": 0.9994968056678772
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 16,
+          "lower": 0.9955896735191345,
+          "upper": 0.9993397712707519
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 17,
+          "lower": 0.9934534549713134,
+          "upper": 0.9991322517395019
+        },
+        {
+          "trajectory": "Susceptible_sol",
+          "timepoint": 18,
+          "lower": 0.9902928590774536,
+          "upper": 0.9988606095314025
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 0,
+          "lower": 5.0160423370471104e-09,
+          "upper": 6.464533619521262e-09
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 1,
+          "lower": 2.0955366153430078e-08,
+          "upper": 2.7463645935199564e-08
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 2,
+          "lower": 5.324992926603045e-08,
+          "upper": 7.073798542478471e-08
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 3,
+          "lower": 1.0631659392856818e-07,
+          "upper": 1.4742837777248495e-07
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 4,
+          "lower": 1.8720619721079856e-07,
+          "upper": 2.7347871878191654e-07
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 5,
+          "lower": 3.049310407732264e-07,
+          "upper": 4.724276948309125e-07
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 6,
+          "lower": 4.6827178721287057e-07,
+          "upper": 7.790617132741317e-07
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 7,
+          "lower": 6.91928539708897e-07,
+          "upper": 1.2449609926079574e-06
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 8,
+          "lower": 9.94455217551149e-07,
+          "upper": 1.9467266838546493e-06
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 9,
+          "lower": 1.3997699852552614e-06,
+          "upper": 2.998192439918057e-06
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 10,
+          "lower": 1.9392767626413844e-06,
+          "upper": 4.5686010253120905e-06
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 11,
+          "lower": 2.6540653379925063e-06,
+          "upper": 6.909646162966964e-06
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 12,
+          "lower": 3.5981023756903595e-06,
+          "upper": 1.0395700883236714e-05
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 13,
+          "lower": 4.842093767365441e-06,
+          "upper": 1.558361436764244e-05
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 14,
+          "lower": 6.4789112002472395e-06,
+          "upper": 2.3301623332372398e-05
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 15,
+          "lower": 8.630347110738512e-06,
+          "upper": 3.4781042631948364e-05
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 16,
+          "lower": 1.1456282845756504e-05,
+          "upper": 5.185129084566142e-05
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 17,
+          "lower": 1.5166587400017306e-05,
+          "upper": 7.722708396613596e-05
+        },
+        {
+          "trajectory": "Threatened_sol",
+          "timepoint": 18,
+          "lower": 2.003665540541988e-05,
+          "upper": 0.00011492932026158086
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 0,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 1,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 2,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 3,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 4,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 5,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 6,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 7,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 8,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 9,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 10,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 11,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 12,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 13,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 14,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 15,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 16,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 17,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "alpha_param",
+          "timepoint": 18,
+          "lower": 0.5254918694496155,
+          "upper": 0.6254613876342774
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 0,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 1,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 2,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 3,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 4,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 5,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 6,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 7,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 8,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 9,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 10,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 11,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 12,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 13,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 14,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 15,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 16,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 17,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "beta_param",
+          "timepoint": 18,
+          "lower": 0.009871406108140945,
+          "upper": 0.01149212159216404
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 0,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 1,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 2,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 3,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 4,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 5,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 6,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 7,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 8,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 9,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 10,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 11,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 12,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 13,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 14,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 15,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 16,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 17,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "delta_param",
+          "timepoint": 18,
+          "lower": 0.009206167981028556,
+          "upper": 0.012570698000490665
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 0,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 1,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 2,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 3,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 4,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 5,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 6,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 7,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 8,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 9,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 10,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 11,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 12,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 13,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 14,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 15,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 16,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 17,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "epsilon_param",
+          "timepoint": 18,
+          "lower": 0.14431528449058534,
+          "upper": 0.18980315923690796
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 0,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 1,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 2,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 3,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 4,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 5,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 6,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 7,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 8,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 9,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 10,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 11,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 12,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 13,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 14,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 15,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 16,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 17,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "eta_param",
+          "timepoint": 18,
+          "lower": 0.1030732586979866,
+          "upper": 0.13312401324510573
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 0,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 1,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 2,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 3,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 4,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 5,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 6,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 7,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 8,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 9,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 10,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 11,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 12,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 13,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 14,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 15,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 16,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 17,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "gamma_param",
+          "timepoint": 18,
+          "lower": 0.383050799369812,
+          "upper": 0.5092280268669128
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 0,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 1,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 2,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 3,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 4,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 5,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 6,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 7,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 8,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 9,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 10,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 11,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 12,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 13,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 14,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 15,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 16,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 17,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "kappa_param",
+          "timepoint": 18,
+          "lower": 0.01461642924696207,
+          "upper": 0.019059862941503525
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 0,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 1,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 2,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 3,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 4,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 5,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 6,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 7,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 8,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 9,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 10,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 11,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 12,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 13,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 14,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 15,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 16,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 17,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "lambda_param",
+          "timepoint": 18,
+          "lower": 0.031421012431383136,
+          "upper": 0.04000032544136047
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 0,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 1,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 2,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 3,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 4,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 5,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 6,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 7,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 8,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 9,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 10,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 11,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 12,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 13,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 14,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 15,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 16,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 17,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "mu_param",
+          "timepoint": 18,
+          "lower": 0.014137995056807994,
+          "upper": 0.017143101990222932
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 0,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 1,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 2,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 3,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 4,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 5,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 6,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 7,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 8,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 9,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 10,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 11,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 12,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 13,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 14,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 15,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 16,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 17,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "nu_param",
+          "timepoint": 18,
+          "lower": 0.02267625406384468,
+          "upper": 0.030514194443821908
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 0,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 1,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 2,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 3,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 4,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 5,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 6,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 7,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 8,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 9,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 10,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 11,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 12,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 13,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 14,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 15,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 16,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 17,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "rho_param",
+          "timepoint": 18,
+          "lower": 0.02887580692768097,
+          "upper": 0.03892715945839882
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 0,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 1,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 2,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 3,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 4,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 5,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 6,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 7,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 8,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 9,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 10,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 11,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 12,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 13,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 14,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 15,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 16,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 17,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "sigma_param",
+          "timepoint": 18,
+          "lower": 0.01448883805423975,
+          "upper": 0.019311850145459174
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 0,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 1,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 2,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 3,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 4,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 5,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 6,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 7,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 8,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 9,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 10,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 11,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 12,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 13,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 14,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 15,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 16,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 17,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "tau_param",
+          "timepoint": 18,
+          "lower": 0.009061474539339542,
+          "upper": 0.01156516894698143
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 0,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 1,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 2,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 3,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 4,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 5,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 6,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 7,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 8,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 9,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 10,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 11,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 12,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 13,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 14,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 15,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 16,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 17,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "theta_param",
+          "timepoint": 18,
+          "lower": 0.36613796949386596,
+          "upper": 0.43963884711265566
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 0,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 1,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 2,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 3,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 4,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 5,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 6,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 7,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 8,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 9,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 10,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 11,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 12,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 13,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 14,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 15,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 16,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 17,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "xi_param",
+          "timepoint": 18,
+          "lower": 0.014265312999486923,
+          "upper": 0.01673755943775177
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 0,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 1,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 2,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 3,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 4,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 5,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 6,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 7,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 8,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 9,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 10,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 11,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 12,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 13,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 14,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 15,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 16,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 17,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        },
+        {
+          "trajectory": "zeta_param",
+          "timepoint": 18,
+          "lower": 0.10259225368499755,
+          "upper": 0.14640449583530427
+        }
+      ]
+    },
+    {
+      "name": "traces",
+      "values": [],
+      "transform": [
+        {
+          "type": "filter",
+          "expr": "isValid(datum.value)"
+        }
+      ]
+    },
+    {
+      "name": "points",
+      "values": []
+    },
+    {
+      "name": "markers",
+      "values": []
+    },
+    {
+      "name": "selected",
+      "on": [
+        {
+          "trigger": "clear",
+          "remove": true
+        },
+        {
+          "trigger": "!shift",
+          "remove": true
+        },
+        {
+          "trigger": "!shift && clicked",
+          "insert": "clicked"
+        },
+        {
+          "trigger": "shift && clicked",
+          "toggle": "clicked"
+        }
+      ]
+    },
+    {
+      "name": "selectedData",
+      "on": [
+        {
+          "trigger": "clearData",
+          "remove": true
+        },
+        {
+          "trigger": "clickedData",
+          "toggle": "clickedData"
+        }
+      ]
+    }
+  ]
+}

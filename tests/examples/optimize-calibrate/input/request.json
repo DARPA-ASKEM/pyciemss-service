@@ -1,0 +1,27 @@
+{
+  "engine": "ciemss",
+  "username": "not_provided",
+  "model_config_id": "0da53e71-52c4-49fd-b957-2219af712fdd",
+  "dataset": {
+    "id": "cc52e71f-c744-4883-9412-0858d8455754",
+    "filename": "train_data.csv"
+  },
+  "timespan": {
+    "start": 0,
+    "end": 19
+  },
+  "interventions": [
+    {
+      "timestep": 20,
+      "name": "beta"
+    }
+  ],
+  "qoi":  {"function": "scenario2dec_nday_average", "state": "Infected_sol", "arg":2},
+  "risk_bound": 10.0,
+  "initial_guess": 1.0,
+  "bounds": [[0.0], [3.0]],
+  "extra": {
+    "num_samples": 5,
+    "n_samples_ouu": 5
+  }
+}
