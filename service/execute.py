@@ -11,6 +11,8 @@ from utils.tds import (
 from pyciemss.PetriNetODE.interfaces import (  # noqa: F401
     load_and_calibrate_and_sample_petri_model,
     load_and_sample_petri_model,
+    load_and_optimize_and_sample_petri_model,
+    load_and_calibrate_and_optimize_and_sample_petri_model,
 )
 
 from pyciemss.Ensemble.interfaces import (  # noqa: F401

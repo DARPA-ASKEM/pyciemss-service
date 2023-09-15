@@ -1,6 +1,6 @@
 from __future__ import annotations
-from typing import NamedTuple
 import socket
+import json
 import logging
 
 from enum import Enum
@@ -70,18 +70,18 @@ class Dataset(BaseModel):
     )
 
 
-class InterventionObject(NamedTuple):
+class InterventionObject(BaseModel):
     timestep: float
     name: str
     value: float
 
 
-class InterventionSelection(NamedTuple):
+class InterventionSelection(BaseModel):
     timestep: float
     name: str
 
 
-class QuantityOfInterest(NamedTuple):
+class QuantityOfInterest(BaseModel):
     function: str
     state: str
     arg: float  # TODO: Make this a list of args?
@@ -261,7 +261,7 @@ class OptimizeSimulate(OperationRequest):
     interventions: List[InterventionSelection] = []
     qoi: QuantityOfInterest
     risk_bound: float
-    initial_guess: List[float]
+    initial_guess: float
     bounds: List[List[float]]
     # TODO: Figure out how to expose `objfun`
     extra: OptimizeSimulateExtra = Field(
@@ -290,7 +290,7 @@ class OptimizeSimulate(OperationRequest):
             "petri_model_or_path": amr_path,
             "timepoints": timepoints,
             "interventions": interventions,
-            "qoi": self.qoi,
+            "qoi": (self.qoi.function, self.qoi.state, self.qoi.arg),
             "risk_bound": self.risk_bound,
             "initial_guess": self.initial_guess,
             "bounds": self.bounds,
@@ -317,7 +317,6 @@ class OptimizeCalibrateExtra(BaseModel):
         100, description="number of samples for a CIEMSS simulation", example=100
     )
     n_samples_ouu: int = Field(100, example=100)
-    start_state: Optional[dict[str, float]] = None
     start_time: float = Field(
         -1e-10, description="Optional field for CIEMSS calibration", example=-1e-10
     )
@@ -361,6 +360,16 @@ class OptimizeCalibrate(OperationRequest):
             self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
         )
 
+        start_state = {}
+        model = json.load(open(amr_path))
+        for var in model["semantics"]["ode"]["initials"]:
+            start_state[var["target"]] = var["expression"]
+            for param in model["semantics"]["ode"]["parameters"]:
+                start_state[var["target"]] = start_state[var["target"]].replace(
+                    param["id"], str(param["value"])
+                )
+            start_state[var["target"]] = float(start_state[var["target"]])
+
         interventions = []
         if len(self.interventions) > 0:
             interventions = [
@@ -390,10 +399,11 @@ class OptimizeCalibrate(OperationRequest):
             "timepoints": timepoints,
             "data_path": dataset_path,
             "interventions": interventions,
-            "qoi": self.qoi,
+            "qoi": (self.qoi.function, self.qoi.state, self.qoi.arg),
             "risk_bound": self.risk_bound,
             "initial_guess": self.initial_guess,
             "bounds": self.bounds,
+            "start_state": start_state,
             "progress_hook": hook,
             "visual_options": True,
             **self.extra.dict(),
