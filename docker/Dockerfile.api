@@ -16,5 +16,9 @@ RUN poetry install
 ENV REDIS_HOST redis
 ENV REDIS_PORT 6379
 
+COPY .git .git
+RUN sh -c 'echo -n $(git rev-parse HEAD) > .version'
+RUN rm -rf .git
+
 WORKDIR /service
 CMD uvicorn api:app --reload --host 0.0.0.0 --port 8000
