@@ -63,7 +63,7 @@ def get_health():
     """
     version_file = "../.version"
     if os.path.exists(version_file):
-        version = open(version_file).read()
+        version = open(version_file).read().strip("\n")
     else:
         version = "unknown"
     return {"status": "ok", "git_sha": version}
