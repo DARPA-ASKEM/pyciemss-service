@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -55,12 +56,17 @@ def build_api(*args) -> FastAPI:
 app = build_api()
 
 
-@app.get("/ping")  # NOT IN SPEC
-def get_ping():
+@app.get("/health")
+def get_health():
     """
-    Retrieve the status of a simulation
+    Get health and version
     """
-    return {"status": "ok"}
+    version_file = "../.version"
+    if os.path.exists(version_file):
+        version = open(version_file).read()
+    else:
+        version = "unknown"
+    return {"status": "ok", "git_sha": version}
 
 
 @app.get("/status/{simulation_id}", response_model=StatusSimulationIdGetResponse)

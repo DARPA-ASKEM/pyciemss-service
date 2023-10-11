@@ -71,3 +71,5 @@ build
 # MISC
 create.sql
 .eslintcache
+
+.version

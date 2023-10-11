@@ -16,5 +16,10 @@ RUN poetry install
 ENV REDIS_HOST redis
 ENV REDIS_PORT 6379
 
+COPY .git/HEAD .git/HEAD
+COPY .git/refs .git/refs
+RUN grep '^ref:' .git/HEAD && cp .git/`cat .git/HEAD | awk '/^ref: / {print $2}'` .version || cp .git/HEAD .version
+RUN rm -fr .git
+
 WORKDIR /service
 CMD uvicorn api:app --reload --host 0.0.0.0 --port 8000
