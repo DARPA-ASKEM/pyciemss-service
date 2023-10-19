@@ -37,11 +37,7 @@ jobs:
       - bake
     steps:
       - name: Report
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GHP_ACCESS_TOKEN }}
         run: |
-          curl -L \
-            -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GHP_ACCESS_TOKEN }}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/DARPA-ASKEM/simulation-integration/actions/workflows/report.yaml/dispatches \
-            -d '{"ref":"main","inputs":{}}'
+          gh workflow run report.yaml --repo DARPA-ASKEM/simulation-integration --ref main
