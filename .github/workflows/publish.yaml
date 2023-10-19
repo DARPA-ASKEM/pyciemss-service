@@ -29,3 +29,19 @@ jobs:
     secrets:
       username: ${{ github.repository_owner }}
       password: ${{ secrets.GITHUB_TOKEN }}
+
+  # Execute simulation-integration reporting
+  simulation-integration:
+    runs-on: ubuntu-latest
+    needs: 
+      - bake
+    steps:
+      - name: Report
+        run: |
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GHP_ACCESS_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/DARPA-ASKEM/simulation-integration/actions/workflows/report.yaml/dispatches \
+            -d '{"ref":"main","inputs":{}}'
