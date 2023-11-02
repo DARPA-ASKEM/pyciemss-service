@@ -3,17 +3,7 @@ from inspect import signature
 
 import pytest
 
-from pyciemss.PetriNetODE.interfaces import (  # noqa: F401
-    load_and_calibrate_and_sample_petri_model,
-    load_and_sample_petri_model,
-    load_and_optimize_and_sample_petri_model,
-    load_and_calibrate_and_optimize_and_sample_petri_model,
-)
-
-from pyciemss.Ensemble.interfaces import (  # noqa: F401
-    load_and_sample_petri_ensemble,
-    load_and_calibrate_and_sample_ensemble_model,
-)
+from pyciemss.interfaces import sample  # noqa: F401
 
 from service.models import (
     Simulate,
@@ -58,7 +48,7 @@ class TestSimulate:
         kwargs = operation_request.gen_pyciemss_args(job_id)
 
         assert kwargs.get("visual_options", False)
-        assert is_satisfactory(kwargs, load_and_sample_petri_model)
+        assert is_satisfactory(kwargs, sample)
 
 
 class TestCalibrate:
@@ -84,7 +74,7 @@ class TestCalibrate:
         kwargs = operation_request.gen_pyciemss_args(job_id)
 
         assert kwargs.get("visual_options", False)
-        assert is_satisfactory(kwargs, load_and_calibrate_and_sample_petri_model)
+        assert is_satisfactory(kwargs, sample)
 
 
 class TestOptimizeSimulate:
@@ -102,7 +92,7 @@ class TestOptimizeSimulate:
         kwargs = operation_request.gen_pyciemss_args(job_id)
 
         assert kwargs.get("visual_options", False)
-        assert is_satisfactory(kwargs, load_and_optimize_and_sample_petri_model)
+        assert is_satisfactory(kwargs, sample)
 
 
 class TestOptimizeCalibrate:
@@ -128,9 +118,7 @@ class TestOptimizeCalibrate:
         kwargs = operation_request.gen_pyciemss_args(job_id)
 
         assert kwargs.get("visual_options", False)
-        assert is_satisfactory(
-            kwargs, load_and_calibrate_and_optimize_and_sample_petri_model
-        )
+        assert is_satisfactory(kwargs, sample)
 
 
 class TestEnsembleSimulate:
@@ -151,7 +139,7 @@ class TestEnsembleSimulate:
         kwargs = operation_request.gen_pyciemss_args(job_id)
 
         assert kwargs.get("visual_options", False)
-        assert is_satisfactory(kwargs, load_and_sample_petri_ensemble)
+        assert is_satisfactory(kwargs, sample)
 
 
 class TestEnsembleCalibrate:
@@ -182,4 +170,4 @@ class TestEnsembleCalibrate:
         kwargs = operation_request.gen_pyciemss_args(job_id)
 
         assert kwargs.get("visual_options", False)
-        assert is_satisfactory(kwargs, load_and_calibrate_and_sample_ensemble_model)
+        assert is_satisfactory(kwargs, sample)

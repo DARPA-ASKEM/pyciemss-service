@@ -2,6 +2,7 @@ from __future__ import annotations
 import socket
 import json
 import logging
+import pyro
 
 from enum import Enum
 from typing import ClassVar, Dict, List, Optional
@@ -111,13 +112,16 @@ class SimulateExtra(BaseModel):
     num_samples: int = Field(
         100, description="number of samples for a CIEMSS simulation", example=100
     )
+    inferred_parameters: Optional[pyro.nn.PyroModule] = (None,)
 
 
 class Simulate(OperationRequest):
-    pyciemss_lib_function: ClassVar[str] = "load_and_sample_petri_model"
+    pyciemss_lib_function: ClassVar[str] = "sample"
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan
-    interventions: List[InterventionObject] = Field(
+    interventions: List[
+        InterventionObject
+    ] = Field(  # TODO!!!!: THIS IS OUTDATED AND NEEDS TO BE FIXED
         default_factory=list, example=[{"timestep": 1, "name": "beta", "value": 0.4}]
     )
     extra: SimulateExtra = Field(
@@ -138,13 +142,10 @@ class Simulate(OperationRequest):
                 for intervention in self.interventions
             ]
 
-        # Generate timepoints
-        time_count = self.timespan.end - self.timespan.start
-        timepoints = [step for step in range(1, time_count + 1)]
-
         return {
             "petri_model_or_path": amr_path,
-            "timepoints": timepoints,
+            "start_time": self.timespan.start,
+            "end_time": self.timespan.start,
             "interventions": interventions,
             "visual_options": True,
             **self.extra.dict(),
