@@ -2,7 +2,8 @@ from __future__ import annotations
 import socket
 import json
 import logging
-import pyro
+
+# import pyro
 
 from enum import Enum
 from typing import ClassVar, Dict, List, Optional
@@ -112,7 +113,6 @@ class SimulateExtra(BaseModel):
     num_samples: int = Field(
         100, description="number of samples for a CIEMSS simulation", example=100
     )
-    inferred_parameters: Optional[pyro.nn.PyroModule] = (None,)
 
 
 class Simulate(OperationRequest):
@@ -124,6 +124,7 @@ class Simulate(OperationRequest):
     ] = Field(  # TODO!!!!: THIS IS OUTDATED AND NEEDS TO BE FIXED
         default_factory=list, example=[{"timestep": 1, "name": "beta", "value": 0.4}]
     )
+    step_size: float = 1.0
     extra: SimulateExtra = Field(
         None,
         description="optional extra system specific arguments for advanced use cases",
@@ -135,18 +136,20 @@ class Simulate(OperationRequest):
             self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
         )
 
-        interventions = []
+        # interventions = []
         if len(self.interventions) > 0:
-            interventions = [
-                (intervention.timestep, intervention.name, intervention.value)
-                for intervention in self.interventions
-            ]
+            raise Exception("Intervention support for the list not supported")
+            # interventions = [
+            #     (intervention.timestep, intervention.name, intervention.value)
+            #     for intervention in self.interventions
+            # ]
 
         return {
             "petri_model_or_path": amr_path,
+            "logging_step_size": self.step_size,
             "start_time": self.timespan.start,
             "end_time": self.timespan.start,
-            "interventions": interventions,
+            # "interventions": interventions,
             "visual_options": True,
             **self.extra.dict(),
         }
