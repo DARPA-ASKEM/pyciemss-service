@@ -145,12 +145,11 @@ class Simulate(OperationRequest):
             # ]
 
         return {
-            "petri_model_or_path": amr_path,
+            "model_path_or_json": amr_path,
             "logging_step_size": self.step_size,
             "start_time": self.timespan.start,
             "end_time": self.timespan.start,
             # "interventions": interventions,
-            "visual_options": True,
             **self.extra.dict(),
         }
 
