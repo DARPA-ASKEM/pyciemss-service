@@ -36,7 +36,7 @@ fakeredis = "^2.17.0"
 httpx = "^0.24.1"
 
 [tool.poe.tasks]
-install-pyciemss = "pip install git+https://github.com/ciemss/pyciemss.git@1512d4fde5f93280ce537a3af1e5dfbb91eac84b --use-pep517" 
+install-pyciemss = "pip install git+https://github.com/fivegrant/pyciemss.git@9e33c22da57477bd9969acc85982a6178a72fd9f --use-pep517" 
 
 [tool.pytest.ini_options]
 markers = ["example_dir"]
