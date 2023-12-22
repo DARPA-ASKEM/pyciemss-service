@@ -8,7 +8,7 @@ from utils.tds import (
     attach_files,
 )
 
-from pyciemss.interfaces import sample  # noqa: F401
+from pyciemss.interfaces import sample, calibrate, ensemble_sample  # noqa: F401
 
 TDS_SIMULATIONS = "/simulations/"
 TDS_URL = settings.TDS_URL
