@@ -21,8 +21,8 @@ TDS_URL = settings.TDS_URL
 
 
 class Timespan(BaseModel):
-    start: int = Field(..., example=0)
-    end: int = Field(..., example=90)
+    start: float = Field(..., example=0)
+    end: float = Field(..., example=90)
 
 
 class Status(Enum):

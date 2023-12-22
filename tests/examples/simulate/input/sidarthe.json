@@ -1,9 +1,9 @@
 {
-  "id": "0da53e71-52c4-49fd-b957-2219af712fdd",
-  "name": "default",
+  "id": "sidarthe",
+  "name": "SIDARTHE",
   "description": "no changes made",
-  "timestamp": "2023-09-14T18:21:48",
-  "model_id": "biomd0000000294-model-id",
+  "timestamp": "2023-08-03T18:00:40",
+  "model_id": "autogen",
   "configuration": {
     "header": {
       "name": "Giordano2020 - SIDARTHE model of COVID-19 spread in Italy",
