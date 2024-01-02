@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field, Extra
 # from pika.exceptions import AMQPConnectionError
 
 
+from utils.convert import convert_to_static_interventions
 from utils.rabbitmq import gen_rabbitmq_hook  # noqa: F401
 from utils.tds import fetch_dataset, fetch_model
 from settings import settings
@@ -119,11 +120,9 @@ class Simulate(OperationRequest):
     pyciemss_lib_function: ClassVar[str] = "sample"
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan = Timespan(start=0, end=90)
-    # interventions: List[
-    #     InterventionObject
-    # ] = Field(  # TODO!!!!: THIS IS OUTDATED AND NEEDS TO BE FIXED
-    #     default_factory=list, example=[{"timestep": 1, "name": "beta", "value": 0.4}]
-    # )
+    interventions: List[InterventionObject] = Field(
+        default_factory=list, example=[{"timestep": 1, "name": "beta", "value": 0.4}]
+    )
     step_size: float = 1.0
     extra: SimulateExtra = Field(
         None,
@@ -136,20 +135,14 @@ class Simulate(OperationRequest):
             self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
         )
 
-        # interventions = []
-        # if len(self.interventions) > 0:
-        #     raise Exception("Intervention support for the list not supported")
-        # interventions = [
-        #     (intervention.timestep, intervention.name, intervention.value)
-        #     for intervention in self.interventions
-        # ]
+        interventions = convert_to_static_interventions(self.interventions)
 
         return {
             "model_path_or_json": amr_path,
             "logging_step_size": self.step_size,
             "start_time": self.timespan.start,
             "end_time": self.timespan.end,
-            # "interventions": interventions,
+            "static_parameter_interventions": interventions,
             **self.extra.dict(),
         }
 
