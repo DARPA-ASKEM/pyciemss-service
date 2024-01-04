@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field, Extra
 # from pika.exceptions import AMQPConnectionError
 
 
-from utils.convert import convert_to_static_interventions
+from utils.convert import convert_to_static_interventions, convert_to_solution_mapping
 from utils.rabbitmq import gen_rabbitmq_hook  # noqa: F401
 from utils.tds import fetch_dataset, fetch_model
 from settings import settings
@@ -253,7 +253,9 @@ class EnsembleSimulate(OperationRequest):
 
     def gen_pyciemss_args(self, job_id):
         # weights = [config.weight for config in self.model_configs]
-        solution_mappings = [config.solution_mappings for config in self.model_configs]
+        solution_mappings = [
+            convert_to_solution_mapping(config) for config in self.model_configs
+        ]
         amr_paths = [
             fetch_model(config.id, TDS_URL, TDS_CONFIGURATIONS, job_id)
             for config in self.model_configs
