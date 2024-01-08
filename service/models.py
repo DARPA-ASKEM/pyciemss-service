@@ -412,10 +412,7 @@ class EnsembleSimulate(OperationRequest):
     def gen_pyciemss_args(self, job_id):
         weights = [config.weight for config in self.model_configs]
         solution_mappings = [config.solution_mappings for config in self.model_configs]
-        amr_paths = [
-            fetch_model(config.id, job_id)
-            for config in self.model_configs
-        ]
+        amr_paths = [fetch_model(config.id, job_id) for config in self.model_configs]
 
         # Generate timepoints
         time_count = self.timespan.end - self.timespan.start
@@ -468,10 +465,7 @@ class EnsembleCalibrate(OperationRequest):
     def gen_pyciemss_args(self, job_id):
         weights = [config.weight for config in self.model_configs]
         solution_mappings = [config.solution_mappings for config in self.model_configs]
-        amr_paths = [
-            fetch_model(config.id, job_id)
-            for config in self.model_configs
-        ]
+        amr_paths = [fetch_model(config.id, job_id) for config in self.model_configs]
 
         dataset_path = fetch_dataset(self.dataset.dict(), job_id)
 

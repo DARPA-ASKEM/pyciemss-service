@@ -13,7 +13,7 @@ from rq.exceptions import NoSuchJobError
 from rq.job import Job
 
 from settings import settings
-from utils.tds import (update_tds_status, create_tds_job, cancel_tds_job)
+from utils.tds import update_tds_status, create_tds_job, cancel_tds_job
 
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)

@@ -23,11 +23,15 @@ TDS_SIMULATIONS = "/simulations/"
 TDS_CONFIGURATIONS = "/model-configurations/"
 TDS_DATASETS = "/datasets/"
 
+
 def tds_session():
-  session = requests.Session()
-  session.auth = (TDS_USER, TDS_PASSWORD)
-  session.headers.update({"Content-Type": "application/json", "X-Enable-Snake-Case": ""})
-  return session
+    session = requests.Session()
+    session.auth = (TDS_USER, TDS_PASSWORD)
+    session.headers.update(
+        {"Content-Type": "application/json", "X-Enable-Snake-Case": ""}
+    )
+    return session
+
 
 def update_tds_status(job_id, status, result_files=[], start=False, finish=False):
     url = TDS_URL + TDS_SIMULATIONS + job_id
@@ -57,6 +61,7 @@ def update_tds_status(job_id, status, result_files=[], start=False, finish=False
 
     return update_response
 
+
 def create_tds_job(payload):
     post_url = TDS_URL + TDS_SIMULATIONS
     response = tds_session().post(post_url, json=payload)
@@ -70,11 +75,13 @@ def create_tds_job(payload):
 
     return response.context
 
+
 def cancel_tds_job(job_id):
     url = TDS_URL + TDS_SIMULATIONS + str(job_id)
     tds_payload = tds_session().get(url).json()
     tds_payload["status"] = "cancelled"
     return tds_session().put(url, json=json.loads(json.dumps(tds_payload, default=str)))
+
 
 def get_job_dir(job_id):
     path = os.path.join("/tmp", str(job_id))
@@ -168,7 +175,9 @@ def attach_files(output: dict, job_id, status="complete"):
     if status != "error":
         for location, handle in files.items():
             upload_url = f"{sim_results_url}/upload-url?filename={handle}"
-            upload_response = tds_session().get(upload_url, auth=(TDS_USER, TDS_PASSWORD))
+            upload_response = tds_session().get(
+                upload_url, auth=(TDS_USER, TDS_PASSWORD)
+            )
             presigned_upload_url = upload_response.json()["url"]
             with open(location, "rb") as f:
                 upload_response = tds_session().put(presigned_upload_url, f)
