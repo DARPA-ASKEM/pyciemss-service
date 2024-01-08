@@ -11,11 +11,6 @@ from pika.exceptions import AMQPConnectionError
 
 from utils.rabbitmq import gen_rabbitmq_hook
 from utils.tds import fetch_dataset, fetch_model
-from settings import settings
-
-TDS_CONFIGURATIONS = "/model_configurations/"
-TDS_SIMULATIONS = "/simulations/"
-TDS_URL = settings.TDS_URL
 
 
 class Timespan(BaseModel):
@@ -127,9 +122,7 @@ class Simulate(OperationRequest):
 
     def gen_pyciemss_args(self, job_id):
         # Get model from TDS
-        amr_path = fetch_model(
-            self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
-        )
+        amr_path = fetch_model(self.model_config_id, job_id)
 
         interventions = []
         if len(self.interventions) > 0:
@@ -151,9 +144,7 @@ class Simulate(OperationRequest):
         }
 
     def run_sciml_operation(self, job_id, julia_context):
-        amr_path = fetch_model(
-            self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
-        )
+        amr_path = fetch_model(self.model_config_id, job_id)
         with open(amr_path, "r") as file:
             amr = file.read()
         result = julia_context.simulate(amr, self.timespan.start, self.timespan.end)
@@ -204,15 +195,13 @@ class Calibrate(OperationRequest):
     )
 
     def gen_pyciemss_args(self, job_id):
-        amr_path = fetch_model(
-            self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
-        )
+        amr_path = fetch_model(self.model_config_id, job_id)
 
         # Generate timepoints
         time_count = self.timespan.end - self.timespan.start
         timepoints = [step for step in range(1, time_count + 1)]
 
-        dataset_path = fetch_dataset(self.dataset.dict(), TDS_URL, job_id)
+        dataset_path = fetch_dataset(self.dataset.dict(), job_id)
 
         # TODO: Test RabbitMQ
         try:
@@ -271,9 +260,7 @@ class OptimizeSimulate(OperationRequest):
 
     def gen_pyciemss_args(self, job_id):
         # Get model from TDS
-        amr_path = fetch_model(
-            self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
-        )
+        amr_path = fetch_model(self.model_config_id, job_id)
 
         interventions = []
         if len(self.interventions) > 0:
@@ -347,9 +334,7 @@ class OptimizeCalibrate(OperationRequest):
     )
 
     def gen_pyciemss_args(self, job_id):
-        amr_path = fetch_model(
-            self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
-        )
+        amr_path = fetch_model(self.model_config_id, job_id)
 
         start_state = {}
         model = json.load(open(amr_path))
@@ -372,7 +357,7 @@ class OptimizeCalibrate(OperationRequest):
         time_count = self.timespan.end - self.timespan.start
         timepoints = [step for step in range(1, time_count + 1)]
 
-        dataset_path = fetch_dataset(self.dataset.dict(), TDS_URL, job_id)
+        dataset_path = fetch_dataset(self.dataset.dict(), job_id)
 
         # TODO: Test RabbitMQ
         try:
@@ -428,7 +413,7 @@ class EnsembleSimulate(OperationRequest):
         weights = [config.weight for config in self.model_configs]
         solution_mappings = [config.solution_mappings for config in self.model_configs]
         amr_paths = [
-            fetch_model(config.id, TDS_URL, TDS_CONFIGURATIONS, job_id)
+            fetch_model(config.id, job_id)
             for config in self.model_configs
         ]
 
@@ -484,11 +469,11 @@ class EnsembleCalibrate(OperationRequest):
         weights = [config.weight for config in self.model_configs]
         solution_mappings = [config.solution_mappings for config in self.model_configs]
         amr_paths = [
-            fetch_model(config.id, TDS_URL, TDS_CONFIGURATIONS, job_id)
+            fetch_model(config.id, job_id)
             for config in self.model_configs
         ]
 
-        dataset_path = fetch_dataset(self.dataset.dict(), TDS_URL, job_id)
+        dataset_path = fetch_dataset(self.dataset.dict(), job_id)
 
         # Generate timepoints
         time_count = self.timespan.end - self.timespan.start
