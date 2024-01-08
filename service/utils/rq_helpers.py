@@ -38,10 +38,8 @@ def update_status_on_job_fail(job, connection, etype, value, traceback):
 
 
 def create_job(request_payload, sim_type, redis_conn):
-    job_id = f"ciemss-{uuid4()}"
-
     payload = {
-        "id": job_id,
+        "name": f"ciemss-{uuid4()}",
         "execution_payload": request_payload.dict(),
         "result_files": [],
         "type": sim_type,
@@ -51,9 +49,10 @@ def create_job(request_payload, sim_type, redis_conn):
     }
     logging.info(payload)
 
-    body = create_tds_job(payload)
+    res = create_tds_job(payload)
+    job_id = res.id
 
-    logging.info(body)
+    logging.info(res)
 
     queue = Queue(connection=redis_conn, default_timeout=-1)
     queue.enqueue_call(
@@ -71,7 +70,7 @@ def fetch_job_status(job_id, redis_conn):
     """Fetch a job's results from RQ.
 
     Args:
-        job_id (str): The id of the job being run in RQ.
+        job_id (uuid): The id of the job being run in RQ.
 
     Returns:
         Response:
