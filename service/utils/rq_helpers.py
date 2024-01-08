@@ -43,7 +43,7 @@ def create_job(request_payload, sim_type, redis_conn):
         "type": sim_type,
         "status": "queued",
         "engine": request_payload.engine,
-        "workflow_id": job_id,
+        "workflow_id": "",
     }
     logging.info(payload)
 
