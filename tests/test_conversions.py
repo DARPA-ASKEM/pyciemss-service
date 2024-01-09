@@ -50,7 +50,7 @@ class TestSimulate:
 
         config_id = example_context["request"]["model_config_id"]
         model = json.loads(example_context["fetch"](config_id + ".json"))
-        requests_mock.get(f"{TDS_URL}/model_configurations/{config_id}", json=model)
+        requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}", json=model)
 
         ### Act and Assert
 
@@ -68,14 +68,14 @@ class TestCalibrate:
 
         config_id = example_context["request"]["model_config_id"]
         model = json.loads(example_context["fetch"](config_id + ".json"))
-        requests_mock.get(f"{TDS_URL}/model_configurations/{config_id}", json=model)
+        requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}", json=model)
 
         dataset_id = example_context["request"]["dataset"]["id"]
         filename = example_context["request"]["dataset"]["filename"]
         dataset = example_context["fetch"](filename, True)
         dataset_loc = {"method": "GET", "url": dataset}
         requests_mock.get(
-            f"{TDS_URL}/datasets/{dataset_id}/download-url?filename={filename}",
+            f"{TDS_URL}/datasets/{dataset_id}/download-csv?filename={filename}",
             json=dataset_loc,
         )
 
@@ -94,7 +94,7 @@ class TestOptimizeSimulate:
 
         config_id = example_context["request"]["model_config_id"]
         model = json.loads(example_context["fetch"](config_id + ".json"))
-        requests_mock.get(f"{TDS_URL}/model_configurations/{config_id}", json=model)
+        requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}", json=model)
 
         ### Act and Assert
 
@@ -112,14 +112,14 @@ class TestOptimizeCalibrate:
 
         config_id = example_context["request"]["model_config_id"]
         model = json.loads(example_context["fetch"](config_id + ".json"))
-        requests_mock.get(f"{TDS_URL}/model_configurations/{config_id}", json=model)
+        requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}", json=model)
 
         dataset_id = example_context["request"]["dataset"]["id"]
         filename = example_context["request"]["dataset"]["filename"]
         dataset = example_context["fetch"](filename, True)
         dataset_loc = {"method": "GET", "url": dataset}
         requests_mock.get(
-            f"{TDS_URL}/datasets/{dataset_id}/download-url?filename={filename}",
+            f"{TDS_URL}/datasets/{dataset_id}/download-csv?filename={filename}",
             json=dataset_loc,
         )
 
@@ -143,7 +143,7 @@ class TestEnsembleSimulate:
         ]
         for config_id in config_ids:
             model = json.loads(example_context["fetch"](config_id + ".json"))
-            requests_mock.get(f"{TDS_URL}/model_configurations/{config_id}", json=model)
+            requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}", json=model)
 
         ### Act and Assert
 
@@ -164,14 +164,14 @@ class TestEnsembleCalibrate:
         ]
         for config_id in config_ids:
             model = json.loads(example_context["fetch"](config_id + ".json"))
-            requests_mock.get(f"{TDS_URL}/model_configurations/{config_id}", json=model)
+            requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}", json=model)
 
         dataset_id = example_context["request"]["dataset"]["id"]
         filename = example_context["request"]["dataset"]["filename"]
         dataset = example_context["fetch"](filename, True)
         dataset_loc = {"method": "GET", "url": dataset}
         requests_mock.get(
-            f"{TDS_URL}/datasets/{dataset_id}/download-url?filename={filename}",
+            f"{TDS_URL}/datasets/{dataset_id}/download-csv?filename={filename}",
             json=dataset_loc,
         )
         requests_mock.get("http://dataset", text=dataset)

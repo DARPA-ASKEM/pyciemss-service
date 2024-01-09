@@ -36,7 +36,7 @@ def test_optimize_simulate_example(
     requests_mock.put(
         f"{TDS_URL}/simulations/{simulation_id}", json={"status": "success"}
     )
-    requests_mock.get(f"{TDS_URL}/model_configurations/{config_id}", json=model)
+    requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}", json=model)
 
     worker.work(burst=True)
 

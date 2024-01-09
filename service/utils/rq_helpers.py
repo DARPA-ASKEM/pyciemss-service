@@ -36,14 +36,16 @@ def update_status_on_job_fail(job, connection, etype, value, traceback):
 
 
 def create_job(request_payload, sim_type, redis_conn):
+    job_id = f"ciemss-{uuid4()}"
+
     payload = {
-        "name": f"ciemss-{uuid4()}",
+        "name": job_id,
         "execution_payload": request_payload.dict(),
         "result_files": [],
         "type": sim_type,
         "status": "queued",
         "engine": request_payload.engine,
-        "workflow_id": "",
+        "workflow_id": job_id,
     }
     logging.info(payload)
 

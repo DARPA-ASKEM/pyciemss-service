@@ -20,7 +20,7 @@ def test_calibrate_example(
     dataset = example_context["fetch"](filename, True)
     dataset_loc = {"method": "GET", "url": dataset}
     requests_mock.get(
-        f"{TDS_URL}/datasets/{dataset_id}/download-url?filename={filename}",
+        f"{TDS_URL}/datasets/{dataset_id}/download-csv?filename={filename}",
         json=dataset_loc,
     )
 
@@ -45,7 +45,7 @@ def test_calibrate_example(
     requests_mock.put(
         f"{TDS_URL}/simulations/{simulation_id}", json={"status": "success"}
     )
-    requests_mock.get(f"{TDS_URL}/model_configurations/{config_id}", json=model)
+    requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}", json=model)
 
     worker.work(burst=True)
 
