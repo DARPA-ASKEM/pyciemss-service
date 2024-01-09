@@ -73,7 +73,7 @@ def create_tds_job(payload):
             )
         )
 
-    return response.context
+    return response.json()
 
 
 def cancel_tds_job(job_id):

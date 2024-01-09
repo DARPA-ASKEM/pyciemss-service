@@ -50,7 +50,7 @@ def create_job(request_payload, sim_type, redis_conn):
     logging.info(payload)
 
     res = create_tds_job(payload)
-    job_id = res.id
+    job_id = res["id"]
 
     logging.info(res)
 
