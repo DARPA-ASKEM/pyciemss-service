@@ -2,18 +2,19 @@ from __future__ import annotations
 import socket  # noqa: F401
 import logging  # noqa: F401
 
-# import pyro
-
 from enum import Enum
 from typing import ClassVar, Dict, List, Optional
 from pydantic import BaseModel, Field, Extra
 
-# from pika.exceptions import AMQPConnectionError
+from pika.exceptions import AMQPConnectionError
+
+# TODO: Do not use Torch in PyCIEMSS Library interface
+import torch
 
 
 from utils.convert import convert_to_static_interventions, convert_to_solution_mapping
 from utils.rabbitmq import gen_rabbitmq_hook  # noqa: F401
-from utils.tds import fetch_dataset, fetch_model
+from utils.tds import fetch_dataset, fetch_model, fetch_inferred_parameters
 from settings import settings
 
 TDS_CONFIGURATIONS = "/model_configurations/"
@@ -114,6 +115,11 @@ class SimulateExtra(BaseModel):
     num_samples: int = Field(
         100, description="number of samples for a CIEMSS simulation", example=100
     )
+    inferred_parameters: Optional[str] = Field(
+        None,
+        description="id from a previous calibration",
+        example=None,
+    )
 
 
 class Simulate(OperationRequest):
@@ -137,13 +143,19 @@ class Simulate(OperationRequest):
 
         interventions = convert_to_static_interventions(self.interventions)
 
+        extra_options = self.extra.dict()
+        inferred_parameters = fetch_inferred_parameters(
+            extra_options.pop("inferred_parameters"), TDS_URL, job_id
+        )
+
         return {
             "model_path_or_json": amr_path,
             "logging_step_size": self.step_size,
             "start_time": self.timespan.start,
             "end_time": self.timespan.end,
             "static_parameter_interventions": interventions,
-            **self.extra.dict(),
+            "inferred_parameters": inferred_parameters,
+            **extra_options,
         }
 
     def run_sciml_operation(self, job_id, julia_context):
@@ -204,15 +216,18 @@ class Calibrate(OperationRequest):
         dataset_path = fetch_dataset(self.dataset.dict(), TDS_URL, job_id)
 
         # TODO: Test RabbitMQ
-        # try:
-        #     hook = gen_rabbitmq_hook(job_id)
-        # except (socket.gaierror, AMQPConnectionError):
-        #     logging.warning(
-        #         "%s: Failed to connect to RabbitMQ. Unable to log progress", job_id
-        #     )
+        try:
+            hook = gen_rabbitmq_hook(job_id)
+        except (socket.gaierror, AMQPConnectionError):
+            logging.warning(
+                "%s: Failed to connect to RabbitMQ. Unable to log progress", job_id
+            )
 
-        #     def hook(_):
-        #         return None
+            def hook(progress, _loss):
+                progress = progress / 10  # TODO: Fix magnitude of progress upstream
+                if progress == int(progress):
+                    logging.info(f"Calibration is {progress}% complete")
+                return None
 
         return {
             "model_path_or_json": amr_path,
@@ -220,7 +235,7 @@ class Calibrate(OperationRequest):
             # TODO: Is this intentionally missing from `calibrate`?
             # "end_time": self.timespan.end,
             "data_path": dataset_path,
-            # "progress_hook": hook,
+            "progress_hook": hook,
             # "visual_options": True,
             **self.extra.dict(),
         }
@@ -252,7 +267,7 @@ class EnsembleSimulate(OperationRequest):
     )
 
     def gen_pyciemss_args(self, job_id):
-        # weights = [config.weight for config in self.model_configs]
+        weights = torch.tensor([config.weight for config in self.model_configs])
         solution_mappings = [
             convert_to_solution_mapping(config) for config in self.model_configs
         ]
@@ -267,7 +282,7 @@ class EnsembleSimulate(OperationRequest):
             "start_time": self.timespan.start,
             "end_time": self.timespan.end,
             "logging_step_size": self.step_size,
-            # "weights": weights,
+            "dirichlet_alpha": weights,
             # "visual_options": True,
             **self.extra.dict(),
         }

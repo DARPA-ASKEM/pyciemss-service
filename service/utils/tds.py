@@ -11,6 +11,7 @@ import json
 import requests
 import dill
 from datetime import datetime
+from typing import Optional
 
 from fastapi import HTTPException
 
@@ -98,6 +99,24 @@ def fetch_dataset(dataset: dict, tds_api, job_id):
     with open(dataset_path, "w") as file:
         df.to_csv(file, index=False)
     return dataset_path
+
+
+def fetch_inferred_parameters(parameters_id: Optional[str], tds_api, job_id):
+    if parameters_id is None:
+        return
+    job_dir = get_job_dir(job_id)
+    logging.debug(f"Fetching inferred parameters {parameters_id}")
+    download_url = (
+        f"{tds_api}/simulations/{parameters_id}/download-url?filename=parameters.dill"
+    )
+    parameters_url = requests.get(download_url).json()["url"]
+    response = requests.get(parameters_url)
+    if response.status_code >= 300:
+        raise HTTPException(status_code=400, detail="Unable to retrieve parameters")
+    parameters_path = os.path.join(job_dir, "parameters.dill")
+    with open(parameters_path, "wb") as file:
+        file.write(response.content)
+    return dill.loads(response.content)
 
 
 def attach_files(output: dict, tds_api, simulation_endpoint, job_id, status="complete"):

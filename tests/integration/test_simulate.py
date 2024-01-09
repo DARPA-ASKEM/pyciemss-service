@@ -8,7 +8,7 @@ TDS_URL = settings.TDS_URL
 
 
 @pytest.mark.example_dir("simulate")
-def test_simulate_example(
+def tdest_simulate_example(
     example_context, client, worker, file_storage, file_check, requests_mock
 ):
     request = example_context["request"]

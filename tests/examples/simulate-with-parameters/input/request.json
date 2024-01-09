@@ -1,0 +1,16 @@
+{
+  "engine": "ciemss",
+  "username": "not_provided",
+  "model_config_id": "sidarthe",
+  "interventions": [
+    {"timestep": 1.0, "name": "beta", "value": 0.4}
+  ],
+  "timespan": {
+    "start": 0,
+    "end": 90
+  },
+  "extra": {
+    "num_samples": 100,
+    "inferred_parameters": "parameters"
+  }
+}

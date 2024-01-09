@@ -11,7 +11,6 @@ from models import (
     Calibrate,
     Simulate,
     EnsembleSimulate,
-    # EnsembleCalibrate,
     StatusSimulationIdGetResponse,
 )
 
@@ -108,21 +107,19 @@ for operation_name, schema in operations.items():
     registrar(operate)
 
 
-@app.get(
-    "/ensemble-calibrate", response_model=StatusSimulationIdGetResponse
-)  # NOT YET IN SPEC
+@app.get("/ensemble-calibrate", response_model=StatusSimulationIdGetResponse)
 def ensemble_calibrate_not_yet_implemented():
     """
     DO NOT USE. Placeholder for `ensemble-calibrate` endpoint.
     This will be reimplemented in the future.
     """
-    raise HTTPException(status=501, detail="Will be implemented soon")
+    raise HTTPException(status=501, detail="Not yet reimplemented")
 
 
 @app.get("/optimize", response_model=StatusSimulationIdGetResponse)  # NOT YET IN SPEC
-def optimize_not_yet_implemented():
+def optimize_not_yet_implemented():  # NOT YET IN SPEC
     """
     DO NOT USE. Placeholder for `optimize` endpoint.
     This will be implemented in the future.
     """
-    raise HTTPException(status=501, detail="Will be implemented soon")
+    raise HTTPException(status=501, detail="Not yet implemented")

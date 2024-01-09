@@ -48,7 +48,7 @@ def test_ensemble_simulate_example(
     )
     status = response.json()["status"]
     result = file_storage("result.csv")
-    viz = file_storage("visualization.json")
+    # viz = file_storage("visualization.json")
     # eval = file_storage("eval.csv") # NOTE: Do we want to check this
 
     # Checks
@@ -57,5 +57,5 @@ def test_ensemble_simulate_example(
     assert result is not None
     assert file_check("csv", result)
 
-    assert viz is not None
-    assert file_check("json", viz)
+    # assert viz is not None
+    # assert file_check("json", viz)

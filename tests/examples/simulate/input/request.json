@@ -3,7 +3,7 @@
   "username": "not_provided",
   "model_config_id": "sidarthe",
   "interventions": [
-    {"timestep": 1, "name": "beta", "value": 0.4}
+    {"timestep": 1.0, "name": "beta", "value": 0.4}
   ],
   "timespan": {
     "start": 0,
