@@ -8,18 +8,7 @@ from utils.tds import (
     attach_files,
 )
 
-from pyciemss.PetriNetODE.interfaces import (  # noqa: F401
-    load_and_calibrate_and_sample_petri_model,
-    load_and_sample_petri_model,
-    load_and_optimize_and_sample_petri_model,
-    load_and_calibrate_and_optimize_and_sample_petri_model,
-)
-
-from pyciemss.Ensemble.interfaces import (  # noqa: F401
-    load_and_sample_petri_ensemble,
-    load_and_calibrate_and_sample_ensemble_model,
-)
-
+from pyciemss.interfaces import sample, calibrate, ensemble_sample  # noqa: F401
 
 TDS_SIMULATIONS = "/simulations/"
 TDS_URL = settings.TDS_URL
