@@ -23,7 +23,12 @@ def mock_rabbitmq_consumer():
 
     def callback(ch, method, properties, body):
         resp = json.loads(body)
-        logging.info("job_id:%s; progress:%s", resp["job_id"], resp["progress"])
+        logging.info(
+            "job_id:%s; progress:%s; loss:%s",
+            resp["job_id"],
+            resp["progress"],
+            resp["loss"],
+        )
 
     channel.basic_consume(
         queue="simulation-status", on_message_callback=callback, auto_ack=True
@@ -39,11 +44,13 @@ def gen_rabbitmq_hook(job_id):
     )
     channel = connection.channel()
 
-    def hook(progress):
+    def hook(progress, loss):
         channel.basic_publish(
             exchange="",
             routing_key="simulation-status",
-            body=json.dumps({"job_id": job_id, "progress": progress}),
+            body=json.dumps(
+                {"job_id": job_id, "progress": progress, "loss": str(loss)}
+            ),
         )
 
     return hook

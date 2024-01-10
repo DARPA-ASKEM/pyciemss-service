@@ -1,0 +1,17 @@
+{
+  "engine": "ciemss",
+  "model_configs": [
+    {
+      "id": "sidarthe",
+      "weight": 0.5,
+      "solution_mappings": {"Infected": "Diagnosed"}
+    }
+  ],
+  "timespan": {
+    "start": 0,
+    "end": 5
+  },
+  "extra": {
+    "num_samples": 100
+  }
+}

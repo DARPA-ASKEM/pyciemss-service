@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from models import (
@@ -10,10 +10,7 @@ from models import (
     JobResponse,
     Calibrate,
     Simulate,
-    OptimizeSimulate,
-    OptimizeCalibrate,
     EnsembleSimulate,
-    EnsembleCalibrate,
     StatusSimulationIdGetResponse,
 )
 
@@ -22,10 +19,7 @@ from utils.rq_helpers import get_redis, create_job, fetch_job_status, kill_job
 operations = {
     "simulate": Simulate,
     "calibrate": Calibrate,
-    "optimize-simulate": OptimizeSimulate,
-    "optimize-calibrate": OptimizeCalibrate,
     "ensemble-simulate": EnsembleSimulate,
-    "ensemble-calibrate": EnsembleCalibrate,
 }
 
 logging.basicConfig()
@@ -111,3 +105,21 @@ for operation_name, schema in operations.items():
         return create_job(body, operation_name, redis_conn)
 
     registrar(operate)
+
+
+@app.get("/ensemble-calibrate", response_model=StatusSimulationIdGetResponse)
+def ensemble_calibrate_not_yet_implemented():
+    """
+    DO NOT USE. Placeholder for `ensemble-calibrate` endpoint.
+    This will be reimplemented in the future.
+    """
+    raise HTTPException(status=501, detail="Not yet reimplemented")
+
+
+@app.get("/optimize", response_model=StatusSimulationIdGetResponse)  # NOT YET IN SPEC
+def optimize_not_yet_implemented():  # NOT YET IN SPEC
+    """
+    DO NOT USE. Placeholder for `optimize` endpoint.
+    This will be implemented in the future.
+    """
+    raise HTTPException(status=501, detail="Not yet implemented")
