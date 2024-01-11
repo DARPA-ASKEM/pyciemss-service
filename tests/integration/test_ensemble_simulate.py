@@ -13,7 +13,7 @@ TDS_URL = settings.TDS_URL
 def test_ensemble_simulate_example(
     example_context, client, worker, file_storage, file_check, requests_mock
 ):
-    job_id = uuid4()
+    job_id = "9036f8a8-7e55-4e77-aeec-e8d4ca120d67"
 
     request = example_context["request"]
     config_ids = [

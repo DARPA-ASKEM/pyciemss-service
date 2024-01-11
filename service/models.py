@@ -91,7 +91,7 @@ class QuantityOfInterest(BaseModel):
 class OperationRequest(BaseModel):
     pyciemss_lib_function: ClassVar[str] = ""
     engine: str = Field("ciemss", example="ciemss")
-    username: str = Field("not_provided", example="not_provided")
+    user_id: str = Field("not_provided", example="not_provided")
 
     def gen_pyciemss_args(self, job_id):
         raise NotImplementedError("PyCIEMSS cannot handle this operation")
@@ -297,7 +297,7 @@ class EnsembleSimulate(OperationRequest):
 #     pyciemss_lib_function: ClassVar[
 #         str
 #     ] = "load_and_calibrate_and_sample_ensemble_model"
-#     username: str = Field("not_provided", example="not_provided")
+#     user_id: str = Field("not_provided", example="not_provided")
 #     model_configs: List[ModelConfig] = Field(
 #         [],
 #         example=[],

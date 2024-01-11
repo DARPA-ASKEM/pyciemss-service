@@ -12,7 +12,7 @@ TDS_URL = settings.TDS_URL
 def test_calibrate_example(
     example_context, client, worker, file_storage, file_check, requests_mock
 ):
-    job_id = uuid4()
+    job_id = "0478a0f7-21b3-4241-afa2-252e1c1992d8"
 
     request = example_context["request"]
     config_id = request["model_config_id"]

@@ -1,48 +1,47 @@
 {
-  "id": "9036f8a8-7e55-4e77-aeec-e8d4ca120d67",
-  "name": null,
-  "description": null,
-  "timestamp": "2023-08-03T21:13:45",
-  "engine": "ciemss",
-  "type": "ensemble-simulate",
-  "status": "complete",
-  "execution_payload": {
-    "engine": "ciemss",
-    "user_id": "not_provided",
-    "model_configs": [
-      {
-        "id": "398d2a33-1cbe-44cf-9b66-a6976b947809",
-        "solution_mappings": {
-          "Infected": "Cases",
-          "Hospitalizations": "hospitalized_population"
-        },
-        "weight": 0.5
-      },
-      {
-        "id": "fab58d86-cf1e-4990-809a-58c029545a3a",
-        "solution_mappings": {
-          "Infected": "Infections",
-          "Hospitalizations": "hospitalized_population"
-        },
-        "weight": 0.5
-      }
-    ],
-    "timespan": {
-      "start": 0,
-      "end": 5
-    },
-    "extra": {
-      "num_samples": 100
-    }
-  },
-  "start_time": "2023-08-03T21:13:31.641100",
-  "completed_time": "2023-08-03T21:13:45.138033",
-  "workflow_id": "ciemss-9036f8a8-7e55-4e77-aeec-e8d4ca120d67",
-  "user_id": null,
-  "project_id": null,
-  "result_files": [
-    "result.csv",
-    "visualization.json",
-    "eval.csv"
-  ]
+	"id": "9036f8a8-7e55-4e77-aeec-e8d4ca120d67",
+	"name": null,
+	"description": null,
+	"timestamp": "2023-08-03T21:13:45",
+	"engine": "ciemss",
+	"type": "ensemble-simulate",
+	"status": "complete",
+	"execution_payload": {
+		"engine": "ciemss",
+		"user_id": "not_provided",
+		"model_configs": [
+			{
+				"id": "398d2a33-1cbe-44cf-9b66-a6976b947809",
+				"solution_mappings": {
+					"Infected": "Cases",
+					"Hospitalizations": "hospitalized_population"
+				},
+				"weight": 0.5
+			},
+			{
+				"id": "fab58d86-cf1e-4990-809a-58c029545a3a",
+				"solution_mappings": {
+					"Infected": "Infections",
+					"Hospitalizations": "hospitalized_population"
+				},
+				"weight": 0.5
+			}
+		],
+		"timespan": {
+			"start": 0,
+			"end": 5
+		},
+		"extra": {
+			"num_samples": 100
+		}
+	},
+	"start_time": "2023-08-03T21:13:31.641100",
+	"completed_time": "2023-08-03T21:13:45.138033",
+	"user_id": null,
+	"project_id": null,
+	"result_files": [
+		"result.csv",
+		"visualization.json",
+		"eval.csv"
+	]
 }

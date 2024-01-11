@@ -190,7 +190,7 @@ def attach_files(output: dict, job_id, status="complete"):
 
     if status != "error":
         for location, handle in files.items():
-            upload_url = f"{sim_results_url}/upload-csv?filename={handle}"
+            upload_url = f"{sim_results_url}/upload-url?filename={handle}"
             upload_response = tds_session().get(upload_url)
             presigned_upload_url = upload_response.json()["url"]
             with open(location, "rb") as f:
