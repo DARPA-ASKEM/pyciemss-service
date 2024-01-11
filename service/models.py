@@ -138,14 +138,14 @@ class Simulate(OperationRequest):
     def gen_pyciemss_args(self, job_id):
         # Get model from TDS
         amr_path = fetch_model(
-            self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
+            self.model_config_id, job_id
         )
 
         interventions = convert_to_static_interventions(self.interventions)
 
         extra_options = self.extra.dict()
         inferred_parameters = fetch_inferred_parameters(
-            extra_options.pop("inferred_parameters"), TDS_URL, job_id
+            extra_options.pop("inferred_parameters"), job_id
         )
 
         return {
@@ -160,7 +160,7 @@ class Simulate(OperationRequest):
 
     def run_sciml_operation(self, job_id, julia_context):
         amr_path = fetch_model(
-            self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
+            self.model_config_id, job_id
         )
         with open(amr_path, "r") as file:
             amr = file.read()
@@ -210,10 +210,10 @@ class Calibrate(OperationRequest):
 
     def gen_pyciemss_args(self, job_id):
         amr_path = fetch_model(
-            self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
+            self.model_config_id, job_id
         )
 
-        dataset_path = fetch_dataset(self.dataset.dict(), TDS_URL, job_id)
+        dataset_path = fetch_dataset(self.dataset.dict(), job_id)
 
         # TODO: Test RabbitMQ
         try:
@@ -272,7 +272,7 @@ class EnsembleSimulate(OperationRequest):
             convert_to_solution_mapping(config) for config in self.model_configs
         ]
         amr_paths = [
-            fetch_model(config.id, TDS_URL, TDS_CONFIGURATIONS, job_id)
+            fetch_model(config.id, job_id)
             for config in self.model_configs
         ]
 
@@ -327,11 +327,11 @@ class EnsembleSimulate(OperationRequest):
 #         solution_mappings = [config.solution_mappings for config
 #               in self.model_configs]
 #         amr_paths = [
-#             fetch_model(config.id, TDS_URL, TDS_CONFIGURATIONS, job_id)
+#             fetch_model(config.id, job_id)
 #             for config in self.model_configs
 #         ]
 
-#         dataset_path = fetch_dataset(self.dataset.dict(), TDS_URL, job_id)
+#         dataset_path = fetch_dataset(self.dataset.dict(), job_id)
 
 #         # Generate timepoints
 #         time_count = self.timespan.end - self.timespan.start
