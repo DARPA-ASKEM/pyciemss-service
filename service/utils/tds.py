@@ -140,7 +140,7 @@ def fetch_inferred_parameters(parameters_id: Optional[str], job_id):
     job_dir = get_job_dir(job_id)
     logging.debug(f"Fetching inferred parameters {parameters_id}")
     download_url = (
-        f"{TDS_URL}{TDS_SIMULATIONS}{parameters_id}/download-csv?filename=parameters.dill"
+        f"{TDS_URL}{TDS_SIMULATIONS}{parameters_id}/download-url?filename=parameters.dill"
     )
     parameters_url = tds_session().get(download_url).json()["url"]
     response = tds_session().get(parameters_url)
