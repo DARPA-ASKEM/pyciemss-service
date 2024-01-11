@@ -1,23 +1,14 @@
 import logging
 
 # from juliacall import newmodule
+from settings import settings
 from utils.tds import (
     update_tds_status,
     cleanup_job_dir,
     attach_files,
 )
 
-from pyciemss.PetriNetODE.interfaces import (  # noqa: F401
-    load_and_calibrate_and_sample_petri_model,
-    load_and_sample_petri_model,
-    load_and_optimize_and_sample_petri_model,
-    load_and_calibrate_and_optimize_and_sample_petri_model,
-)
-
-from pyciemss.Ensemble.interfaces import (  # noqa: F401
-    load_and_sample_petri_ensemble,
-    load_and_calibrate_and_sample_ensemble_model,
-)
+from pyciemss.interfaces import sample, calibrate, ensemble_sample  # noqa: F401
 
 # jl = newmodule("SciMLIntegration")
 # jl.seval("using SciMLIntegration, PythonCall")

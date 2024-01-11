@@ -1,4 +1,4 @@
-SHELL = /bin/bash
+SHELL = /usr/bin/env bash
 LANG = en_US.utf-8
 PYTHON = $(shell which python3 || which python)
 DOCKER = $(shell which docker)

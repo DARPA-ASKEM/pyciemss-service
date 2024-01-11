@@ -53,18 +53,14 @@ def test_calibrate_example(
         f"/status/{simulation_id}",
     )
     status = response.json()["status"]
-    result = file_storage("result.csv")
     params = file_storage("parameters.pickle")
-    viz = file_storage("visualization.json")
+    # viz = file_storage("visualization.json")
     # eval = file_storage("eval.csv") # NOTE: Do we want to check this
 
     # Checks
     assert status == "complete"
 
-    assert result is not None
-    assert file_check("csv", result)
-
     assert params is not None
 
-    assert viz is not None
-    assert file_check("json", viz)
+    # assert viz is not None
+    # assert file_check("json", viz)

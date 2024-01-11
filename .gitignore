@@ -46,6 +46,7 @@ dist
 .venv
 .tmp
 .vscode
+.devcontainer
 .cache
 .sqlite
 experiments-main
@@ -73,3 +74,4 @@ create.sql
 .eslintcache
 
 .version
+*.nix

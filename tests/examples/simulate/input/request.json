@@ -1,12 +1,19 @@
 {
-  "engine": "ciemss",
-  "user_id": "not_provided",
-  "model_config_id": "0da53e71-52c4-49fd-b957-2219af712fdd",
-  "timespan": {
-    "start": 0,
-    "end": 90
-  },
-  "extra": {
-    "num_samples": 100
-  }
+	"engine": "ciemss",
+	"user_id": "not_provided",
+	"model_config_id": "sidarthe",
+	"interventions": [
+		{
+			"timestep": 1.0,
+			"name": "beta",
+			"value": 0.4
+		}
+	],
+	"timespan": {
+		"start": 0,
+		"end": 90
+	},
+	"extra": {
+		"num_samples": 100
+	}
 }

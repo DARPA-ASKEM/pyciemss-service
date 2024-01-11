@@ -2,14 +2,14 @@
   "engine": "ciemss",
   "model_configs": [
     {
-      "id": "398d2a33-1cbe-44cf-9b66-a6976b947809",
+      "id": "sidarthe",
       "weight": 0.5,
-      "solution_mappings": {"Infected": "Cases", "Hospitalizations": "hospitalized_population"}
+      "solution_mappings": {"Infected": "Diagnosed"}
     },
     {
-      "id": "fab58d86-cf1e-4990-809a-58c029545a3a",
+      "id": "other-model",
       "weight": 0.5,
-      "solution_mappings": {"Infected": "Infections", "Hospitalizations": "hospitalized_population"}
+      "solution_mappings": {"Infected": "Infections"}
     }
   ],
   "timespan": {

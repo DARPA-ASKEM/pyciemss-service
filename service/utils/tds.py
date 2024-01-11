@@ -11,6 +11,7 @@ import json
 import requests
 import dill
 from datetime import datetime
+from typing import Optional
 
 from fastapi import HTTPException
 
@@ -20,8 +21,8 @@ TDS_URL = settings.TDS_URL
 TDS_USER = settings.TDS_USER
 TDS_PASSWORD = settings.TDS_PASSWORD
 TDS_SIMULATIONS = "/simulations/"
-TDS_CONFIGURATIONS = "/model-configurations/"
 TDS_DATASETS = "/datasets/"
+TDS_CONFIGURATIONS = "/model-configurations/"
 
 
 def tds_session():
@@ -33,8 +34,28 @@ def tds_session():
     return session
 
 
+def create_tds_job(payload):
+    post_url = TDS_URL + TDS_SIMULATIONS
+    response = tds_session().post(post_url, json=payload)
+    if response.status_code >= 300:
+        raise Exception(
+            (
+                "Failed to create simulation on TDS "
+                f"(status: {response.status_code}): {json.dumps(payload)}"
+            )
+        )
+    return response.json()
+
+
+def cancel_tds_job(job_id):
+    url = TDS_URL + TDS_SIMULATIONS + str(job_id)
+    tds_payload = tds_session().get(url).json()
+    tds_payload["status"] = "cancelled"
+    return tds_session().put(url, json=json.loads(json.dumps(tds_payload, default=str)))
+
+
 def update_tds_status(job_id, status, result_files=[], start=False, finish=False):
-    url = TDS_URL + TDS_SIMULATIONS + job_id
+    url = TDS_URL + TDS_SIMULATIONS + str(job_id)
     logging.debug(
         "Updating simulation `%s` -- %s start: %s; finish: %s; result_files: %s",
         url,
@@ -60,27 +81,6 @@ def update_tds_status(job_id, status, result_files=[], start=False, finish=False
     )
 
     return update_response
-
-
-def create_tds_job(payload):
-    post_url = TDS_URL + TDS_SIMULATIONS
-    response = tds_session().post(post_url, json=payload)
-    if response.status_code >= 300:
-        raise Exception(
-            (
-                "Failed to create simulation on TDS "
-                f"(status: {response.status_code}): {json.dumps(payload)}"
-            )
-        )
-
-    return response.json()
-
-
-def cancel_tds_job(job_id):
-    url = TDS_URL + TDS_SIMULATIONS + str(job_id)
-    tds_payload = tds_session().get(url).json()
-    tds_payload["status"] = "cancelled"
-    return tds_session().put(url, json=json.loads(json.dumps(tds_payload, default=str)))
 
 
 def get_job_dir(job_id):
@@ -134,8 +134,26 @@ def fetch_dataset(dataset: dict, job_id):
     return dataset_path
 
 
+def fetch_inferred_parameters(parameters_id: Optional[str], job_id):
+    if parameters_id is None:
+        return
+    job_dir = get_job_dir(job_id)
+    logging.debug(f"Fetching inferred parameters {parameters_id}")
+    download_url = (
+        f"{TDS_URL}{TDS_SIMULATIONS}{parameters_id}/download-url?filename=parameters.dill"
+    )
+    parameters_url = tds_session().get(download_url).json()["url"]
+    response = tds_session().get(parameters_url)
+    if response.status_code >= 300:
+        raise HTTPException(status_code=400, detail="Unable to retrieve parameters")
+    parameters_path = os.path.join(job_dir, "parameters.dill")
+    with open(parameters_path, "wb") as file:
+        file.write(response.content)
+    return dill.loads(response.content)
+
+
 def attach_files(output: dict, job_id, status="complete"):
-    sim_results_url = TDS_URL + TDS_SIMULATIONS + job_id
+    sim_results_url = TDS_URL + TDS_SIMULATIONS + str(job_id)
     job_dir = get_job_dir(job_id)
     files = {}
 
@@ -174,10 +192,8 @@ def attach_files(output: dict, job_id, status="complete"):
 
     if status != "error":
         for location, handle in files.items():
-            upload_url = f"{sim_results_url}/upload-url?filename={handle}"
-            upload_response = tds_session().get(
-                upload_url, auth=(TDS_USER, TDS_PASSWORD)
-            )
+            upload_url = f"{sim_results_url}/upload-csv?filename={handle}"
+            upload_response = tds_session().get(upload_url)
             presigned_upload_url = upload_response.json()["url"]
             with open(location, "rb") as f:
                 upload_response = tds_session().put(presigned_upload_url, f)
@@ -193,6 +209,6 @@ def attach_files(output: dict, job_id, status="complete"):
 
     # Update simulation object with status and filepaths.
     update_tds_status(
-        sim_results_url, status=status, result_files=list(files.values()), finish=True
+        job_id, status=status, result_files=list(files.values()), finish=True
     )
     logging.info("uploaded files to %s", job_id)
