@@ -10,9 +10,6 @@ from utils.tds import (
 
 from pyciemss.interfaces import sample, calibrate, ensemble_sample  # noqa: F401
 
-TDS_SIMULATIONS = "/simulations/"
-TDS_URL = settings.TDS_URL
-
 # jl = newmodule("SciMLIntegration")
 # jl.seval("using SciMLIntegration, PythonCall")
 

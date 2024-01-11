@@ -17,10 +17,6 @@ from utils.rabbitmq import gen_rabbitmq_hook  # noqa: F401
 from utils.tds import fetch_dataset, fetch_model, fetch_inferred_parameters
 from settings import settings
 
-TDS_CONFIGURATIONS = "/model-configurations/"
-TDS_SIMULATIONS = "/simulations/"
-TDS_URL = settings.TDS_URL
-
 
 class Timespan(BaseModel):
     start: float = Field(..., example=0)
