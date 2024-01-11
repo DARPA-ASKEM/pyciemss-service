@@ -133,9 +133,7 @@ class Simulate(OperationRequest):
 
     def gen_pyciemss_args(self, job_id):
         # Get model from TDS
-        amr_path = fetch_model(
-            self.model_config_id, job_id
-        )
+        amr_path = fetch_model(self.model_config_id, job_id)
 
         interventions = convert_to_static_interventions(self.interventions)
 
@@ -155,9 +153,7 @@ class Simulate(OperationRequest):
         }
 
     def run_sciml_operation(self, job_id, julia_context):
-        amr_path = fetch_model(
-            self.model_config_id, job_id
-        )
+        amr_path = fetch_model(self.model_config_id, job_id)
         with open(amr_path, "r") as file:
             amr = file.read()
         result = julia_context.simulate(amr, self.timespan.start, self.timespan.end)
@@ -205,9 +201,7 @@ class Calibrate(OperationRequest):
     )
 
     def gen_pyciemss_args(self, job_id):
-        amr_path = fetch_model(
-            self.model_config_id, job_id
-        )
+        amr_path = fetch_model(self.model_config_id, job_id)
 
         dataset_path = fetch_dataset(self.dataset.dict(), job_id)
 
@@ -267,10 +261,7 @@ class EnsembleSimulate(OperationRequest):
         solution_mappings = [
             convert_to_solution_mapping(config) for config in self.model_configs
         ]
-        amr_paths = [
-            fetch_model(config.id, job_id)
-            for config in self.model_configs
-        ]
+        amr_paths = [fetch_model(config.id, job_id) for config in self.model_configs]
 
         return {
             "model_paths_or_jsons": amr_paths,
