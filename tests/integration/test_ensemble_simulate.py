@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from uuid import uuid4
 
 from service.settings import settings
 
@@ -12,6 +13,8 @@ TDS_URL = settings.TDS_URL
 def test_ensemble_simulate_example(
     example_context, client, worker, file_storage, file_check, requests_mock
 ):
+    job_id = uuid4()
+
     request = example_context["request"]
     config_ids = [
         config["id"] for config in example_context["request"]["model_configs"]
@@ -20,7 +23,7 @@ def test_ensemble_simulate_example(
         model = json.loads(example_context["fetch"](config_id + ".json"))
         requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}", json=model)
 
-    requests_mock.post(f"{TDS_URL}/simulations/", json={"id": None})
+    requests_mock.post(f"{TDS_URL}/simulations/", json={"id": str(job_id)})
 
     response = client.post(
         "/ensemble-simulate",
