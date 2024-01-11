@@ -1,6 +1,6 @@
 {
   "engine": "ciemss",
-  "username": "not_provided",
+  "user_id": "not_provided",
   "model_config_id": "0da53e71-52c4-49fd-b957-2219af712fdd",
   "timespan": {
     "start": 0,

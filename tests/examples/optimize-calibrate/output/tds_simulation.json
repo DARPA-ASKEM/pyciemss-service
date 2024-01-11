@@ -1,5 +1,5 @@
 {
-  "id": "ciemss-b1ff52f0-5c4a-4c9a-9d84-14edabed1c61",
+  "id": "b1ff52f0-5c4a-4c9a-9d84-14edabed1c61",
   "name": null,
   "description": null,
   "timestamp": "2023-09-15T18:31:27",
@@ -8,7 +8,7 @@
   "status": "complete",
   "execution_payload": {
     "engine": "ciemss",
-    "username": "not_provided",
+    "user_id": "not_provided",
     "model_config_id": "0da53e71-52c4-49fd-b957-2219af712fdd",
     "dataset": {
       "id": "cc52e71f-c744-4883-9412-0858d8455754",
