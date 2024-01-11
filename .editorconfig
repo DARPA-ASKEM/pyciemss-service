@@ -19,6 +19,10 @@ indent_style = space
 [*.{yml,yaml}]
 indent_style = space
 
+[*.{py}]
+indent_size = 4
+indent_style = space
+
 [*.{cmd,bat}]
 end_of_line = crlf
 

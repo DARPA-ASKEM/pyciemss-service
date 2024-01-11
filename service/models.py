@@ -15,7 +15,6 @@ import torch
 from utils.convert import convert_to_static_interventions, convert_to_solution_mapping
 from utils.rabbitmq import gen_rabbitmq_hook  # noqa: F401
 from utils.tds import fetch_dataset, fetch_model, fetch_inferred_parameters
-from settings import settings
 
 
 class Timespan(BaseModel):

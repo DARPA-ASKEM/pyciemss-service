@@ -1,7 +1,6 @@
 import logging
 
 # from juliacall import newmodule
-from settings import settings
 from utils.tds import (
     update_tds_status,
     cleanup_job_dir,
