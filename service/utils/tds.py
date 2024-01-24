@@ -20,9 +20,9 @@ from settings import settings
 TDS_URL = settings.TDS_URL
 TDS_USER = settings.TDS_USER
 TDS_PASSWORD = settings.TDS_PASSWORD
-TDS_SIMULATIONS = "/simulations/"
-TDS_DATASETS = "/datasets/"
-TDS_CONFIGURATIONS = "/model-configurations/"
+TDS_SIMULATIONS = "/simulations"
+TDS_DATASETS = "/datasets"
+TDS_CONFIGURATIONS = "/model-configurations"
 
 
 def tds_session():
@@ -48,14 +48,14 @@ def create_tds_job(payload):
 
 
 def cancel_tds_job(job_id):
-    url = TDS_URL + TDS_SIMULATIONS + str(job_id)
+    url = TDS_URL + TDS_SIMULATIONS + "/" + str(job_id)
     tds_payload = tds_session().get(url).json()
     tds_payload["status"] = "cancelled"
     return tds_session().put(url, json=json.loads(json.dumps(tds_payload, default=str)))
 
 
 def update_tds_status(job_id, status, result_files=[], start=False, finish=False):
-    url = TDS_URL + TDS_SIMULATIONS + str(job_id)
+    url = TDS_URL + TDS_SIMULATIONS + "/" + str(job_id)
     logging.debug(
         "Updating simulation `%s` -- %s start: %s; finish: %s; result_files: %s",
         url,
@@ -116,7 +116,7 @@ def fetch_dataset(dataset: dict, job_id):
     job_dir = get_job_dir(job_id)
     logging.debug(f"Fetching dataset {dataset['id']}")
     dataset_url = (
-        f"{TDS_URL}{TDS_DATASETS}{dataset['id']}/"
+        f"{TDS_URL}{TDS_DATASETS}/{dataset['id']}/"
         f"download-csv?filename={dataset['filename']}"
     )
     response = tds_session().get(dataset_url)
@@ -139,7 +139,7 @@ def fetch_inferred_parameters(parameters_id: Optional[str], job_id):
         return
     job_dir = get_job_dir(job_id)
     logging.debug(f"Fetching inferred parameters {parameters_id}")
-    download_url = f"{TDS_URL}{TDS_SIMULATIONS}{parameters_id}/download-url?filename=parameters.dill"
+    download_url = f"{TDS_URL}{TDS_SIMULATIONS}/{parameters_id}/download-url?filename=parameters.dill"
     parameters_url = tds_session().get(download_url).json()["url"]
     response = tds_session().get(parameters_url)
     if response.status_code >= 300:
@@ -151,7 +151,7 @@ def fetch_inferred_parameters(parameters_id: Optional[str], job_id):
 
 
 def attach_files(output: dict, job_id, status="complete"):
-    sim_results_url = TDS_URL + TDS_SIMULATIONS + str(job_id)
+    sim_results_url = TDS_URL + TDS_SIMULATIONS + "/" + str(job_id)
     job_dir = get_job_dir(job_id)
     files = {}
 
