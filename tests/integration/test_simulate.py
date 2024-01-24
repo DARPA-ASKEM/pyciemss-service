@@ -17,7 +17,7 @@ def test_simulate_example(
     config_id = request["model_config_id"]
     model = json.loads(example_context["fetch"](config_id + ".json"))
 
-    requests_mock.post(f"{TDS_URL}/simulations/", json={"id": str(job_id)})
+    requests_mock.post(f"{TDS_URL}/simulations", json={"id": str(job_id)})
 
     response = client.post(
         "/simulate",

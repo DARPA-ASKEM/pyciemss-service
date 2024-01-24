@@ -26,7 +26,7 @@ def test_calibrate_example(
         json=dataset_loc,
     )
 
-    requests_mock.post(f"{TDS_URL}/simulations/", json={"id": str(job_id)})
+    requests_mock.post(f"{TDS_URL}/simulations", json={"id": str(job_id)})
 
     response = client.post(
         "/calibrate",

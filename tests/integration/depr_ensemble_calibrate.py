@@ -29,7 +29,7 @@ def test_ensemble_calibrate_example(
     )
     requests_mock.get("http://dataset", text=dataset)
 
-    requests_mock.post(f"{TDS_URL}/simulations/", json={"id": None})
+    requests_mock.post(f"{TDS_URL}/simulations", json={"id": None})
 
     response = client.post(
         "/ensemble-calibrate",
