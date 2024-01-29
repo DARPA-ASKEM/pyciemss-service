@@ -4,7 +4,7 @@ Module used to interact with the Terarium Data Service (TDS)
 from __future__ import annotations
 
 import logging
-import urllib
+
 import os
 import shutil
 import json
@@ -79,6 +79,14 @@ def update_tds_status(job_id, status, result_files=[], start=False, finish=False
     update_response = tds_session().put(
         url, json=json.loads(json.dumps(tds_payload, default=str))
     )
+    if update_response.status_code >= 300:
+        logging.debug("error", update_response.reason)
+        raise Exception(
+            (
+                "Failed to update simulation on TDS "
+                f"(status: {update_response.status_code}): {json.dumps(tds_payload, default=str)}"
+            )
+        )
 
     return update_response
 
@@ -97,13 +105,13 @@ def cleanup_job_dir(job_id):
 def fetch_model(model_config_id, job_id):
     job_dir = get_job_dir(job_id)
     logging.debug(f"Fetching model {model_config_id}")
-    url_components = [TDS_URL, TDS_CONFIGURATIONS, model_config_id]
-    model_url = ""
-    for component in url_components:
-        model_url = urllib.parse.urljoin(model_url, component)
+
+    model_url = TDS_URL + TDS_CONFIGURATIONS + "/" + model_config_id
+
     model_response = tds_session().get(model_url)
     if model_response.status_code == 404:
         raise HTTPException(status_code=404, detail="Model not found")
+
     amr_path = os.path.join(job_dir, f"./{model_config_id}.json")
     with open(amr_path, "w") as file:
         json.dump(model_response.json()["configuration"], file)
