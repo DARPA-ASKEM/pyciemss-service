@@ -201,8 +201,9 @@ def attach_files(output: dict, job_id, status="complete"):
             upload_url = f"{sim_results_url}/upload-url?filename={handle}"
             upload_response = tds_session().get(upload_url)
             presigned_upload_url = upload_response.json()["url"]
+
             with open(location, "rb") as f:
-                upload_response = tds_session().put(presigned_upload_url, f)
+                upload_response = requests.put(presigned_upload_url, f)
                 if upload_response.status_code >= 300:
                     raise Exception(
                         (
