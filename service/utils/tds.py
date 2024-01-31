@@ -125,9 +125,10 @@ def fetch_dataset(dataset: dict, job_id):
     logging.debug(f"Fetching dataset {dataset['id']}")
     dataset_url = (
         f"{TDS_URL}{TDS_DATASETS}/{dataset['id']}/"
-        f"download-csv?filename={dataset['filename']}"
+        f"download-url?filename={dataset['filename']}"
     )
     response = tds_session().get(dataset_url)
+
     if response.status_code >= 300:
         raise HTTPException(status_code=400, detail="Unable to retrieve dataset")
     df = pd.read_csv(response.json()["url"])
