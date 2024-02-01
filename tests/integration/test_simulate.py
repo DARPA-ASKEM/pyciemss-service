@@ -11,11 +11,13 @@ TDS_URL = settings.TDS_URL
 def test_simulate_example(
     example_context, client, worker, file_storage, file_check, requests_mock
 ):
+    job_id = "9ed74639-7778-4bb9-96fd-7509d68cd425"
+
     request = example_context["request"]
     config_id = request["model_config_id"]
     model = json.loads(example_context["fetch"](config_id + ".json"))
 
-    requests_mock.post(f"{TDS_URL}/simulations/", json={"id": None})
+    requests_mock.post(f"{TDS_URL}/simulations", json={"id": str(job_id)})
 
     response = client.post(
         "/simulate",
@@ -36,7 +38,7 @@ def test_simulate_example(
     requests_mock.put(
         f"{TDS_URL}/simulations/{simulation_id}", json={"status": "success"}
     )
-    requests_mock.get(f"{TDS_URL}/model_configurations/{config_id}", json=model)
+    requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}", json=model)
 
     worker.work(burst=True)
 

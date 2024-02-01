@@ -6,8 +6,9 @@ authors = ["Powell Fendley", "Five Grant"]
 readme = "README.md"
 packages = [{include = "service"}, {include = "tests"}]
 
+
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 requests = "^2.31.0"
 fastapi = "^0.96.0"
 rq = "^1.15.0"
@@ -20,6 +21,7 @@ filelock = "^3.12.2"
 poethepoet = "^0.21.1"
 # juliacall = { version="^0.9.14", optional = true }
 dill = "^0.3.7"
+
 
 [tool.poetry.scripts]
 mockrabbitmq = "service.utils.rabbitmq:mock_rabbitmq_consumer"
@@ -35,6 +37,7 @@ mock = "^5.1.0"
 fakeredis = "^2.17.0"
 httpx = "^0.24.1"
 
+
 [tool.poe.tasks]
 install-pyciemss = "pip install --no-cache-dir git+https://github.com/fivegrant/pyciemss.git@087bc64d935f2ab5090330f1f7d6bde930404115 --use-pep517"
 
@@ -47,3 +50,7 @@ pythonpath = "service"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.ruff]
+ignore = ["E501"]

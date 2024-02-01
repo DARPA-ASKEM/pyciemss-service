@@ -12,15 +12,17 @@ TDS_URL = settings.TDS_URL
 def test_ensemble_simulate_example(
     example_context, client, worker, file_storage, file_check, requests_mock
 ):
+    job_id = "9036f8a8-7e55-4e77-aeec-e8d4ca120d67"
+
     request = example_context["request"]
     config_ids = [
         config["id"] for config in example_context["request"]["model_configs"]
     ]
     for config_id in config_ids:
         model = json.loads(example_context["fetch"](config_id + ".json"))
-        requests_mock.get(f"{TDS_URL}/model_configurations/{config_id}", json=model)
+        requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}", json=model)
 
-    requests_mock.post(f"{TDS_URL}/simulations/", json={"id": None})
+    requests_mock.post(f"{TDS_URL}/simulations", json={"id": str(job_id)})
 
     response = client.post(
         "/ensemble-simulate",

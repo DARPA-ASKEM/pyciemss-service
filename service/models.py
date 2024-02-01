@@ -15,11 +15,6 @@ import torch
 from utils.convert import convert_to_static_interventions, convert_to_solution_mapping
 from utils.rabbitmq import gen_rabbitmq_hook  # noqa: F401
 from utils.tds import fetch_dataset, fetch_model, fetch_inferred_parameters
-from settings import settings
-
-TDS_CONFIGURATIONS = "/model_configurations/"
-TDS_SIMULATIONS = "/simulations/"
-TDS_URL = settings.TDS_URL
 
 
 class Timespan(BaseModel):
@@ -95,7 +90,7 @@ class QuantityOfInterest(BaseModel):
 class OperationRequest(BaseModel):
     pyciemss_lib_function: ClassVar[str] = ""
     engine: str = Field("ciemss", example="ciemss")
-    username: str = Field("not_provided", example="not_provided")
+    user_id: str = Field("not_provided", example="not_provided")
 
     def gen_pyciemss_args(self, job_id):
         raise NotImplementedError("PyCIEMSS cannot handle this operation")
@@ -137,15 +132,13 @@ class Simulate(OperationRequest):
 
     def gen_pyciemss_args(self, job_id):
         # Get model from TDS
-        amr_path = fetch_model(
-            self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
-        )
+        amr_path = fetch_model(self.model_config_id, job_id)
 
         interventions = convert_to_static_interventions(self.interventions)
 
         extra_options = self.extra.dict()
         inferred_parameters = fetch_inferred_parameters(
-            extra_options.pop("inferred_parameters"), TDS_URL, job_id
+            extra_options.pop("inferred_parameters"), job_id
         )
 
         return {
@@ -159,9 +152,7 @@ class Simulate(OperationRequest):
         }
 
     def run_sciml_operation(self, job_id, julia_context):
-        amr_path = fetch_model(
-            self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
-        )
+        amr_path = fetch_model(self.model_config_id, job_id)
         with open(amr_path, "r") as file:
             amr = file.read()
         result = julia_context.simulate(amr, self.timespan.start, self.timespan.end)
@@ -209,11 +200,9 @@ class Calibrate(OperationRequest):
     )
 
     def gen_pyciemss_args(self, job_id):
-        amr_path = fetch_model(
-            self.model_config_id, TDS_URL, TDS_CONFIGURATIONS, job_id
-        )
+        amr_path = fetch_model(self.model_config_id, job_id)
 
-        dataset_path = fetch_dataset(self.dataset.dict(), TDS_URL, job_id)
+        dataset_path = fetch_dataset(self.dataset.dict(), job_id)
 
         # TODO: Test RabbitMQ
         try:
@@ -271,10 +260,7 @@ class EnsembleSimulate(OperationRequest):
         solution_mappings = [
             convert_to_solution_mapping(config) for config in self.model_configs
         ]
-        amr_paths = [
-            fetch_model(config.id, TDS_URL, TDS_CONFIGURATIONS, job_id)
-            for config in self.model_configs
-        ]
+        amr_paths = [fetch_model(config.id, job_id) for config in self.model_configs]
 
         return {
             "model_paths_or_jsons": amr_paths,
@@ -310,7 +296,7 @@ class EnsembleSimulate(OperationRequest):
 #     pyciemss_lib_function: ClassVar[
 #         str
 #     ] = "load_and_calibrate_and_sample_ensemble_model"
-#     username: str = Field("not_provided", example="not_provided")
+#     user_id: str = Field("not_provided", example="not_provided")
 #     model_configs: List[ModelConfig] = Field(
 #         [],
 #         example=[],
@@ -327,11 +313,11 @@ class EnsembleSimulate(OperationRequest):
 #         solution_mappings = [config.solution_mappings for config
 #               in self.model_configs]
 #         amr_paths = [
-#             fetch_model(config.id, TDS_URL, TDS_CONFIGURATIONS, job_id)
+#             fetch_model(config.id, job_id)
 #             for config in self.model_configs
 #         ]
 
-#         dataset_path = fetch_dataset(self.dataset.dict(), TDS_URL, job_id)
+#         dataset_path = fetch_dataset(self.dataset.dict(), job_id)
 
 #         # Generate timepoints
 #         time_count = self.timespan.end - self.timespan.start

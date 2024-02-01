@@ -11,6 +11,8 @@ TDS_URL = settings.TDS_URL
 def test_calibrate_example(
     example_context, client, worker, file_storage, file_check, requests_mock
 ):
+    job_id = "0478a0f7-21b3-4241-afa2-252e1c1992d8"
+
     request = example_context["request"]
     config_id = request["model_config_id"]
     model = json.loads(example_context["fetch"](config_id + ".json"))
@@ -24,7 +26,7 @@ def test_calibrate_example(
         json=dataset_loc,
     )
 
-    requests_mock.post(f"{TDS_URL}/simulations/", json={"id": None})
+    requests_mock.post(f"{TDS_URL}/simulations", json={"id": str(job_id)})
 
     response = client.post(
         "/calibrate",
@@ -45,7 +47,7 @@ def test_calibrate_example(
     requests_mock.put(
         f"{TDS_URL}/simulations/{simulation_id}", json={"status": "success"}
     )
-    requests_mock.get(f"{TDS_URL}/model_configurations/{config_id}", json=model)
+    requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}", json=model)
 
     worker.work(burst=True)
 
