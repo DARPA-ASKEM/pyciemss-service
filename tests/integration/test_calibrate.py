@@ -22,7 +22,7 @@ def test_calibrate_example(
     dataset = example_context["fetch"](filename, True)
     dataset_loc = {"method": "GET", "url": dataset}
     requests_mock.get(
-        f"{TDS_URL}/datasets/{dataset_id}/download-csv?filename={filename}",
+        f"{TDS_URL}/datasets/{dataset_id}/download-url?filename={filename}",
         json=dataset_loc,
     )
 
