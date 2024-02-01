@@ -129,14 +129,30 @@ def fetch_dataset(dataset: dict, job_id):
     )
     response = tds_session().get(dataset_url)
 
+    # Small hack to rename mapping, namely timestamp => Timestamp if timestamp exist as a value
+    key_to_rename = None
+    for item in dataset["mappings"].items():
+        if item[1] == "timestamp":
+            key_to_rename = item[0]
+    if key_to_rename is not None:
+        logging.debug(f"Overwriting {key_to_rename}")
+        logging.debug("")
+        dataset["mappings"][key_to_rename] = "Timestamp"
+
     if response.status_code >= 300:
         raise HTTPException(status_code=400, detail="Unable to retrieve dataset")
     df = pd.read_csv(response.json()["url"])
     df = df.rename(columns=dataset["mappings"])
+
+    # Shift Timestamp to first position
+    col = df.pop("Timestamp")
+    df.insert(0, "Timestamp", col)
+
     # drop columns that aren't being mapped
     if len(df.columns) > len(dataset["mappings"]) and len(dataset["mappings"]) > 0:
         extra_columns = set(df.columns) - set(dataset["mappings"].values())
         df.drop(columns=list(extra_columns), inplace=True)
+
     dataset_path = os.path.join(job_dir, "./temp.json")
     with open(dataset_path, "w") as file:
         df.to_csv(file, index=False)
@@ -150,7 +166,9 @@ def fetch_inferred_parameters(parameters_id: Optional[str], job_id):
     logging.debug(f"Fetching inferred parameters {parameters_id}")
     download_url = f"{TDS_URL}{TDS_SIMULATIONS}/{parameters_id}/download-url?filename=parameters.dill"
     parameters_url = tds_session().get(download_url).json()["url"]
-    response = tds_session().get(parameters_url)
+    # response = tds_session().get(parameters_url)
+
+    response = requests.get(parameters_url)
     if response.status_code >= 300:
         raise HTTPException(status_code=400, detail="Unable to retrieve parameters")
     parameters_path = os.path.join(job_dir, "parameters.dill")
