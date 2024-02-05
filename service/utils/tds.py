@@ -68,9 +68,9 @@ def update_tds_status(job_id, status, result_files=[], start=False, finish=False
     tds_payload = tds_payload.json()
 
     if start:
-        tds_payload["start_time"] = datetime.now()
+        tds_payload["start_time"] = datetime.now().isoformat()
     if finish:
-        tds_payload["completed_time"] = datetime.now()
+        tds_payload["completed_time"] = datetime.now().isoformat()
 
     tds_payload["status"] = status
     if result_files:
@@ -141,6 +141,7 @@ def fetch_dataset(dataset: dict, job_id):
 
     if response.status_code >= 300:
         raise HTTPException(status_code=400, detail="Unable to retrieve dataset")
+
     df = pd.read_csv(response.json()["url"])
     df = df.rename(columns=dataset["mappings"])
 
@@ -165,6 +166,7 @@ def fetch_inferred_parameters(parameters_id: Optional[str], job_id):
     job_dir = get_job_dir(job_id)
     logging.debug(f"Fetching inferred parameters {parameters_id}")
     download_url = f"{TDS_URL}{TDS_SIMULATIONS}/{parameters_id}/download-url?filename=parameters.dill"
+
     parameters_url = tds_session().get(download_url).json()["url"]
     # response = tds_session().get(parameters_url)
 
