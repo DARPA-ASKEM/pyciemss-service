@@ -8,7 +8,7 @@ TDS_URL = settings.TDS_URL
 
 
 @pytest.mark.example_dir("optimize")
-def test_simulate_example(
+def test_optimize_example(
     example_context, client, worker, file_storage, file_check, requests_mock
 ):
     job_id = "9ed74639-7778-4bb9-96fd-7509d68cd425"
@@ -22,7 +22,6 @@ def test_simulate_example(
     response = client.post(
         "/optimize",
         json=request,
-        headers={"Content-Type": "application/json"},
     )
     simulation_id = response.json()["simulation_id"]
     response = client.get(

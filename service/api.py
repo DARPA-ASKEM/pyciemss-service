@@ -11,6 +11,7 @@ from service.models import (
     Calibrate,
     Simulate,
     EnsembleSimulate,
+    Optimize,
     StatusSimulationIdGetResponse,
 )
 
@@ -20,6 +21,7 @@ operations = {
     "simulate": Simulate,
     "calibrate": Calibrate,
     "ensemble-simulate": EnsembleSimulate,
+    "optimize": Optimize,
 }
 
 logging.basicConfig()
@@ -114,12 +116,3 @@ def ensemble_calibrate_not_yet_implemented():
     This will be reimplemented in the future.
     """
     raise HTTPException(status=501, detail="Not yet reimplemented")
-
-
-@app.get("/optimize", response_model=StatusSimulationIdGetResponse)  # NOT YET IN SPEC
-def optimize_not_yet_implemented():  # NOT YET IN SPEC
-    """
-    DO NOT USE. Placeholder for `optimize` endpoint.
-    This will be implemented in the future.
-    """
-    raise HTTPException(status=501, detail="Not yet implemented")

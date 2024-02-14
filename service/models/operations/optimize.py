@@ -34,7 +34,7 @@ def obs_nday_average_qoi(
     return np.mean(dataQoI[:, -ndays:], axis=1)
 
 
-qoi_implementations = {QOIMethod.obs_nday_average: obs_nday_average_qoi}
+qoi_implementations = {QOIMethod.obs_nday_average.value: obs_nday_average_qoi}
 
 
 class OptimizeExtra(BaseModel):
@@ -99,3 +99,4 @@ class Optimize(OperationRequest):
 
     class Config:
         extra = Extra.forbid
+        use_enum_values = True

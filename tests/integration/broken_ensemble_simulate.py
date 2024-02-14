@@ -1,3 +1,8 @@
+"""
+NOTE: PyCIEMSS library had a broken ensemble but it has now been fixed. This
+test succeeded using the broken version but now fails using the updated PyCIEMSS.
+Will be fixed and moved by to `test_ensemble_simulate` soon.    
+"""
 import json
 
 import pytest
