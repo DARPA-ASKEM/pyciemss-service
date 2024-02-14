@@ -1,0 +1,23 @@
+{
+	"engine": "ciemss",
+	"user_id": "not_provided",
+	"model_config_id": "sidarthe",
+	"interventions": [
+		{
+			"timestep": 1.0,
+			"name": "beta",
+			"value": 0.4
+		}
+	],
+	"timespan": {
+		"start": 0,
+		"end": 90
+	},
+	"qoi": "obs_nday_avg",
+	"risk_bound": 10.0,
+  "initial_guess": 1.0,
+  "bounds": [[0.0], [3.0]],
+	"extra": {
+		"num_samples": 100
+	}
+}
