@@ -5,7 +5,7 @@ import os
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from models import (
+from service.models import (
     Status,
     JobResponse,
     Calibrate,

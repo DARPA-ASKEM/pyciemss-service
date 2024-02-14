@@ -70,8 +70,10 @@ dist
 build
 
 # MISC
+.ruff_cache
 create.sql
 .eslintcache
 
 .version
-*.nix
+venv
+flake.lock
