@@ -39,7 +39,11 @@ qoi_implementations = {QOIMethod.obs_nday_average: obs_nday_average_qoi}
 
 class OptimizeExtra(BaseModel):
     num_samples: int = Field(
-        100, description="number of samples for a CIEMSS simulation", example=100
+        100,
+        description="""
+            The number of samples to draw from the model to estimate risk for each optimization iteration.
+        """,
+        example=100,
     )
     inferred_parameters: Optional[str] = Field(
         None,
@@ -75,18 +79,21 @@ class Optimize(OperationRequest):
         inferred_parameters = fetch_inferred_parameters(
             extra_options.pop("inferred_parameters"), job_id
         )
+        n_samples_ouu = extra_options.pop("num_samples")
 
         return {
             "model_path_or_json": amr_path,
             "logging_step_size": self.step_size,
             "start_time": self.timespan.start,
             "end_time": self.timespan.end,
+            "objfun": lambda x: np.sum(np.abs(x)),
             "qoi": qoi_implementations[self.qoi],
             "risk_bound": self.risk_bound,
             "initial_guess_interventions": self.initial_guess_interventions,
             "bounds_interventions": self.bounds_interventions,
             "static_parameter_interventions": interventions,
             "inferred_parameters": inferred_parameters,
+            "n_samples_ouu": n_samples_ouu,
             **extra_options,
         }
 

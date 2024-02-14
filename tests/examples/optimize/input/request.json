@@ -13,7 +13,7 @@
 		"start": 0,
 		"end": 90
 	},
-	"qoi": "obs_nday_avg",
+	"qoi": "obs_nday_average",
 	"risk_bound": 10.0,
   "initial_guess_interventions": [1.0],
   "bounds_interventions": [[0.0], [3.0]],
