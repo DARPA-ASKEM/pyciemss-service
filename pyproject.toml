@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyciemss-service"
-version = "2.0.0"
+version = "2.1.0"
 description = "PyCIEMSS simulation service to run CIEMSS simulations"
 authors = ["Powell Fendley", "Five Grant"]
 readme = "README.md"
@@ -39,7 +39,7 @@ httpx = "^0.24.1"
 
 
 [tool.poe.tasks]
-install-pyciemss = "pip install --no-cache-dir git+https://github.com/fivegrant/pyciemss.git@087bc64d935f2ab5090330f1f7d6bde930404115 --use-pep517"
+install-pyciemss = "pip install --no-cache-dir git+https://github.com/fivegrant/pyciemss.git@520f8e871568c8c0c85b5b0d53c3bfd386c7696c --use-pep517"
 
 
 [tool.pytest.ini_options]
