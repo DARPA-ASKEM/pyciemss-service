@@ -15,8 +15,8 @@
 	},
 	"qoi": "obs_nday_avg",
 	"risk_bound": 10.0,
-  "initial_guess": 1.0,
-  "bounds": [[0.0], [3.0]],
+  "initial_guess_interventions": [1.0],
+  "bounds_interventions": [[0.0], [3.0]],
 	"extra": {
 		"num_samples": 100
 	}
