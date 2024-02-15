@@ -50,6 +50,8 @@ class OptimizeExtra(BaseModel):
         description="id from a previous calibration",
         example=None,
     )
+    maxiter: int = 5
+    maxfeval: int = 5
 
 
 class Optimize(OperationRequest):
