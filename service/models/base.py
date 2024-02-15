@@ -42,12 +42,6 @@ class InterventionSelection(BaseModel):
     name: str
 
 
-class QuantityOfInterest(BaseModel):
-    function: str
-    state: str
-    arg: int  # TODO: Make this a list of args?
-
-
 class OperationRequest(BaseModel):
     pyciemss_lib_function: ClassVar[str] = ""
     engine: str = Field("ciemss", example="ciemss")

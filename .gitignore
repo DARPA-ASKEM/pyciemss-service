@@ -75,5 +75,3 @@ create.sql
 .eslintcache
 
 .version
-venv
-flake.lock

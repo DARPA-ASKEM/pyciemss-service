@@ -7,7 +7,12 @@ from utils.tds import (
     attach_files,
 )
 
-from pyciemss.interfaces import sample, calibrate, ensemble_sample  # noqa: F401
+from pyciemss.interfaces import (  # noqa: F401
+    sample,
+    calibrate,
+    ensemble_sample,
+    optimize,
+)
 
 # jl = newmodule("SciMLIntegration")
 # jl.seval("using SciMLIntegration, PythonCall")

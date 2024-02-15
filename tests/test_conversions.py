@@ -3,13 +3,18 @@ from inspect import signature
 
 import pytest
 
-from pyciemss.interfaces import sample, calibrate, ensemble_sample  # noqa: F401
+from pyciemss.interfaces import (
+    sample,
+    calibrate,
+    ensemble_sample,
+    optimize,
+)  # noqa: F401
 
 from service.models import (
     Simulate,
     Calibrate,
     EnsembleSimulate,
-    # EnsembleCalibrate,
+    Optimize,
 )
 from service.settings import settings
 
@@ -93,33 +98,19 @@ class TestEnsembleSimulate:
         is_satisfactory(kwargs, ensemble_sample)
 
 
-# class TestEnsembleCalibrate:
-#     @pytest.mark.example_dir("ensemble-calibrate")
-#     def test_example_conversion(self, example_context, requests_mock):
-#         job_id = example_context["tds_simulation"]["id"]
+class TestOptimize:
+    @pytest.mark.example_dir("optimize")
+    def test_example_conversion(self, example_context, requests_mock):
+        job_id = example_context["tds_simulation"]["id"]
 
-#         config_ids = [
-#             config["id"] for config in example_context["request"]["model_configs"]
-#         ]
-#         for config_id in config_ids:
-#             model = json.loads(example_context["fetch"](config_id + ".json"))
-#             requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}",
-#                json=model)
+        config_id = example_context["request"]["model_config_id"]
+        model = json.loads(example_context["fetch"](config_id + ".json"))
+        requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}", json=model)
 
-#         dataset_id = example_context["request"]["dataset"]["id"]
-#         filename = example_context["request"]["dataset"]["filename"]
-#         dataset = example_context["fetch"](filename, True)
-#         dataset_loc = {"method": "GET", "url": dataset}
-#         requests_mock.get(
-#             f"{TDS_URL}/datasets/{dataset_id}/download-csv?filename={filename}",
-#             json=dataset_loc,
-#         )
-#         requests_mock.get("http://dataset", text=dataset)
+        ### Act and Assert
 
-#         ### Act and Assert
+        operation_request = Optimize(**example_context["request"])
+        kwargs = operation_request.gen_pyciemss_args(job_id)
 
-#         operation_request = EnsembleCalibrate(**example_context["request"])
-#         kwargs = operation_request.gen_pyciemss_args(job_id)
-
-#         assert kwargs.get("visual_options", False)
-#         assert is_satisfactory(kwargs, sample)
+        # assert kwargs.get("visual_options", False)
+        is_satisfactory(kwargs, optimize)
