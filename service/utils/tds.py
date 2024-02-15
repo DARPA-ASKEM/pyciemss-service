@@ -198,17 +198,24 @@ def attach_files(output: dict, job_id, status="complete"):
 
     params_filename = os.path.join(job_dir, "./parameters.dill")
     params_result = output.get("inferred_parameters", None)
-    if params_result:
+    if params_result is not None:
         with open(params_filename, "wb") as file:
             dill.dump(params_result, file)
         files[params_filename] = "parameters.dill"
 
-    policy_filename = os.path.join(job_dir, "./policy.dill")
+    policy_filename = os.path.join(job_dir, "./policy.json")
     policy = output.get("policy", None)
     if policy is not None:
-        with open(policy_filename, "wb") as file:
-            dill.dump(params_result, file)
-        files[policy_filename] = "policy.dill"
+        with open(policy_filename, "w") as file:
+            json.dump(policy.tolist(), file)
+        files[policy_filename] = "policy.json"
+
+    results_filename = os.path.join(job_dir, "./optimize_results.dill")
+    results = output.get("OptResults", None)
+    if results is not None:
+        with open(results_filename, "wb") as file:
+            dill.dump(results, file)
+        files[results_filename] = "optimize_results.dill"
 
     visualization_filename = os.path.join(job_dir, "./visualization.json")
     viz_result = output.get("visual", None)

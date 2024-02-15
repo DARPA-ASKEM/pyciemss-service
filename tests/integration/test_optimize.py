@@ -45,15 +45,10 @@ def test_optimize_example(
         f"/status/{simulation_id}",
     )
     status = response.json()["status"]
-    result = file_storage("result.csv")
-    # viz = file_storage("visualization.json")
-    # eval = file_storage("eval.csv") # NOTE: Do we want to check this
+    policy = file_storage("policy.json")
 
     # Checks
     assert status == "complete"
 
-    assert result is not None
-    assert file_check("csv", result)
-
-    # assert viz is not None
-    # assert file_check("json", viz)
+    assert policy is not None
+    assert file_check("json", policy)
