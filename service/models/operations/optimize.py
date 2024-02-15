@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-from enum import Enum
-from typing import ClassVar, Dict, List, Optional
+# from enum import Enum
+from typing import ClassVar, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
 from pydantic import BaseModel, Field, Extra
 
 
-from models.base import OperationRequest, Timespan, InterventionObject
-from models.converters import convert_to_static_interventions
+from models.base import OperationRequest, Timespan
 from utils.tds import fetch_model, fetch_inferred_parameters
 
 
-class QOIMethod(Enum):
-    obs_nday_average = "obs_nday_average"
+# TODO: Add more methods later if needed
+# class QOIMethod(Enum):
+#     obs_nday_average = "obs_nday_average"
 
 
 def obs_nday_average_qoi(
@@ -29,12 +29,12 @@ def obs_nday_average_qoi(
     Taken from:
     https://github.com/ciemss/pyciemss/blob/main/docs/source/interfaces.ipynb
     """
-    dataQoI = samples[contexts[0]].detach().numpy()
+    dataQoI = samples[contexts[0] + "_state"].detach().numpy()
 
     return np.mean(dataQoI[:, -ndays:], axis=1)
 
 
-qoi_implementations = {QOIMethod.obs_nday_average.value: obs_nday_average_qoi}
+# qoi_implementations = {QOIMethod.obs_nday_average.value: obs_nday_average_qoi}
 
 
 class OptimizeExtra(BaseModel):
@@ -56,11 +56,11 @@ class Optimize(OperationRequest):
     pyciemss_lib_function: ClassVar[str] = "optimize"
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan = Timespan(start=0, end=90)
-    interventions: List[InterventionObject] = Field(
-        default_factory=list, example=[{"timestep": 1, "name": "beta", "value": 0.4}]
+    interventions: List[Tuple[float, str]] = Field(
+        default_factory=list, example=[(1.0, "beta")]
     )
     step_size: float = 1.0
-    qoi: QOIMethod
+    qoi: List[str]  # QOIMethod
     risk_bound: float
     initial_guess_interventions: List[float]
     bounds_interventions: List[List[float]]
@@ -73,7 +73,7 @@ class Optimize(OperationRequest):
         # Get model from TDS
         amr_path = fetch_model(self.model_config_id, job_id)
 
-        interventions = convert_to_static_interventions(self.interventions)
+        interventions = {torch.tensor(k): v for k, v in self.interventions}
 
         extra_options = self.extra.dict()
         inferred_parameters = fetch_inferred_parameters(
@@ -87,7 +87,7 @@ class Optimize(OperationRequest):
             "start_time": self.timespan.start,
             "end_time": self.timespan.end,
             "objfun": lambda x: np.sum(np.abs(x)),
-            "qoi": qoi_implementations[self.qoi],
+            "qoi": lambda samples: obs_nday_average_qoi(samples, self.qoi, 1),
             "risk_bound": self.risk_bound,
             "initial_guess_interventions": self.initial_guess_interventions,
             "bounds_interventions": self.bounds_interventions,
@@ -99,4 +99,4 @@ class Optimize(OperationRequest):
 
     class Config:
         extra = Extra.forbid
-        use_enum_values = True
+        # use_enum_values = True
