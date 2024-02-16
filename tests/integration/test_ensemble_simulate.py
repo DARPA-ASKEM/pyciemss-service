@@ -1,8 +1,3 @@
-"""
-NOTE: PyCIEMSS library had a broken ensemble but it has now been fixed. This
-test succeeded using the broken version but now fails using the updated PyCIEMSS.
-Will be fixed and moved by to `test_ensemble_simulate` soon.    
-"""
 import json
 
 import pytest
@@ -12,8 +7,7 @@ from service.settings import settings
 TDS_URL = settings.TDS_URL
 
 
-# TODO: Switch back to actual ensemble test when solution_mappings are fixed
-@pytest.mark.example_dir("ensemble-simulate-temp-quick-fix")
+@pytest.mark.example_dir("ensemble-simulate")
 def test_ensemble_simulate_example(
     example_context, client, worker, file_storage, file_check, requests_mock
 ):
