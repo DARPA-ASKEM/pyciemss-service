@@ -100,12 +100,16 @@ def cancel_job(
 for operation_name, schema in operations.items():
     registrar = app.post(f"/{operation_name}", response_model=JobResponse)
 
-    def operate(
-        body: schema,
-        redis_conn=Depends(get_redis),
-    ) -> JobResponse:
-        return create_job(body, operation_name, redis_conn)
+    def make_operate(operation):
+        def operate(
+            body: schema,
+            redis_conn=Depends(get_redis),
+        ) -> JobResponse:
+            return create_job(body, operation, redis_conn)
 
+        return operate
+
+    operate = make_operate(operation_name)
     registrar(operate)
 
 
