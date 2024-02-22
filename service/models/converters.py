@@ -18,7 +18,7 @@ def convert_to_solution_mapping(config):
     }
 
     def solution_mapping(individual_states):
-        ensemble_map = defaultdict(0)
+        ensemble_map = defaultdict(lambda: 0)
         for state, value in individual_states.items():
             ensemble_state = (
                 individual_to_ensemble[state]
