@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.11
 
 WORKDIR /
 RUN pip install --no-cache-dir poetry==1.5.1
