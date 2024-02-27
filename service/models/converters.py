@@ -14,7 +14,7 @@ def convert_to_static_interventions(interventions):
 def convert_optimize_to_static_interventions(interventions):
     static_interventions = defaultdict(dict)
     for i in interventions:
-        static_interventions[i.timestep] = i.name
+        static_interventions[torch.tensor(i.timestep)] = i.name
     return static_interventions
 
 
