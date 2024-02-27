@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 # from enum import Enum
-from typing import ClassVar, Dict, List, Optional, Tuple
+from typing import ClassVar, Dict, List, Optional
 
 import numpy as np
 import torch
 from pydantic import BaseModel, Field, Extra
-
-
-from models.base import OperationRequest, Timespan
+from models.base import OperationRequest, Timespan, InterventionObject
+from models.converters import convert_to_static_interventions
 from utils.tds import fetch_model, fetch_inferred_parameters
 
 
@@ -58,8 +57,8 @@ class Optimize(OperationRequest):
     pyciemss_lib_function: ClassVar[str] = "optimize"
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan = Timespan(start=0, end=90)
-    interventions: List[Tuple[float, str]] = Field(
-        default_factory=list, example=[(1.0, "beta")]
+    interventions: List[InterventionObject] = Field(
+        default_factory=list, example=[{"timestep": 1, "name": "beta", "value": 0.4}]
     )
     step_size: float = 1.0
     qoi: List[str]  # QOIMethod
@@ -75,7 +74,7 @@ class Optimize(OperationRequest):
         # Get model from TDS
         amr_path = fetch_model(self.model_config_id, job_id)
 
-        interventions = {torch.tensor(k): v for k, v in self.interventions}
+        interventions = convert_to_static_interventions(self.interventions)
 
         extra_options = self.extra.dict()
         inferred_parameters = fetch_inferred_parameters(
