@@ -5,8 +5,7 @@
 	"interventions": [
 		{
 			"timestep": 1.0,
-			"name": "beta",
-			"value": 0.4
+			"name": "beta"
 		}
 	],
 	"timespan": {
