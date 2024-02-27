@@ -11,6 +11,13 @@ def convert_to_static_interventions(interventions):
     return static_interventions
 
 
+def convert_optimize_to_static_interventions(interventions):
+    static_interventions = defaultdict(dict)
+    for i in interventions:
+        static_interventions[torch.tensor(i.timestep)] = i.name
+    return static_interventions
+
+
 def convert_to_solution_mapping(config):
     individual_to_ensemble = {
         individual_state: ensemble_state
