@@ -33,6 +33,13 @@ def obs_nday_average_qoi(
     return np.mean(dataQoI[:, -ndays:], axis=1)
 
 
+def objfun(x, is_minimized):
+    if is_minimized:
+        return np.sum(np.abs(x))
+    else:
+        return -np.sum(np.abs(x))
+
+
 # qoi_implementations = {QOIMethod.obs_nday_average.value: obs_nday_average_qoi}
 
 
@@ -51,6 +58,7 @@ class OptimizeExtra(BaseModel):
     )
     maxiter: int = 5
     maxfeval: int = 5
+    is_minimized: bool = True
 
 
 class Optimize(OperationRequest):
@@ -81,13 +89,14 @@ class Optimize(OperationRequest):
             extra_options.pop("inferred_parameters"), job_id
         )
         n_samples_ouu = extra_options.pop("num_samples")
+        is_minimized = extra_options.pop("is_minimized")
 
         return {
             "model_path_or_json": amr_path,
             "logging_step_size": self.step_size,
             "start_time": self.timespan.start,
             "end_time": self.timespan.end,
-            "objfun": lambda x: np.sum(np.abs(x)),
+            "objfun": lambda x: objfun(x, is_minimized),
             "qoi": lambda samples: obs_nday_average_qoi(samples, self.qoi, 1),
             "risk_bound": self.risk_bound,
             "initial_guess_interventions": self.initial_guess_interventions,
