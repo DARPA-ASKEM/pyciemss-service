@@ -28,6 +28,7 @@ def run(request, *, job_id):
     # if request.engine == "ciemss":
     operation_name = request.__class__.pyciemss_lib_function
     kwargs = request.gen_pyciemss_args(job_id)
+		logger.info(f"{job_id} started with the following args: {kwargs}")
     if len(operation_name) == 0:
         raise Exception("No operation provided in request")
     else:
