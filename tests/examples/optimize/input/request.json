@@ -2,20 +2,20 @@
 	"engine": "ciemss",
 	"user_id": "not_provided",
 	"model_config_id": "sidarthe",
-	"interventions": [
-		{
-			"timestep": 1.0,
-			"name": "beta"
-		}
-	],
+	"interventions": {
+		"selection": "param_value",
+		"start_time": [2],
+		"param_names": ["beta"],
+		"param_values": [0.02]
+	},
 	"timespan": {
 		"start": 0,
 		"end": 90
 	},
 	"qoi": ["Infected"],
 	"risk_bound": 10.0,
-  "initial_guess_interventions": [1.0],
-  "bounds_interventions": [[0.0], [3.0]],
+  	"initial_guess_interventions": [1.0],
+  	"bounds_interventions": [[0.0], [3.0]],
 	"extra": {
 		"num_samples": 4,
 		"is_minimized": true

@@ -37,11 +37,6 @@ class InterventionObject(BaseModel):
     value: float
 
 
-class OptimizeInterventionObject(BaseModel):
-    timestep: float
-    name: str
-
-
 class InterventionSelection(BaseModel):
     timestep: float
     name: str

@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-# from enum import Enum
 from typing import ClassVar, Dict, List, Optional
 
 import numpy as np
 import torch
 from pydantic import BaseModel, Field, Extra
-from models.base import OperationRequest, Timespan, OptimizeInterventionObject
-from models.converters import convert_optimize_to_static_interventions
+from models.base import OperationRequest, Timespan
+from pyciemss.integration_utils.intervention_builder import (
+    param_value_objective,
+    start_time_objective,
+)
 from utils.tds import fetch_model, fetch_inferred_parameters
 
 
@@ -40,7 +42,15 @@ def objfun(x, is_minimized):
         return -np.sum(np.abs(x))
 
 
-# qoi_implementations = {QOIMethod.obs_nday_average.value: obs_nday_average_qoi}
+class InterventionObjective(BaseModel):
+    selection: str = Field(
+        "param_value",
+        description="The intervention objective to use",
+        example="param_value",
+    )
+    param_names: list[str]
+    param_values: Optional[list[Optional[float]]] = None
+    start_time: Optional[list[float]] = None
 
 
 class OptimizeExtra(BaseModel):
@@ -53,7 +63,7 @@ class OptimizeExtra(BaseModel):
     )
     inferred_parameters: Optional[str] = Field(
         None,
-        description="id from a previous calibration",
+        description="ID from a previous calibration",
         example=None,
     )
     maxiter: int = 5
@@ -65,9 +75,7 @@ class Optimize(OperationRequest):
     pyciemss_lib_function: ClassVar[str] = "optimize"
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan = Timespan(start=0, end=90)
-    interventions: List[OptimizeInterventionObject] = Field(
-        default_factory=list, example=[{"timestep": 1, "name": "beta"}]
-    )
+    interventions: InterventionObjective
     step_size: float = 1.0
     qoi: List[str]  # QOIMethod
     risk_bound: float
@@ -82,7 +90,26 @@ class Optimize(OperationRequest):
         # Get model from TDS
         amr_path = fetch_model(self.model_config_id, job_id)
 
-        interventions = convert_optimize_to_static_interventions(self.interventions)
+        intervention_type = self.interventions.selection
+        if intervention_type == "param_value":
+            assert self.interventions.start_time is not None
+            start_time = [torch.tensor(time) for time in self.interventions.start_time]
+            param_value = [None] * len(self.interventions.param_names)
+
+            interventions = param_value_objective(
+                start_time=start_time,
+                param_name=self.interventions.param_names,
+                param_value=param_value,
+            )
+        else:
+            assert self.interventions.param_values is not None
+            param_value = [
+                torch.tensor(value) for value in self.interventions.param_values
+            ]
+            interventions = start_time_objective(
+                param_name=self.interventions.param_names,
+                param_value=param_value,
+            )
 
         extra_options = self.extra.dict()
         inferred_parameters = fetch_inferred_parameters(
