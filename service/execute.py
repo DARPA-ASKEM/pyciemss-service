@@ -18,7 +18,8 @@ from pyciemss.interfaces import (  # noqa: F401
 # jl.seval("using SciMLIntegration, PythonCall")
 
 logging.basicConfig()
-logger = logging.getLogger().setLevel(logging.DEBUG)
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 
 def run(request, *, job_id):
