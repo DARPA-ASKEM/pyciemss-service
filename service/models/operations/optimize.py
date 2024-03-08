@@ -69,6 +69,7 @@ class OptimizeExtra(BaseModel):
     maxiter: int = 5
     maxfeval: int = 5
     is_minimized: bool = True
+    alpha: float = 0.95
 
 
 class Optimize(OperationRequest):
