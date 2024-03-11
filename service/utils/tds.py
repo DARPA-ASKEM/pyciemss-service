@@ -213,6 +213,12 @@ def attach_files(output: dict, job_id, status="complete"):
     results_filename = os.path.join(job_dir, "./optimize_results.dill")
     results = output.get("OptResults", None)
     if results is not None:
+        json_obj = json.loads(json.dumps(results, default=str))
+        json_filename = os.path.join(job_dir, "./optimize_result.json")
+        with open(json_filename, "w") as f:
+            json.dump(json_obj, f, ensure_ascii=False, indent=4)
+        files[json_filename] = "optimize_results.json"
+
         with open(results_filename, "wb") as file:
             dill.dump(results, file)
         files[results_filename] = "optimize_results.dill"
