@@ -190,6 +190,14 @@ def attach_files(output: dict, job_id, status="complete"):
         data_result.to_csv(output_filename, index=False)
         files[output_filename] = "result.csv"
 
+    risk_result = output.get("risk", None)
+    if risk_result is not None:
+        json_obj = json.loads(json.dumps(risk_result, default=str))
+        json_filename = os.path.join(job_dir, "./risk.json")
+        with open(json_filename, "w") as f:
+            json.dump(json_obj, f, ensure_ascii=False, indent=4)
+        files[json_filename] = "risk.json"
+
     eval_output_filename = os.path.join(job_dir, "./eval.csv")
     eval_result = output.get("quantiles", None)
     if eval_result is not None:
