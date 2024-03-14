@@ -196,9 +196,7 @@ def attach_files(output: dict, job_id, status="complete"):
         for k, v in risk_result.items():
             risk_result[k]["qoi"] = v["qoi"].tolist()
         risk_json_obj = json.dumps(risk_result, default=str)
-        print(risk_json_obj)
         json_obj = json.loads(risk_json_obj)
-        print(json_obj)
         json_filename = os.path.join(job_dir, "./risk.json")
         with open(json_filename, "w") as f:
             json.dump(json_obj, f, ensure_ascii=False, indent=4)
