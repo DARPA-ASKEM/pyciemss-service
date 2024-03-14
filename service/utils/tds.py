@@ -191,8 +191,6 @@ def attach_files(output: dict, job_id, status="complete"):
         files[output_filename] = "result.csv"
 
     risk_result = output.get("risk", None)
-    print("Tom")
-    print(risk_result)
     if risk_result is not None:
         # Update qoi (tensor) to a list before serializing with json.dumps
         for k, v in risk_result.items():
