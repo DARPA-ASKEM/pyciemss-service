@@ -11,6 +11,7 @@ from pyciemss.interfaces import (  # noqa: F401
     sample,
     calibrate,
     ensemble_sample,
+    ensemble_calibrate,
     optimize,
 )
 
