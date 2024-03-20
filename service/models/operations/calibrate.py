@@ -2,13 +2,14 @@ from __future__ import annotations
 import socket
 import logging
 
-from typing import ClassVar, Optional
+from typing import ClassVar, Optional, List
 from pydantic import BaseModel, Field, Extra
 
 from pika.exceptions import AMQPConnectionError
 
 
-from models.base import Dataset, OperationRequest, Timespan
+from models.base import Dataset, OperationRequest, Timespan, InterventionObject
+from models.converters import convert_to_static_interventions
 from utils.rabbitmq import gen_rabbitmq_hook
 from utils.tds import fetch_dataset, fetch_model
 
@@ -44,6 +45,10 @@ class Calibrate(OperationRequest):
     model_config_id: str = Field(..., example="c1cd941a-047d-11ee-be56")
     dataset: Dataset = None
     timespan: Optional[Timespan] = None
+    interventions: List[InterventionObject] = Field(
+        default_factory=list, example=[{"timestep": 1, "name": "beta", "value": 0.4}]
+    )
+
     extra: CalibrateExtra = Field(
         None,
         description="optional extra system specific arguments for advanced use cases",
@@ -53,6 +58,8 @@ class Calibrate(OperationRequest):
         amr_path = fetch_model(self.model_config_id, job_id)
 
         dataset_path = fetch_dataset(self.dataset.dict(), job_id)
+
+        interventions = convert_to_static_interventions(self.interventions)
 
         # TODO: Test RabbitMQ
         try:
@@ -74,6 +81,7 @@ class Calibrate(OperationRequest):
             # TODO: Is this intentionally missing from `calibrate`?
             # "end_time": self.timespan.end,
             "data_path": dataset_path,
+            "intervention": interventions,
             "progress_hook": hook,
             # "visual_options": True,
             **self.extra.dict(),
