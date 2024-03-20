@@ -81,7 +81,7 @@ class Calibrate(OperationRequest):
             # TODO: Is this intentionally missing from `calibrate`?
             # "end_time": self.timespan.end,
             "data_path": dataset_path,
-            "intervention": interventions,
+            "static_parameter_interventions": interventions,
             "progress_hook": hook,
             # "visual_options": True,
             **self.extra.dict(),
