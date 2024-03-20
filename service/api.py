@@ -74,12 +74,15 @@ def get_status(
     """
     Retrieve the status of a simulation
     """
-    status = fetch_job_status(simulation_id, redis_conn)
+    status, error_msg = fetch_job_status(simulation_id, redis_conn)
     logging.info(status)
     if not isinstance(status, str):
         return status
 
-    return {"status": Status.from_rq(status)}
+    return {
+        "status": Status.from_rq(status),
+        "error_msg": error_msg,
+    }
 
 
 @app.get(

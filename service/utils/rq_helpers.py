@@ -79,15 +79,17 @@ def fetch_job_status(job_id, redis_conn):
     """
     try:
         job = Job.fetch(job_id, connection=redis_conn)
-        # r = job.latest_result()
-        # string_res = r.return_value
-        result = job.get_status()
-        return result
     except NoSuchJobError:
-        return Response(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content=f"Simulation {job_id} not found",
+        return (
+            Response(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content=f"Simulation {job_id} not found",
+            ),
+            None,
         )
+    else:
+        result = job.get_status()
+        return result, job.exc_info
 
 
 def kill_job(job_id, redis_conn):
