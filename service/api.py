@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from service.models import (
@@ -11,6 +11,7 @@ from service.models import (
     Calibrate,
     Simulate,
     EnsembleSimulate,
+    EnsembleCalibrate,
     Optimize,
     StatusSimulationIdGetResponse,
 )
@@ -21,6 +22,7 @@ operations = {
     "simulate": Simulate,
     "calibrate": Calibrate,
     "ensemble-simulate": EnsembleSimulate,
+    "ensemble-calibrate": EnsembleCalibrate,
     "optimize": Optimize,
 }
 
@@ -72,12 +74,15 @@ def get_status(
     """
     Retrieve the status of a simulation
     """
-    status = fetch_job_status(simulation_id, redis_conn)
+    status, error_msg = fetch_job_status(simulation_id, redis_conn)
     logging.info(status)
     if not isinstance(status, str):
         return status
 
-    return {"status": Status.from_rq(status)}
+    return {
+        "status": Status.from_rq(status),
+        "error_msg": error_msg,
+    }
 
 
 @app.get(
@@ -111,12 +116,3 @@ for operation_name, schema in operations.items():
 
     operate = make_operate(operation_name)
     registrar(operate)
-
-
-@app.get("/ensemble-calibrate", response_model=StatusSimulationIdGetResponse)
-def ensemble_calibrate_not_yet_implemented():
-    """
-    DO NOT USE. Placeholder for `ensemble-calibrate` endpoint.
-    This will be reimplemented in the future.
-    """
-    raise HTTPException(status=501, detail="Not yet reimplemented")

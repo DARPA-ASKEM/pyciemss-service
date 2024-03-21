@@ -1,18 +1,23 @@
 from __future__ import annotations
 
-from typing import ClassVar, List
+from typing import ClassVar, List, Optional
 
 from pydantic import BaseModel, Field, Extra
 import torch  # TODO: Do not use Torch in PyCIEMSS Library interface
 
 from models.base import OperationRequest, Timespan, ModelConfig
 from models.converters import convert_to_solution_mapping
-from utils.tds import fetch_model
+from utils.tds import fetch_model, fetch_inferred_parameters
 
 
 class EnsembleSimulateExtra(BaseModel):
     num_samples: int = Field(
         100, description="number of samples for a CIEMSS simulation", example=100
+    )
+    inferred_parameters: Optional[str] = Field(
+        None,
+        description="id from a previous calibration",
+        example=None,
     )
 
 
@@ -38,6 +43,11 @@ class EnsembleSimulate(OperationRequest):
         ]
         amr_paths = [fetch_model(config.id, job_id) for config in self.model_configs]
 
+        extra_options = self.extra.dict()
+        inferred_parameters = fetch_inferred_parameters(
+            extra_options.pop("inferred_parameters"), job_id
+        )
+
         return {
             "model_paths_or_jsons": amr_paths,
             "solution_mappings": solution_mappings,
@@ -45,8 +55,9 @@ class EnsembleSimulate(OperationRequest):
             "end_time": self.timespan.end,
             "logging_step_size": self.step_size,
             "dirichlet_alpha": weights,
+            "inferred_parameters": inferred_parameters,
             # "visual_options": True,
-            **self.extra.dict(),
+            **extra_options,
         }
 
     class Config:

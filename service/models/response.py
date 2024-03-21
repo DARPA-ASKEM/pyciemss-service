@@ -41,3 +41,4 @@ class JobResponse(BaseModel):
 
 class StatusSimulationIdGetResponse(BaseModel):
     status: Optional[Status] = None
+    error_msg: Optional[str] = None

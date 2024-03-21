@@ -2,27 +2,30 @@
   "engine": "ciemss",
   "model_configs": [
     {
-      "id": "398d2a33-1cbe-44cf-9b66-a6976b947809",
+      "id": "right",
       "weight": 0.5,
-      "solution_mappings": {"Infected": "Cases", "Hospitalizations": "hospitalized_population"}
+      "solution_mappings": {"Infected": "I", "Hospitalizations": "H"}
     },
     {
-      "id": "fab58d86-cf1e-4990-809a-58c029545a3a",
+      "id": "left",
       "weight": 0.5,
-      "solution_mappings": {"Infected": "Infections", "Hospitalizations": "hospitalized_population"}
+      "solution_mappings": {"Infected": "I", "Hospitalizations": "H"}
     }
   ],
   "dataset": {
     "id": "cc52e71f-c744-4883-9412-0858d8455754",
-    "filename": "ensemble.csv"
+    "filename": "ensemble.csv",
+		"mappings": {
+			"tstep": "Timestamp",
+			"Infected": "Infected",
+			"Hospitalizations": "Hospitalizations"
+    }
   },
   "timespan": {
     "start": 0,
     "end": 5
   },
   "extra": {
-    "num_samples": 200,
-    "total_population": 1000,
-    "num_iterations": 8
+    "num_iterations": 2
   }
 }
