@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import ClassVar, Dict, List, Optional
+from typing import Any, ClassVar, Dict, List, Optional
 
 import numpy as np
 import torch
@@ -71,6 +71,7 @@ class OptimizeExtra(BaseModel):
     is_minimized: bool = True
     alpha: float = 0.95
     solver_method: str = "dopri5"
+    solver_options: Dict[str, Any] = {}
 
 
 class Optimize(OperationRequest):
