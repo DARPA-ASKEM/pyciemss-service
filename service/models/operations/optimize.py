@@ -67,7 +67,7 @@ class OptimizeExtra(BaseModel):
         example=None,
     )
     maxiter: int = 5
-    maxfeval: int = 5
+    maxfeval: int = 25
     is_minimized: bool = True
     alpha: float = 0.95
     solver_method: str = "dopri5"
