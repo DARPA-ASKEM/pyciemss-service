@@ -20,7 +20,7 @@ class CalibrateExtra(BaseModel):
     #     1.0, description="Optional field for CIEMSS calibration", example=1.0
     # )
     start_time: float = Field(
-        -1e-10, description="Optional field for CIEMSS calibration", example=-1e-10
+        0, description="Optional field for CIEMSS calibration", example=0
     )
     num_iterations: int = Field(
         1000, description="Optional field for CIEMSS calibration", example=1000
