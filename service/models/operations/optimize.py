@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any, ClassVar, Dict, List, Optional
+from enum import Enum
 
 import numpy as np
 import torch
@@ -10,29 +11,30 @@ from pyciemss.integration_utils.intervention_builder import (
     param_value_objective,
     start_time_objective,
 )
+
+from pyciemss.ouu.qoi import obs_nday_average_qoi, obs_max_qoi
+
 from utils.tds import fetch_model, fetch_inferred_parameters
 
 
-# TODO: Add more methods later if needed
-# class QOIMethod(Enum):
-#     obs_nday_average = "obs_nday_average"
+class QOIMethod(str, Enum):
+    day_average = "day_average"
+    max = "max"
 
 
-def obs_nday_average_qoi(
-    samples: Dict[str, torch.Tensor], contexts: List, ndays: int = 7
-) -> np.ndarray:
-    """
-    Return estimate of last n-day average of each sample.
-    samples is is the output from a Pyro Predictive object.
-    samples[VARIABLE] is expected to have dimension (nreplicates, ntimepoints)
-    Note: last ndays timepoints is assumed to represent last n-days of simulation.
+class QOI(BaseModel):
+    method: QOIMethod = QOIMethod.day_average
+    contexts: List[str] = []
 
-    Taken from:
-    https://github.com/ciemss/pyciemss/blob/main/docs/source/interfaces.ipynb
-    """
-    dataQoI = samples[contexts[0] + "_state"].detach().numpy()
-
-    return np.mean(dataQoI[:, -ndays:], axis=1)
+    def gen_call(self):
+        contexts = [context + "_state" for context in self.contexts]
+        qoi_map = {
+            QOIMethod.day_average: lambda samples: obs_nday_average_qoi(
+                samples, contexts, 1
+            ),
+            QOIMethod.max: lambda samples: obs_max_qoi(samples, contexts),
+        }
+        return qoi_map[self.method]
 
 
 def objfun(x, is_minimized):
@@ -80,7 +82,7 @@ class Optimize(OperationRequest):
     timespan: Timespan = Timespan(start=0, end=90)
     interventions: InterventionObjective
     step_size: float = 1.0
-    qoi: List[str]  # QOIMethod
+    qoi: QOI
     risk_bound: float
     initial_guess_interventions: List[float]
     bounds_interventions: List[List[float]]
@@ -127,7 +129,7 @@ class Optimize(OperationRequest):
             "start_time": self.timespan.start,
             "end_time": self.timespan.end,
             "objfun": lambda x: objfun(x, is_minimized),
-            "qoi": lambda samples: obs_nday_average_qoi(samples, self.qoi, 1),
+            "qoi": self.qoi.gen_call(),
             "risk_bound": self.risk_bound,
             "initial_guess_interventions": self.initial_guess_interventions,
             "bounds_interventions": self.bounds_interventions,
