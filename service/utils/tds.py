@@ -10,6 +10,7 @@ import shutil
 import json
 import requests
 import dill
+import numbers
 from datetime import datetime
 from typing import Optional
 
@@ -23,6 +24,25 @@ TDS_PASSWORD = settings.TDS_PASSWORD
 TDS_SIMULATIONS = "/simulations"
 TDS_DATASETS = "/datasets"
 TDS_CONFIGURATIONS = "/model-configurations"
+
+
+#
+# FIXME: remove when pyciemss resolve https://github.com/ciemss/pyciemss/issues/567
+#
+# Recursively force every numeric looking value in a dict to be float to make it more likely to
+# be compatible with tensor datatypes downstream
+def shim_float(obj):
+    if type(obj) == dict:
+        for k, v in obj.items():
+            obj[k] = shim_float(v)
+    elif type(obj) == list:
+        for idx, v in enumerate(obj):
+            obj[idx] = shim_float(v)
+
+    if isinstance(obj, numbers.Number):
+        return float(obj)
+    else:
+        return obj
 
 
 def tds_session():
@@ -114,7 +134,9 @@ def fetch_model(model_config_id, job_id):
 
     amr_path = os.path.join(job_dir, f"./{model_config_id}.json")
     with open(amr_path, "w") as file:
-        json.dump(model_response.json()["configuration"], file)
+        model = model_response.json()["configuration"]
+        shimmed_model = shim_float(model)
+        json.dump(shimmed_model, file)
     return amr_path
 
 
