@@ -6,10 +6,15 @@ import logging
 from settings import settings
 
 creds = pika.PlainCredentials(settings.RABBITMQ_USERNAME, settings.RABBITMQ_PASSWORD)
-conn_config = pika.ConnectionParameters(
-    host=settings.RABBITMQ_HOST, port=settings.RABBITMQ_PORT, credentials=creds
-)
 
+if settings.RABBITMQ_SSL:
+  conn_config = pika.URLParameters(
+    "amqps://" + settings.RABBITMQ_USERNAME + ":" + settings.RABBITMQ_PASSWORD + "@" + settings.RABBITMQ_HOST + ":" + str(settings.RABBITMQ_PORT) + "/"
+  )
+else:
+  conn_config = pika.ConnectionParameters(
+    host=settings.RABBITMQ_HOST, port=settings.RABBITMQ_PORT, credentials=creds
+  )
 
 def mock_rabbitmq_consumer():
     logging.basicConfig()
