@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     RABBITMQ_PORT: int = 5672
     RABBITMQ_USERNAME: str = "guest"
     RABBITMQ_PASSWORD: str = "guest"
+    RABBITMQ_SSL: bool = False
 
 
 settings = Settings()
