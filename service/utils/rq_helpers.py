@@ -9,6 +9,7 @@ from redis import Redis
 from rq import Queue
 from rq.exceptions import NoSuchJobError
 from rq.job import Job
+from rq.command import send_stop_job_command
 
 from settings import settings
 from utils.tds import update_tds_status, create_tds_job, cancel_tds_job
@@ -102,6 +103,7 @@ def kill_job(job_id, redis_conn):
         )
     else:
         job.cancel()
+        send_stop_job_command(redis_conn, job_id)
 
         cancel_tds_job(str(job_id))
 

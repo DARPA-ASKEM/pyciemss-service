@@ -20,10 +20,12 @@ class Status(Enum):
     def from_rq(rq_status):
         rq_status_to_tds_status = {
             "canceled": "cancelled",
+            "stopped": "cancelled",
             "complete": "complete",
             "error": "error",
             "queued": "queued",
             "running": "running",
+            "working": "running",
             "failed": "failed",
             "started": "running",
             "finished": "complete",
