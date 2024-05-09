@@ -114,7 +114,15 @@ def fetch_model(model_config_id, job_id):
 
     amr_path = os.path.join(job_dir, f"./{model_config_id}.json")
     with open(amr_path, "w") as file:
-        json.dump(model_response.json()["configuration"], file)
+        # Ensure we don't have null observables which can be problematic downstream, if so convert
+        # to empty list
+        model_json = model_response.json()["configuration"]
+        if "semantics" in model_json and "ode" in model_json["semantics"]:
+            ode = model_json["semantics"]["ode"]
+            if "observables" in ode and ode["observables"] is None:
+                ode["observables"] = []
+
+        json.dump(model_json, file)
     return amr_path
 
 
