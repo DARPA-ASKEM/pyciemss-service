@@ -37,10 +37,6 @@ def file_storage(requests_mock):
     def get_filename(url):
         return parse_qs(urlparse(url).query)["filename"][0]
 
-    def get_loc(request, _):
-        filename = get_filename(request.url)
-        return {"url": f"https://filesave?filename={filename}"}
-
     def save(request, context):
         filename = get_filename(request.url)
         try:
@@ -52,10 +48,8 @@ def file_storage(requests_mock):
     def retrieve(filename):
         return storage.get(filename, storage)
 
-    get_upload_url = re.compile("upload-url")
-    requests_mock.get(get_upload_url, json=get_loc)
-    upload_url = re.compile("filesave")
-    requests_mock.put(upload_url, json=save)
+    upload_file_url = re.compile("upload-file")
+    requests_mock.get(upload_file_url, json=save)
 
     yield retrieve
 
