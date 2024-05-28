@@ -2,7 +2,7 @@
 	"engine": "ciemss",
 	"user_id": "not_provided",
 	"model_config_id": "sidarthe",
-	"interventions": {
+	"policy_interventions": {
 		"selection": "param_value",
 		"start_time": [2],
 		"param_names": ["beta"],
