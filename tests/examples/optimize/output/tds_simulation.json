@@ -14,7 +14,7 @@
 			"start": 0,
 			"end": 90
 		},
-		"interventions": [],
+		"policy_interventions": [],
 		"extra": {
 			"num_samples": 100
 		}
