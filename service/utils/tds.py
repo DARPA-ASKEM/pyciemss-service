@@ -22,7 +22,7 @@ TDS_USER = settings.TDS_USER
 TDS_PASSWORD = settings.TDS_PASSWORD
 TDS_SIMULATIONS = "/simulations"
 TDS_DATASETS = "/datasets"
-TDS_CONFIGURATIONS = "/model-configurations"
+TDS_CONFIGURATIONS = "/model-configurations-legacy"
 
 
 def tds_session():
