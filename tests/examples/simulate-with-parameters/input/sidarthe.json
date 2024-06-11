@@ -1,10 +1,4 @@
 {
-  "id": "sidarthe",
-  "name": "SIDARTHE",
-  "description": "no changes made",
-  "timestamp": "2023-08-03T18:00:40",
-  "model_id": "autogen",
-  "configuration": {
     "header": {
       "name": "Giordano2020 - SIDARTHE model of COVID-19 spread in Italy",
       "schema": "https://raw.githubusercontent.com/DARPA-ASKEM/Model-Representations/petrinet_v0.5/petrinet/petrinet_schema.json",
@@ -696,9 +690,4 @@
         ]
       }
     }
-  },
-  "amr_configuration": null,
-  "calibrated": false,
-  "calibration": null,
-  "calibration_score": null
-}
+  }
