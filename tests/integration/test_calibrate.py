@@ -47,7 +47,7 @@ def test_calibrate_example(
     requests_mock.put(
         f"{TDS_URL}/simulations/{simulation_id}", json={"status": "success"}
     )
-    requests_mock.get(f"{TDS_URL}/model-configurations-legacy/{config_id}", json=model)
+    requests_mock.get(f"{TDS_URL}/model-configurations/as-configured-model/{config_id}", json=model)
 
     worker.work(burst=True)
 
