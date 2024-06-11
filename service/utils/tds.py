@@ -23,7 +23,7 @@ TDS_USER = settings.TDS_USER
 TDS_PASSWORD = settings.TDS_PASSWORD
 TDS_SIMULATIONS = "/simulations"
 TDS_DATASETS = "/datasets"
-TDS_CONFIGURATIONS = "/model-configurations-legacy"
+TDS_CONFIGURATIONS = "/model-configurations/as-configured-model"
 
 
 #
@@ -136,7 +136,7 @@ def fetch_model(model_config_id, job_id):
     with open(amr_path, "w") as file:
         # Ensure we don't have null observables which can be problematic downstream, if so convert
         # to empty list
-        model_json = model_response.json()["configuration"]
+        model_json = model_response.json()
         if "semantics" in model_json and "ode" in model_json["semantics"]:
             ode = model_json["semantics"]["ode"]
             if "observables" in ode and ode["observables"] is None:
