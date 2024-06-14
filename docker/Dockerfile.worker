@@ -12,8 +12,7 @@ RUN poetry config virtualenvs.create false && \
 # Pin netCDF4 to version 1.6.5
 RUN pip install netCDF4==1.6.5
 
-# We have to install PyCIEMSS now since the interface uses Torch
-# TODO: Do not use Torch in PyCIEMSS Library interface
+# Install PyCIEMSS
 RUN poetry run poe install-pyciemss
 
 COPY service service
