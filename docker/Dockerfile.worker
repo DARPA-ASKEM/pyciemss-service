@@ -1,20 +1,20 @@
 FROM python:3.10
 
-# RUN wget --no-verbose -O julia.tar.gz "https://julialang-s3.julialang.org/bin/linux/$(uname -m|sed 's/86_//')/1.9/julia-1.9.2-linux-$(uname -m).tar.gz"
-# RUN tar -xzf "julia.tar.gz" && mv julia-1.9.2 /opt/julia && \
-#     ln -s /opt/julia/bin/julia /usr/local/bin/julia && rm "julia.tar.gz"
-
 WORKDIR /
 
-# RUN julia -e 'using Pkg; Pkg.add(url="https://github.com/jataware/SciMLIntegration.jl", rev="main"); Pkg.precompile()'
-
-RUN pip install --no-cache-dir poetry==1.5.1
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir poetry==1.5.1
 COPY pyproject.toml pyproject.toml
 COPY poetry.lock poetry.lock
 RUN poetry config virtualenvs.create false && \
     poetry install --no-root --no-cache
 
+# Pin netCDF4 to version 1.6.5
+RUN pip install netCDF4==1.6.5
+
+# Install PyCIEMSS
 RUN poetry run poe install-pyciemss
+
 COPY service service
 COPY tests tests
 COPY README.md README.md
