@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     pyciemss-service configuration
     """
 
-    TDS_URL: str = "http://data-service-api:8000"
+    TDS_URL: str = "http://localhost:3000"
     TDS_USER: str = "user"
     TDS_PASSWORD: str = "password"
     REDIS_HOST: str = "redis"
