@@ -13,6 +13,8 @@ import dill
 import numbers
 from datetime import datetime
 from typing import Optional
+import pandas as pd
+import numpy as np
 
 from fastapi import HTTPException
 
@@ -148,8 +150,6 @@ def fetch_model(model_config_id, job_id):
 
 
 def fetch_dataset(dataset: dict, job_id):
-    import pandas as pd
-
     job_dir = get_job_dir(job_id)
     logging.debug(f"Fetching dataset {dataset['id']}")
     dataset_url = (
@@ -208,6 +208,58 @@ def fetch_inferred_parameters(parameters_id: Optional[str], job_id):
     return dill.loads(response.content)
 
 
+def get_result_summary(data_result):
+    try:
+        column_headers = data_result.columns
+        timepoint_id_set = list(set(data_result["timepoint_id"].to_list()))
+        timepoint_id_set.sort()
+        sample_id_set = list(set(data_result["sample_id"].to_list()))
+        sample_id_set.sort()
+        summary_result = [
+            ["", "bins", "min_value", "max_value", "mean", "median", "std"]
+        ]
+        for i in sample_id_set:
+            from_index = (i * timepoint_id_set[-1]) + i
+            to_index = (i + 1) * timepoint_id_set[-1] + i
+            for col_name in column_headers:
+                series_row = get_csv_column_stats(
+                    data_result[from_index:to_index][col_name]
+                )
+                series_row.insert(0, col_name)
+                summary_result.append(series_row)
+
+        return summary_result
+    # If the format of the data_result does not match expected column names ect just throw error
+    except:
+        raise
+
+
+def get_csv_column_stats(column):
+    column = column.to_list()
+    column.sort()
+    min_value = column[0]
+    max_value = column[-1]
+    mean = sum(column) / len(column)
+    median = column[len(column) // 2]
+    std = np.std(column)
+
+    # set up bins:
+    bin_count = 10
+    step_size = (max_value - min_value) / (bin_count - 1)
+    bins = []
+    if step_size == 0:
+        # Every value is the same, so just return a single bin
+        bins = [len(column)]
+    else:
+        bins = [0] * bin_count
+        # Fill bins
+        for i in column:
+            bin_index = int(abs(i - min_value) // step_size)
+            bins[bin_index] += 1
+
+    return [bins, min_value, max_value, mean, median, std]
+
+
 def attach_files(output: dict, job_id, status="complete"):
     sim_results_url = TDS_URL + TDS_SIMULATIONS + "/" + str(job_id)
     job_dir = get_job_dir(job_id)
@@ -218,6 +270,18 @@ def attach_files(output: dict, job_id, status="complete"):
     if data_result is not None:
         data_result.to_csv(output_filename, index=False)
         files[output_filename] = "result.csv"
+        # Add a result summary file for the HMI to digest.
+        try:
+            result_summary_filename = os.path.join(job_dir, "./result_summary.csv")
+            summary_data = get_result_summary(data_result)
+            summary_df = pd.DataFrame.from_records(summary_data)
+            summary_df.to_csv(result_summary_filename)
+            files[result_summary_filename] = "result_summary.csv"
+        except (
+            Exception
+        ) as error:  # If the result file is a new format do not fail entire simulation run
+            logging.error(f"{job_id} get_result_summary ran into error")
+            logging.error(error)
 
     risk_result = output.get("risk", None)
     if risk_result is not None:
