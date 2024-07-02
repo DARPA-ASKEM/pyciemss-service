@@ -13,6 +13,7 @@ import dill
 import numbers
 from datetime import datetime
 from typing import Optional
+import pandas as pd
 
 from fastapi import HTTPException
 
@@ -148,8 +149,6 @@ def fetch_model(model_config_id, job_id):
 
 
 def fetch_dataset(dataset: dict, job_id):
-    import pandas as pd
-
     job_dir = get_job_dir(job_id)
     logging.debug(f"Fetching dataset {dataset['id']}")
     dataset_url = (
@@ -208,6 +207,19 @@ def fetch_inferred_parameters(parameters_id: Optional[str], job_id):
     return dill.loads(response.content)
 
 
+def get_result_summary(data_result):
+    try:
+        df2 = data_result.groupby("timepoint_id", as_index=False).agg(
+            ["min", "max", "mean", "median", "std"]
+        )
+        df2 = df2.drop(columns=["sample_id", "timepoint_unknown"])
+        df2.columns = ["_".join(i) for i in df2.columns]
+        return df2
+    # If the format of the data_result does not match expected column names ect just throw error
+    except:
+        raise
+
+
 def attach_files(output: dict, job_id, status="complete"):
     sim_results_url = TDS_URL + TDS_SIMULATIONS + "/" + str(job_id)
     job_dir = get_job_dir(job_id)
@@ -218,6 +230,18 @@ def attach_files(output: dict, job_id, status="complete"):
     if data_result is not None:
         data_result.to_csv(output_filename, index=False)
         files[output_filename] = "result.csv"
+        # Add a result summary file for the HMI to digest.
+        try:
+            result_summary_filename = os.path.join(job_dir, "./result_summary.csv")
+            summary_data = get_result_summary(data_result)
+            summary_df = pd.DataFrame.from_records(summary_data)
+            summary_df.to_csv(result_summary_filename)
+            files[result_summary_filename] = "result_summary.csv"
+        except (
+            Exception
+        ) as error:  # If the result file is a new format do not fail entire simulation run
+            logging.error(f"{job_id} get_result_summary ran into error")
+            logging.error(error)
 
     risk_result = output.get("risk", None)
     if risk_result is not None:
