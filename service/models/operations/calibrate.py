@@ -57,7 +57,7 @@ class Calibrate(OperationRequest):
         dataset_path = fetch_dataset(self.dataset.dict(), job_id)
 
         static_interventions = fetch_and_convert_static_interventions(
-            self.policy_intervention_id
+            self.policy_intervention_id, job_id
         )
 
         # TODO: Test RabbitMQ
