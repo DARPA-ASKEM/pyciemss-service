@@ -96,7 +96,7 @@ class Optimize(OperationRequest):
         # Get model from TDS
         amr_path = fetch_model(self.model_config_id, job_id)
         static_interventions = fetch_and_convert_static_interventions(
-            self.policy_intervention_id
+            self.policy_intervention_id, job_id
         )
 
         intervention_type = self.policy_interventions.selection
