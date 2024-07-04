@@ -323,12 +323,10 @@ def attach_files(output: dict, job_id, status="complete"):
 
 def fetch_interventions(policy_intervention_id: str, job_id):
     job_dir = get_job_dir(job_id)
-    logging.error(f"Fetching interventions {policy_intervention_id}")
+    logging.debug(f"Fetching interventions {policy_intervention_id}")
 
     intervention_url = TDS_URL + TDS_INTERVENTIONS + "/" + policy_intervention_id
-    logging.error(intervention_url)
     intervention_response = tds_session().get(intervention_url)
-    logging.error(intervention_response)
     if intervention_response.status_code == 404:
         raise HTTPException(status_code=404, detail="Intervention not found")
 
