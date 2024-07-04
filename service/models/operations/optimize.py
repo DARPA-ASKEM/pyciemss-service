@@ -90,7 +90,7 @@ class Optimize(OperationRequest):
         None,
         description="optional extra system specific arguments for advanced use cases",
     )
-    policy_intervention_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
+    policy_intervention_id: str = Field(None, example="ba8da8d4-047d-11ee-be56")
 
     def gen_pyciemss_args(self, job_id):
         # Get model from TDS
