@@ -25,6 +25,7 @@ TDS_PASSWORD = settings.TDS_PASSWORD
 TDS_SIMULATIONS = "/simulations"
 TDS_DATASETS = "/datasets"
 TDS_CONFIGURATIONS = "/model-configurations/as-configured-model"
+TDS_INTERVENTIONS = "/interventions"
 
 
 #
@@ -318,3 +319,24 @@ def attach_files(output: dict, job_id, status="complete"):
         job_id, status=status, result_files=list(files.values()), finish=True
     )
     logging.info("uploaded files to %s", job_id)
+
+
+def fetch_interventions(policy_intervention_id: str, job_id):
+    job_dir = get_job_dir(job_id)
+    logging.error(f"Fetching interventions {policy_intervention_id}")
+
+    intervention_url = TDS_URL + TDS_INTERVENTIONS + "/" + policy_intervention_id
+    logging.error(intervention_url)
+    intervention_response = tds_session().get(intervention_url)
+    logging.error(intervention_response)
+    if intervention_response.status_code == 404:
+        raise HTTPException(status_code=404, detail="Intervention not found")
+
+    intervention_path = os.path.join(job_dir, f"./{policy_intervention_id}.json")
+    with open(intervention_path, "w") as file:
+        # Ensure we don't have null observables which can be problematic downstream, if so convert
+        # to empty list
+        intervention_json = intervention_response.json()
+        json.dump(intervention_json, file)
+
+    return intervention_response.json()
