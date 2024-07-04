@@ -24,7 +24,7 @@ class Simulate(OperationRequest):
     pyciemss_lib_function: ClassVar[str] = "sample"
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan = Timespan(start=0, end=90)
-    policy_intervention_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
+    policy_intervention_id: str = Field(None, example="ba8da8d4-047d-11ee-be56")
     step_size: float = 1.0
     extra: SimulateExtra = Field(
         None,

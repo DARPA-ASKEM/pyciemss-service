@@ -45,7 +45,7 @@ class Calibrate(OperationRequest):
     model_config_id: str = Field(..., example="c1cd941a-047d-11ee-be56")
     dataset: Dataset = None
     timespan: Optional[Timespan] = None
-    policy_intervention_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
+    policy_intervention_id: str = Field(None, example="ba8da8d4-047d-11ee-be56")
     extra: CalibrateExtra = Field(
         None,
         description="optional extra system specific arguments for advanced use cases",
