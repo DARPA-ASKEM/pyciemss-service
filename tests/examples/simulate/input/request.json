@@ -2,13 +2,7 @@
 	"engine": "ciemss",
 	"user_id": "not_provided",
 	"model_config_id": "sidarthe",
-	"interventions": [
-		{
-			"timestep": 1.0,
-			"name": "beta",
-			"value": 0.4
-		}
-	],
+	"policy_intervention_id": "intervention",
 	"timespan": {
 		"start": 0,
 		"end": 90

@@ -1,0 +1,32 @@
+{
+	"id":"7ff1c6d2-fdca-43e9-8132-558b33a70006",
+	"created_on":"2024-07-04T18:39:19.754+00:00",
+	"updated_on":"2024-07-04T18:39:25.561+00:00",
+	"name":"two_beta",
+	"description":"This is a sample intervention policy.",
+	"file_names":[
+
+	],
+	"temporary":false,
+	"public_asset":true,
+	"model_id":"a0f723dd-06c5-45c1-a0ad-87181cb94d86",
+	"interventions":[
+		{
+				"name":"New_Intervention",
+				"applied_to":"β",
+				"static_interventions":[
+					{
+							"timestep":0,
+							"value":0
+					},
+					{
+							"timestep":1,
+							"value":2
+					}
+				],
+				"dynamic_interventions":[
+
+				]
+		}
+	]
+}
