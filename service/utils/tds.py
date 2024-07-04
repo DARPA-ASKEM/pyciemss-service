@@ -332,8 +332,6 @@ def fetch_interventions(policy_intervention_id: str, job_id):
 
     intervention_path = os.path.join(job_dir, f"./{policy_intervention_id}.json")
     with open(intervention_path, "w") as file:
-        # Ensure we don't have null observables which can be problematic downstream, if so convert
-        # to empty list
         intervention_json = intervention_response.json()
         json.dump(intervention_json, file)
 
