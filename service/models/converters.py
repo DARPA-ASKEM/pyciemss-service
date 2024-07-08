@@ -2,12 +2,21 @@ from collections import defaultdict
 
 # TODO: Do not use Torch in PyCIEMSS Library interface
 import torch
+from utils.tds import fetch_interventions
+from typing import Dict
 
 
-def convert_to_static_interventions(interventions):
-    static_interventions = defaultdict(dict)
-    for i in interventions:
-        static_interventions[i.timestep][i.name] = torch.tensor(i.value)
+def fetch_and_convert_static_interventions(policy_intervention_id, job_id):
+    static_interventions: Dict[torch.Tensor, Dict[str, any]] = defaultdict(dict)
+    if not (policy_intervention_id):
+        return static_interventions
+    policy_intervention = fetch_interventions(policy_intervention_id, job_id)
+    for inter in policy_intervention["interventions"]:
+        for static_inter in inter["static_interventions"]:
+            time = torch.tensor(float(static_inter["timestep"]))
+            parameter_name = inter["applied_to"]
+            value = torch.tensor(float(static_inter["value"]))
+            static_interventions[time][parameter_name] = value
     return static_interventions
 
 
