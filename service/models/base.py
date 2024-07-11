@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import ClassVar, Dict
+from typing import ClassVar, Dict, Optional
 from pydantic import BaseModel, Field
 
 
@@ -40,6 +40,31 @@ class InterventionObject(BaseModel):
 class InterventionSelection(BaseModel):
     timestep: float
     name: str
+
+
+class HMIStaticIntervention(BaseModel):
+    timestep: float
+    value: float
+
+
+class HMIDynamicIntervention(BaseModel):
+    parameter: str
+    threshold: float
+    value: float
+    is_greater_than: bool
+
+
+class HMIInterventionPolicy(BaseModel):
+    model_id: Optional[str] = Field(default="")
+    Interventions: list[HMIIntervention]
+
+
+class HMIIntervention(BaseModel):
+    name: str
+    applied_to: str
+    type: str
+    static_interventions: Optional[list[HMIStaticIntervention]] = Field(default=None)
+    dynamic_interventions: Optional[list[HMIDynamicIntervention]] = Field(default=None)
 
 
 class OperationRequest(BaseModel):

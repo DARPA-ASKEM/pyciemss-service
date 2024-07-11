@@ -6,14 +6,14 @@ from enum import Enum
 import numpy as np
 import torch
 from pydantic import BaseModel, Field, Extra
-from models.base import OperationRequest, Timespan
+from models.base import OperationRequest, Timespan, HMIIntervention
 from pyciemss.integration_utils.intervention_builder import (
     param_value_objective,
     start_time_objective,
 )
 
 from pyciemss.ouu.qoi import obs_nday_average_qoi, obs_max_qoi
-from models.converters import fetch_and_convert_static_interventions
+from models.converters import convert_static_interventions
 from utils.tds import fetch_model, fetch_inferred_parameters
 
 
@@ -37,15 +37,17 @@ class QOI(BaseModel):
         return qoi_map[self.method]
 
 
-def objfun(x, is_minimized):
-    if is_minimized:
+def objfun(x, initial_guess, objective_function_option):
+    if objective_function_option == "lower_bound":
         return np.sum(np.abs(x))
-    else:
+    if objective_function_option == "upper_bound":
         return -np.sum(np.abs(x))
+    if objective_function_option == "initial_guess":
+        return np.sum(np.abs(x - initial_guess))
 
 
 class InterventionObjective(BaseModel):
-    selection: str = Field(
+    intervention_type: str = Field(
         "param_value",
         description="The intervention objective to use",
         example="param_value",
@@ -53,6 +55,8 @@ class InterventionObjective(BaseModel):
     param_names: list[str]
     param_values: Optional[list[Optional[float]]] = None
     start_time: Optional[list[float]] = None
+    objective_function_option: Optional[list[str]] = None
+    initial_guess: Optional[list[float]] = None
 
 
 class OptimizeExtra(BaseModel):
@@ -70,7 +74,6 @@ class OptimizeExtra(BaseModel):
     )
     maxiter: int = 5
     maxfeval: int = 25
-    is_minimized: bool = True
     alpha: float = 0.95
     solver_method: str = "dopri5"
     solver_options: Dict[str, Any] = {}
@@ -80,7 +83,10 @@ class Optimize(OperationRequest):
     pyciemss_lib_function: ClassVar[str] = "optimize"
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan = Timespan(start=0, end=90)
-    policy_interventions: InterventionObjective
+    optimize_interventions: InterventionObjective  # These are the interventions to be optimized.
+    fixed_static_parameter_interventions: list[HMIIntervention] = Field(
+        None
+    )  # Theses are interventions provided that will not be optimized
     step_size: float = 1.0
     qoi: QOI
     risk_bound: float
@@ -90,35 +96,35 @@ class Optimize(OperationRequest):
         None,
         description="optional extra system specific arguments for advanced use cases",
     )
-    policy_intervention_id: str = Field(None, example="ba8da8d4-047d-11ee-be56")
 
     def gen_pyciemss_args(self, job_id):
         # Get model from TDS
         amr_path = fetch_model(self.model_config_id, job_id)
-        static_interventions = fetch_and_convert_static_interventions(
-            self.policy_intervention_id, job_id
+        fixed_static_parameter_interventions = convert_static_interventions(
+            self.fixed_static_parameter_interventions
         )
 
-        intervention_type = self.policy_interventions.selection
+        intervention_type = self.optimize_interventions.intervention_type
         if intervention_type == "param_value":
-            assert self.policy_interventions.start_time is not None
+            assert self.optimize_interventions.start_time is not None
             start_time = [
-                torch.tensor(time) for time in self.policy_interventions.start_time
+                torch.tensor(time) for time in self.optimize_interventions.start_time
             ]
-            param_value = [None] * len(self.policy_interventions.param_names)
+            param_value = [None] * len(self.optimize_interventions.param_names)
 
-            policy_interventions = param_value_objective(
+            optimize_interventions = param_value_objective(
                 start_time=start_time,
-                param_name=self.policy_interventions.param_names,
+                param_name=self.optimize_interventions.param_names,
                 param_value=param_value,
             )
         else:
-            assert self.policy_interventions.param_values is not None
+            assert self.optimize_interventions.param_values is not None
             param_value = [
-                torch.tensor(value) for value in self.policy_interventions.param_values
+                torch.tensor(value)
+                for value in self.optimize_interventions.param_values
             ]
-            policy_interventions = start_time_objective(
-                param_name=self.policy_interventions.param_names,
+            optimize_interventions = start_time_objective(
+                param_name=self.optimize_interventions.param_names,
                 param_value=param_value,
             )
 
@@ -127,20 +133,23 @@ class Optimize(OperationRequest):
             extra_options.pop("inferred_parameters"), job_id
         )
         n_samples_ouu = extra_options.pop("num_samples")
-        is_minimized = extra_options.pop("is_minimized")
 
         return {
             "model_path_or_json": amr_path,
             "logging_step_size": self.step_size,
             "start_time": self.timespan.start,
             "end_time": self.timespan.end,
-            "objfun": lambda x: objfun(x, is_minimized),
+            "objfun": lambda x: objfun(
+                x,
+                self.optimize_interventions.initial_guess[0],
+                self.optimize_interventions.objective_function_option[0],
+            ),
             "qoi": self.qoi.gen_call(),
             "risk_bound": self.risk_bound,
             "initial_guess_interventions": self.initial_guess_interventions,
             "bounds_interventions": self.bounds_interventions,
-            "static_parameter_interventions": policy_interventions,
-            "fixed_static_parameter_interventions": static_interventions,
+            "static_parameter_interventions": optimize_interventions,
+            "fixed_static_parameter_interventions": fixed_static_parameter_interventions,
             "inferred_parameters": inferred_parameters,
             "n_samples_ouu": n_samples_ouu,
             **extra_options,
