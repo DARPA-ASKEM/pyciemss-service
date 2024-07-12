@@ -21,10 +21,10 @@ def convert_static_interventions(interventions: list[HMIIntervention]):
         return defaultdict(dict)
     static_interventions: Dict[torch.Tensor, Dict[str, any]] = defaultdict(dict)
     for inter in interventions:
-        for static_inter in inter.static_interventions:
-            time = torch.tensor(float(static_inter.timestep))
-            parameter_name = inter.applied_to
-            value = torch.tensor(float(static_inter.value))
+        for static_inter in inter["static_interventions"]:
+            time = torch.tensor(float(static_inter["timestep"]))
+            parameter_name = inter["applied_to"]
+            value = torch.tensor(float(static_inter["value"]))
             static_interventions[time][parameter_name] = value
     return static_interventions
 
