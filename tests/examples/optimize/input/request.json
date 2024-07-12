@@ -6,7 +6,8 @@
 		"intervention_type": "param_value",
 		"start_time": [2],
 		"param_names": ["beta"],
-		"param_values": [0.02]
+		"param_values": [0.02],
+		"initial_guess": [0]
 	},
 	"timespan": {
 		"start": 0,
