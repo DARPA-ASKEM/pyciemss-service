@@ -4,6 +4,7 @@
 	"model_config_id": "sidarthe",
 	"optimize_interventions": {
 		"intervention_type": "param_value",
+		"objective_function_option": ["lower_bound"],
 		"start_time": [2],
 		"param_names": ["beta"],
 		"param_values": [0.02],
