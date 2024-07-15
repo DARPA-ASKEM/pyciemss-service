@@ -4,14 +4,23 @@ from collections import defaultdict
 import torch
 from utils.tds import fetch_interventions
 from typing import Dict
+from models.base import HMIIntervention
 
 
 def fetch_and_convert_static_interventions(policy_intervention_id, job_id):
-    static_interventions: Dict[torch.Tensor, Dict[str, any]] = defaultdict(dict)
     if not (policy_intervention_id):
-        return static_interventions
+        return defaultdict(dict)
     policy_intervention = fetch_interventions(policy_intervention_id, job_id)
-    for inter in policy_intervention["interventions"]:
+    interventionList = policy_intervention["interventions"]
+    return convert_static_interventions(interventionList)
+
+
+# Used to convert from HMI Intervention Policy -> pyciemss static interventions.
+def convert_static_interventions(interventions: list[HMIIntervention]):
+    if not (interventions):
+        return defaultdict(dict)
+    static_interventions: Dict[torch.Tensor, Dict[str, any]] = defaultdict(dict)
+    for inter in interventions:
         for static_inter in inter["static_interventions"]:
             time = torch.tensor(float(static_inter["timestep"]))
             parameter_name = inter["applied_to"]
