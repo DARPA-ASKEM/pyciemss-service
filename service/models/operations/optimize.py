@@ -10,6 +10,7 @@ from models.base import OperationRequest, Timespan, HMIIntervention
 from pyciemss.integration_utils.intervention_builder import (
     param_value_objective,
     start_time_objective,
+    start_time_param_value_objective,
 )
 
 from pyciemss.ouu.qoi import obs_nday_average_qoi, obs_max_qoi
@@ -116,7 +117,7 @@ class Optimize(OperationRequest):
                 param_name=self.optimize_interventions.param_names,
                 param_value=param_value,
             )
-        else:
+        if intervention_type == "start_time":
             assert self.optimize_interventions.param_values is not None
             param_value = [
                 torch.tensor(value)
@@ -125,6 +126,10 @@ class Optimize(OperationRequest):
             optimize_interventions = start_time_objective(
                 param_name=self.optimize_interventions.param_names,
                 param_value=param_value,
+            )
+        if intervention_type == "start_time_param_value":
+            optimize_interventions = start_time_param_value_objective(
+                param_name=self.optimize_interventions.param_names
             )
 
         extra_options = self.extra.dict()
