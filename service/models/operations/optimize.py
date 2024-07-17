@@ -10,6 +10,7 @@ from models.base import OperationRequest, Timespan, HMIIntervention
 from pyciemss.integration_utils.intervention_builder import (
     param_value_objective,
     start_time_objective,
+    start_time_param_value_objective,
 )
 
 from pyciemss.ouu.qoi import obs_nday_average_qoi, obs_max_qoi
@@ -90,7 +91,6 @@ class Optimize(OperationRequest):
     step_size: float = 1.0
     qoi: QOI
     risk_bound: float
-    initial_guess_interventions: List[float]
     bounds_interventions: List[List[float]]
     extra: OptimizeExtra = Field(
         None,
@@ -117,7 +117,7 @@ class Optimize(OperationRequest):
                 param_name=self.optimize_interventions.param_names,
                 param_value=param_value,
             )
-        else:
+        if intervention_type == "start_time":
             assert self.optimize_interventions.param_values is not None
             param_value = [
                 torch.tensor(value)
@@ -126,6 +126,10 @@ class Optimize(OperationRequest):
             optimize_interventions = start_time_objective(
                 param_name=self.optimize_interventions.param_names,
                 param_value=param_value,
+            )
+        if intervention_type == "start_time_param_value":
+            optimize_interventions = start_time_param_value_objective(
+                param_name=self.optimize_interventions.param_names
             )
 
         extra_options = self.extra.dict()
@@ -146,7 +150,7 @@ class Optimize(OperationRequest):
             ),
             "qoi": self.qoi.gen_call(),
             "risk_bound": self.risk_bound,
-            "initial_guess_interventions": self.initial_guess_interventions,
+            "initial_guess_interventions": self.optimize_interventions.initial_guess,
             "bounds_interventions": self.bounds_interventions,
             "static_parameter_interventions": optimize_interventions,
             "fixed_static_parameter_interventions": fixed_static_parameter_interventions,
