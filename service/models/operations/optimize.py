@@ -90,7 +90,6 @@ class Optimize(OperationRequest):
     step_size: float = 1.0
     qoi: QOI
     risk_bound: float
-    initial_guess_interventions: List[float]
     bounds_interventions: List[List[float]]
     extra: OptimizeExtra = Field(
         None,
@@ -146,7 +145,7 @@ class Optimize(OperationRequest):
             ),
             "qoi": self.qoi.gen_call(),
             "risk_bound": self.risk_bound,
-            "initial_guess_interventions": self.initial_guess_interventions,
+            "initial_guess_interventions": self.optimize_interventions.initial_guess,
             "bounds_interventions": self.bounds_interventions,
             "static_parameter_interventions": optimize_interventions,
             "fixed_static_parameter_interventions": fixed_static_parameter_interventions,
