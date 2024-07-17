@@ -40,7 +40,7 @@ httpx = "^0.24.1"
 
 
 [tool.poe.tasks]
-install-pyciemss = "pip install --no-cache-dir git+https://github.com/ciemss/pyciemss.git@7967dfaede3136dfec4b8e08dd11b272a6190677 --use-pep517"
+install-pyciemss = "pip install --no-cache-dir git+https://github.com/ciemss/pyciemss.git@672201f44752e40ed3a92a335ada136bc30f776e --use-pep517"
 
 
 [tool.pytest.ini_options]
