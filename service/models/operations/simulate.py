@@ -5,7 +5,10 @@ from pydantic import BaseModel, Field, Extra
 
 
 from models.base import OperationRequest, Timespan
-from models.converters import fetch_and_convert_static_interventions
+from models.converters import (
+    fetch_and_convert_static_interventions,
+    fetch_and_convert_dynamic_interventions,
+)
 from utils.tds import fetch_model, fetch_inferred_parameters
 
 
@@ -39,6 +42,10 @@ class Simulate(OperationRequest):
             self.policy_intervention_id, job_id
         )
 
+        dynamic_interventions = fetch_and_convert_dynamic_interventions(
+            self.policy_intervention_id, job_id
+        )
+
         extra_options = self.extra.dict()
         inferred_parameters = fetch_inferred_parameters(
             extra_options.pop("inferred_parameters"), job_id
@@ -50,6 +57,7 @@ class Simulate(OperationRequest):
             "start_time": self.timespan.start,
             "end_time": self.timespan.end,
             "static_parameter_interventions": static_interventions,
+            "dynamic_parameter_interventions": dynamic_interventions,
             "inferred_parameters": inferred_parameters,
             **extra_options,
         }
