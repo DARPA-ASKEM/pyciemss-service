@@ -55,6 +55,9 @@ def convert_static_interventions(interventions: list[HMIIntervention]):
     return static_interventions
 
 
+# Define the threshold for when the intervention should be applied.
+# Can support further functions options in the future
+# https://github.com/ciemss/pyciemss/blob/main/docs/source/interfaces.ipynb
 def make_var_threshold(var: str, threshold: torch.Tensor):
     def var_threshold(time, state):
         return state[var] - threshold
@@ -62,6 +65,7 @@ def make_var_threshold(var: str, threshold: torch.Tensor):
     return var_threshold
 
 
+# Used to convert from HMI Intervention Policy -> pyciemss dynamic interventions.
 def convert_dynamic_interventions(interventions: list[HMIIntervention]):
     if not (interventions):
         return defaultdict(dict)
