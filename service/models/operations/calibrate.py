@@ -39,7 +39,9 @@ class Calibrate(OperationRequest):
     dataset: Dataset = None
     timespan: Optional[Timespan] = None
     policy_intervention_id: str = Field(None, example="ba8da8d4-047d-11ee-be56")
-    learning_rate: float = 0.03
+    learning_rate: float = Field(
+        0.03, description="Optional field for CIEMSS calibration", example=0.03
+    )
     solver_method: str = (
         Field(
             "dopri5",
