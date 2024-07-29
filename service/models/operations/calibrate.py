@@ -2,7 +2,7 @@ from __future__ import annotations
 import socket
 import logging
 
-from typing import ClassVar, Optional, Any, Dict
+from typing import ClassVar, Optional
 from pydantic import BaseModel, Field, Extra
 
 from pika.exceptions import AMQPConnectionError
@@ -50,7 +50,11 @@ class Calibrate(OperationRequest):
         ),
     )
     # https://github.com/ciemss/pyciemss/blob/main/pyciemss/integration_utils/interface_checks.py
-    solver_options: Dict[str, Any] = ({},)
+    solver_step_size: Optional[float] = Field(
+        None,
+        description="id from a previous calibration",
+        example=None,
+    )
     extra: CalibrateExtra = Field(
         None,
         description="optional extra system specific arguments for advanced use cases",
@@ -80,6 +84,9 @@ class Calibrate(OperationRequest):
                 return None
 
         extra_options = self.extra.dict()
+        solver_options = {}
+        if self.solver_step_size is not None:
+            solver_options = {"step_size": self.solver_step_size}
 
         return {
             "model_path_or_json": amr_path,
@@ -91,7 +98,7 @@ class Calibrate(OperationRequest):
             "progress_hook": hook,
             "lr": self.learning_rate,
             "solver_method": self.solver_method,
-            "solver_options": self.solver_options,
+            "solver_options": solver_options,
             # "visual_options": True,
             **extra_options,
         }

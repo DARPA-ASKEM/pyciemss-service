@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import ClassVar, Optional
 from pydantic import BaseModel, Field, Extra
-from typing import Dict, Any
 from models.base import OperationRequest, Timespan
 from models.converters import (
     fetch_and_convert_static_interventions,
@@ -34,9 +33,13 @@ class Simulate(OperationRequest):
             example="dopri5",
         ),
     )
+    logging_step_size: float = 1.0
     # https://github.com/ciemss/pyciemss/blob/main/pyciemss/integration_utils/interface_checks.py
-    solver_options: Dict[str, Any] = ({},)
-    step_size: float = 1.0
+    solver_step_size: Optional[float] = Field(
+        None,
+        description="id from a previous calibration",
+        example=None,
+    )
     extra: SimulateExtra = Field(
         None,
         description="optional extra system specific arguments for advanced use cases",
@@ -59,6 +62,10 @@ class Simulate(OperationRequest):
             extra_options.pop("inferred_parameters"), job_id
         )
 
+        solver_options = {}
+        if self.solver_step_size is not None:
+            solver_options = {"step_size": self.solver_step_size}
+
         return {
             "model_path_or_json": amr_path,
             "logging_step_size": self.step_size,
@@ -68,7 +75,7 @@ class Simulate(OperationRequest):
             "dynamic_parameter_interventions": dynamic_interventions,
             "inferred_parameters": inferred_parameters,
             "solver_method": self.solver_method,
-            "solver_options": self.solver_options,
+            "solver_options": solver_options,
             **extra_options,
         }
 
