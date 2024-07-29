@@ -26,19 +26,17 @@ class Simulate(OperationRequest):
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan = Timespan(start=0, end=90)
     policy_intervention_id: str = Field(None, example="ba8da8d4-047d-11ee-be56")
-    solver_method: str = (
-        Field(
-            "dopri5",
-            description="Optional field for CIEMSS calibration",
-            example="dopri5",
-        ),
+    solver_method: str = Field(
+        "dopri5",
+        description="Optional field for CIEMSS calibration",
+        example="dopri5",
     )
     logging_step_size: float = 1.0
     # https://github.com/ciemss/pyciemss/blob/main/pyciemss/integration_utils/interface_checks.py
-    solver_step_size: Optional[float] = Field(
+    solver_step_size: float = Field(
         None,
         description="id from a previous calibration",
-        example=None,
+        example=1.0,
     )
     extra: SimulateExtra = Field(
         None,

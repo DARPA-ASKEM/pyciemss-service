@@ -42,18 +42,17 @@ class Calibrate(OperationRequest):
     learning_rate: float = Field(
         0.03, description="Optional field for CIEMSS calibration", example=0.03
     )
-    solver_method: str = (
-        Field(
-            "dopri5",
-            description="Optional field for CIEMSS calibration",
-            example="dopri5",
-        ),
+    solver_method: str = Field(
+        "dopri5",
+        description="Optional field for CIEMSS calibration",
+        example="dopri5",
     )
+
     # https://github.com/ciemss/pyciemss/blob/main/pyciemss/integration_utils/interface_checks.py
-    solver_step_size: Optional[float] = Field(
+    solver_step_size: float = Field(
         None,
         description="id from a previous calibration",
-        example=None,
+        example=1.0,
     )
     extra: CalibrateExtra = Field(
         None,
