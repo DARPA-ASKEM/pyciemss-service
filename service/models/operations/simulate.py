@@ -66,7 +66,7 @@ class Simulate(OperationRequest):
 
         return {
             "model_path_or_json": amr_path,
-            "logging_step_size": self.step_size,
+            "logging_step_size": self.logging_step_size,
             "start_time": self.timespan.start,
             "end_time": self.timespan.end,
             "static_parameter_interventions": static_interventions,
