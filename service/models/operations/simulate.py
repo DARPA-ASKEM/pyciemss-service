@@ -34,6 +34,7 @@ class Simulate(OperationRequest):
             example="dopri5",
         ),
     )
+    # https://github.com/ciemss/pyciemss/blob/main/pyciemss/integration_utils/interface_checks.py
     solver_options: Dict[str, Any] = ({},)
     step_size: float = 1.0
     extra: SimulateExtra = Field(
