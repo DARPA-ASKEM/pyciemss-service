@@ -2,7 +2,7 @@ from __future__ import annotations
 import socket
 import logging
 
-from typing import ClassVar, Optional
+from typing import ClassVar, Optional, Any, Dict
 from pydantic import BaseModel, Field, Extra
 
 from pika.exceptions import AMQPConnectionError
@@ -25,18 +25,11 @@ class CalibrateExtra(BaseModel):
     num_iterations: int = Field(
         1000, description="Optional field for CIEMSS calibration", example=1000
     )
-    lr: float = Field(
-        0.03, description="Optional field for CIEMSS calibration", example=0.03
-    )
     verbose: bool = Field(
         False, description="Optional field for CIEMSS calibration", example=False
     )
     num_particles: int = Field(
         1, description="Optional field for CIEMSS calibration", example=1
-    )
-    # autoguide: pyro.infer.autoguide.AutoLowRankMultivariateNormal
-    solver_method: str = Field(
-        "dopri5", description="Optional field for CIEMSS calibration", example="dopri5"
     )
 
 
@@ -46,6 +39,15 @@ class Calibrate(OperationRequest):
     dataset: Dataset = None
     timespan: Optional[Timespan] = None
     policy_intervention_id: str = Field(None, example="ba8da8d4-047d-11ee-be56")
+    learning_rate: float = 0.03
+    solver_method: str = (
+        Field(
+            "dopri5",
+            description="Optional field for CIEMSS calibration",
+            example="dopri5",
+        ),
+    )
+    solver_options: Dict[str, Any] = ({},)
     extra: CalibrateExtra = Field(
         None,
         description="optional extra system specific arguments for advanced use cases",
@@ -74,6 +76,8 @@ class Calibrate(OperationRequest):
                     logging.info(f"Calibration is {progress}% complete")
                 return None
 
+        extra_options = self.extra.dict()
+
         return {
             "model_path_or_json": amr_path,
             "start_time": self.timespan.start,
@@ -82,8 +86,11 @@ class Calibrate(OperationRequest):
             "data_path": dataset_path,
             "static_parameter_interventions": static_interventions,
             "progress_hook": hook,
+            "lr": self.learning_rate,
+            "solver_method": self.solver_method,
+            "solver_options": self.solver_options,
             # "visual_options": True,
-            **self.extra.dict(),
+            **extra_options,
         }
 
     class Config:

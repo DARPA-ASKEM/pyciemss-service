@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from typing import ClassVar, Optional
 from pydantic import BaseModel, Field, Extra
-
-
+from typing import Dict, Any
 from models.base import OperationRequest, Timespan
 from models.converters import (
     fetch_and_convert_static_interventions,
@@ -28,6 +27,14 @@ class Simulate(OperationRequest):
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan = Timespan(start=0, end=90)
     policy_intervention_id: str = Field(None, example="ba8da8d4-047d-11ee-be56")
+    solver_method: str = (
+        Field(
+            "dopri5",
+            description="Optional field for CIEMSS calibration",
+            example="dopri5",
+        ),
+    )
+    solver_options: Dict[str, Any] = ({},)
     step_size: float = 1.0
     extra: SimulateExtra = Field(
         None,
@@ -59,6 +66,8 @@ class Simulate(OperationRequest):
             "static_parameter_interventions": static_interventions,
             "dynamic_parameter_interventions": dynamic_interventions,
             "inferred_parameters": inferred_parameters,
+            "solver_method": self.solver_method,
+            "solver_options": self.solver_options,
             **extra_options,
         }
 
