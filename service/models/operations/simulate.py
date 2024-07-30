@@ -63,7 +63,10 @@ class Simulate(OperationRequest):
         )
 
         solver_options = {}
-        if self.extra.solver_step_size is not None:
+        if (
+            self.extra.solver_step_size is not None
+            and self.extra.solver_method == "euler"
+        ):
             solver_options = {"step_size": self.extra.solver_step_size}
 
         return {

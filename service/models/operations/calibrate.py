@@ -82,7 +82,7 @@ class Calibrate(OperationRequest):
 
         extra_options = self.extra.dict()
         solver_options = {}
-        if self.solver_step_size is not None:
+        if self.solver_step_size is not None and self.extra.solver_method == "euler":
             solver_options = {"step_size": self.solver_step_size}
 
         return {
