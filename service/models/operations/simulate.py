@@ -66,7 +66,8 @@ class Simulate(OperationRequest):
         step_size = extra_options.pop(
             "solver_step_size"
         )  # Need to pop this out of extra.
-        if step_size is not None and self.extra.solver_method == "euler":
+        solver_method = extra_options.pop("solver_method")
+        if step_size is not None and solver_method == "euler":
             solver_options = {"step_size": step_size}
 
         return {
@@ -77,7 +78,7 @@ class Simulate(OperationRequest):
             "static_parameter_interventions": static_interventions,
             "dynamic_parameter_interventions": dynamic_interventions,
             "inferred_parameters": inferred_parameters,
-            "solver_method": self.extra.solver_method,
+            "solver_method": solver_method,
             "solver_options": solver_options,
             **extra_options,
         }
