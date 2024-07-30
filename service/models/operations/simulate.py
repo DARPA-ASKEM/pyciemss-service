@@ -68,7 +68,7 @@ class Simulate(OperationRequest):
         )  # Need to pop this out of extra.
         solver_method = extra_options.pop("solver_method")
         if step_size is not None and solver_method == "euler":
-            solver_options = {"step_size": step_size}
+            solver_options["step_size"] = step_size
 
         return {
             "model_path_or_json": amr_path,
