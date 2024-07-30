@@ -29,7 +29,7 @@ class SimulateExtra(BaseModel):
     # https://github.com/ciemss/pyciemss/blob/main/pyciemss/integration_utils/interface_checks.py
     solver_step_size: float = Field(
         None,
-        description="id from a previous calibration",
+        description="Step size required if solver method is euler.",
         example=1.0,
     )
 
