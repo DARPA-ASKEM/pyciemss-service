@@ -38,6 +38,12 @@ class CalibrateExtra(BaseModel):
     solver_method: str = Field(
         "dopri5", description="Optional field for CIEMSS calibration", example="dopri5"
     )
+    # https://github.com/ciemss/pyciemss/blob/main/pyciemss/integration_utils/interface_checks.py
+    solver_step_size: float = Field(
+        None,
+        description="Step size required if solver method is euler.",
+        example=1.0,
+    )
 
 
 class Calibrate(OperationRequest):
@@ -74,6 +80,15 @@ class Calibrate(OperationRequest):
                     logging.info(f"Calibration is {progress}% complete")
                 return None
 
+        extra_options = self.extra.dict()
+        solver_options = {}
+        step_size = extra_options.pop(
+            "solver_step_size"
+        )  # Need to pop this out of extra.
+        solver_method = extra_options.pop("solver_method")
+        if step_size is not None and solver_method == "euler":
+            solver_options["step_size"] = step_size
+
         return {
             "model_path_or_json": amr_path,
             "start_time": self.timespan.start,
@@ -82,8 +97,10 @@ class Calibrate(OperationRequest):
             "data_path": dataset_path,
             "static_parameter_interventions": static_interventions,
             "progress_hook": hook,
+            "solver_method": solver_method,
+            "solver_options": solver_options,
             # "visual_options": True,
-            **self.extra.dict(),
+            **extra_options,
         }
 
     class Config:

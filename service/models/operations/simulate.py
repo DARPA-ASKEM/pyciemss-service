@@ -21,6 +21,17 @@ class SimulateExtra(BaseModel):
         description="id from a previous calibration",
         example=None,
     )
+    solver_method: str = Field(
+        "dopri5",
+        description="Optional field for CIEMSS calibration",
+        example="dopri5",
+    )
+    # https://github.com/ciemss/pyciemss/blob/main/pyciemss/integration_utils/interface_checks.py
+    solver_step_size: float = Field(
+        None,
+        description="Step size required if solver method is euler.",
+        example=1.0,
+    )
 
 
 class Simulate(OperationRequest):
@@ -28,7 +39,7 @@ class Simulate(OperationRequest):
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan = Timespan(start=0, end=90)
     policy_intervention_id: str = Field(None, example="ba8da8d4-047d-11ee-be56")
-    step_size: float = 1.0
+    logging_step_size: float = 1.0
     extra: SimulateExtra = Field(
         None,
         description="optional extra system specific arguments for advanced use cases",
@@ -51,14 +62,24 @@ class Simulate(OperationRequest):
             extra_options.pop("inferred_parameters"), job_id
         )
 
+        solver_options = {}
+        step_size = extra_options.pop(
+            "solver_step_size"
+        )  # Need to pop this out of extra.
+        solver_method = extra_options.pop("solver_method")
+        if step_size is not None and solver_method == "euler":
+            solver_options["step_size"] = step_size
+
         return {
             "model_path_or_json": amr_path,
-            "logging_step_size": self.step_size,
+            "logging_step_size": self.logging_step_size,
             "start_time": self.timespan.start,
             "end_time": self.timespan.end,
             "static_parameter_interventions": static_interventions,
             "dynamic_parameter_interventions": dynamic_interventions,
             "inferred_parameters": inferred_parameters,
+            "solver_method": solver_method,
+            "solver_options": solver_options,
             **extra_options,
         }
 
