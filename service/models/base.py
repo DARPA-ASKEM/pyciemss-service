@@ -51,7 +51,6 @@ class HMIDynamicIntervention(BaseModel):
     parameter: str
     threshold: float
     value: float
-    is_greater_than: bool
 
 
 class HMIInterventionPolicy(BaseModel):
