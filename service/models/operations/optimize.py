@@ -28,7 +28,7 @@ class QOI(BaseModel):
     contexts: List[str] = []
 
     def gen_call(self):
-        contexts = [context + "_state" for context in self.contexts]
+        contexts = self.contexts
         qoi_map = {
             QOIMethod.day_average: lambda samples: obs_nday_average_qoi(
                 samples, contexts, 1
