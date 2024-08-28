@@ -90,7 +90,7 @@ class Optimize(OperationRequest):
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan = Timespan(start=0, end=90)
     optimize_interventions: InterventionObjective  # These are the interventions to be optimized.
-    fixed_static_parameter_interventions: list[HMIIntervention] = Field(
+    fixed_interventions: list[HMIIntervention] = Field(
         None
     )  # Theses are interventions provided that will not be optimized
     logging_step_size: float = 1.0
@@ -105,9 +105,10 @@ class Optimize(OperationRequest):
     def gen_pyciemss_args(self, job_id):
         # Get model from TDS
         amr_path = fetch_model(self.model_config_id, job_id)
-        fixed_static_parameter_interventions = convert_static_interventions(
-            self.fixed_static_parameter_interventions
-        )
+        (
+            fixed_static_parameter_interventions,
+            fixed_static_state_interventions,
+        ) = convert_static_interventions(self.fixed_interventions)
 
         intervention_type = self.optimize_interventions.intervention_type
         if intervention_type == "param_value":
@@ -166,6 +167,7 @@ class Optimize(OperationRequest):
             "bounds_interventions": self.bounds_interventions,
             "static_parameter_interventions": optimize_interventions,
             "fixed_static_parameter_interventions": fixed_static_parameter_interventions,
+            # "fixed_static_state_interventions": fixed_static_state_interventions, Does not exist?
             "inferred_parameters": inferred_parameters,
             "n_samples_ouu": n_samples_ouu,
             "solver_method": solver_method,

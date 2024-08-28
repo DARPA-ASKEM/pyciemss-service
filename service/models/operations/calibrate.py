@@ -9,7 +9,10 @@ from pika.exceptions import AMQPConnectionError
 
 
 from models.base import Dataset, OperationRequest, Timespan
-from models.converters import fetch_and_convert_static_interventions
+from models.converters import (
+    fetch_and_convert_static_interventions,
+    fetch_and_convert_dynamic_interventions,
+)
 from utils.rabbitmq import gen_rabbitmq_hook
 from utils.tds import fetch_dataset, fetch_model
 
@@ -62,9 +65,15 @@ class Calibrate(OperationRequest):
 
         dataset_path = fetch_dataset(self.dataset.dict(), job_id)
 
-        static_interventions = fetch_and_convert_static_interventions(
-            self.policy_intervention_id, job_id
-        )
+        (
+            static_param_interventions,
+            static_state_interventions,
+        ) = fetch_and_convert_static_interventions(self.policy_intervention_id, job_id)
+
+        (
+            dynamic_param_interventions,
+            dynamic_state_interventions,
+        ) = fetch_and_convert_dynamic_interventions(self.policy_intervention_id, job_id)
 
         # TODO: Test RabbitMQ
         try:
@@ -95,7 +104,10 @@ class Calibrate(OperationRequest):
             # TODO: Is this intentionally missing from `calibrate`?
             # "end_time": self.timespan.end,
             "data_path": dataset_path,
-            "static_parameter_interventions": static_interventions,
+            "static_parameter_interventions": static_param_interventions,
+            "static_state_interventions": static_state_interventions,
+            "dynamic_parameter_interventions": dynamic_param_interventions,
+            "dynamic_state_interventions": dynamic_state_interventions,
             "progress_hook": hook,
             "solver_method": solver_method,
             "solver_options": solver_options,
