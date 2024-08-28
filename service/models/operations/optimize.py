@@ -167,7 +167,8 @@ class Optimize(OperationRequest):
             "bounds_interventions": self.bounds_interventions,
             "static_parameter_interventions": optimize_interventions,
             "fixed_static_parameter_interventions": fixed_static_parameter_interventions,
-            # "fixed_static_state_interventions": fixed_static_state_interventions, Does not exist?
+            # https://github.com/DARPA-ASKEM/terarium/issues/4612
+            # "fixed_static_state_interventions": fixed_static_state_interventions,
             "inferred_parameters": inferred_parameters,
             "n_samples_ouu": n_samples_ouu,
             "solver_method": solver_method,
