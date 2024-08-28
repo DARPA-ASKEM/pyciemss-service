@@ -49,13 +49,15 @@ class Simulate(OperationRequest):
         # Get model from TDS
         amr_path = fetch_model(self.model_config_id, job_id)
 
-        static_interventions = fetch_and_convert_static_interventions(
-            self.policy_intervention_id, job_id
-        )
+        (
+            static_param_interventions,
+            static_state_interventions,
+        ) = fetch_and_convert_static_interventions(self.policy_intervention_id, job_id)
 
-        dynamic_interventions = fetch_and_convert_dynamic_interventions(
-            self.policy_intervention_id, job_id
-        )
+        (
+            dynamic_param_interventions,
+            dynamic_state_interventions,
+        ) = fetch_and_convert_dynamic_interventions(self.policy_intervention_id, job_id)
 
         extra_options = self.extra.dict()
         inferred_parameters = fetch_inferred_parameters(
@@ -75,8 +77,10 @@ class Simulate(OperationRequest):
             "logging_step_size": self.logging_step_size,
             "start_time": self.timespan.start,
             "end_time": self.timespan.end,
-            "static_parameter_interventions": static_interventions,
-            "dynamic_parameter_interventions": dynamic_interventions,
+            "static_parameter_interventions": static_param_interventions,
+            "static_state_interventions": static_state_interventions,
+            "dynamic_parameter_interventions": dynamic_param_interventions,
+            "dynamic_state_interventions": dynamic_state_interventions,
             "inferred_parameters": inferred_parameters,
             "solver_method": solver_method,
             "solver_options": solver_options,

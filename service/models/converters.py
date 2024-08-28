@@ -9,7 +9,7 @@ from models.base import HMIIntervention
 
 def fetch_and_convert_static_interventions(policy_intervention_id, job_id):
     if not (policy_intervention_id):
-        return defaultdict(dict)
+        return defaultdict(dict), defaultdict(dict)
     policy_intervention = fetch_interventions(policy_intervention_id, job_id)
     interventionList: list[HMIIntervention] = []
     for inter in policy_intervention["interventions"]:
@@ -26,7 +26,7 @@ def fetch_and_convert_static_interventions(policy_intervention_id, job_id):
 
 def fetch_and_convert_dynamic_interventions(policy_intervention_id, job_id):
     if not (policy_intervention_id):
-        return defaultdict(dict)
+        return defaultdict(dict), defaultdict(dict)
     policy_intervention = fetch_interventions(policy_intervention_id, job_id)
     interventionList: list[HMIIntervention] = []
     for inter in policy_intervention["interventions"]:
@@ -44,15 +44,19 @@ def fetch_and_convert_dynamic_interventions(policy_intervention_id, job_id):
 # Used to convert from HMI Intervention Policy -> pyciemss static interventions.
 def convert_static_interventions(interventions: list[HMIIntervention]):
     if not (interventions):
-        return defaultdict(dict)
-    static_interventions: Dict[torch.Tensor, Dict[str, any]] = defaultdict(dict)
+        return defaultdict(dict), defaultdict(dict)
+    static_param_interventions: Dict[torch.Tensor, Dict[str, any]] = defaultdict(dict)
+    static_state_interventions: Dict[torch.Tensor, Dict[str, any]] = defaultdict(dict)
     for inter in interventions:
         for static_inter in inter.static_interventions:
             time = torch.tensor(float(static_inter.timestep))
             parameter_name = inter.applied_to
             value = torch.tensor(float(static_inter.value))
-            static_interventions[time][parameter_name] = value
-    return static_interventions
+            if inter.type == "parameter":
+                static_param_interventions[time][parameter_name] = value
+            if inter.type == "state":
+                static_state_interventions[time][parameter_name] = value
+    return static_param_interventions, static_state_interventions
 
 
 # Define the threshold for when the intervention should be applied.
@@ -68,8 +72,12 @@ def make_var_threshold(var: str, threshold: torch.Tensor):
 # Used to convert from HMI Intervention Policy -> pyciemss dynamic interventions.
 def convert_dynamic_interventions(interventions: list[HMIIntervention]):
     if not (interventions):
-        return defaultdict(dict)
+        return defaultdict(dict), defaultdict(dict)
     dynamic_parameter_interventions: Dict[
+        Callable[[torch.Tensor, Dict[str, torch.Tensor]], torch.Tensor],
+        Dict[str, any],
+    ] = defaultdict(dict)
+    dynamic_state_interventions: Dict[
         Callable[[torch.Tensor, Dict[str, torch.Tensor]], torch.Tensor],
         Dict[str, any],
     ] = defaultdict(dict)
@@ -81,11 +89,16 @@ def convert_dynamic_interventions(interventions: list[HMIIntervention]):
             threshold_func = make_var_threshold(
                 dynamic_inter.parameter, threshold_value
             )
-            dynamic_parameter_interventions[threshold_func].update(
-                {parameter_name: to_value}
-            )
+            if inter.type == "parameter":
+                dynamic_parameter_interventions[threshold_func].update(
+                    {parameter_name: to_value}
+                )
+            if inter.type == "state":
+                dynamic_state_interventions[threshold_func].update(
+                    {parameter_name: to_value}
+                )
 
-    return dynamic_parameter_interventions
+    return dynamic_parameter_interventions, dynamic_state_interventions
 
 
 def convert_to_solution_mapping(config):
