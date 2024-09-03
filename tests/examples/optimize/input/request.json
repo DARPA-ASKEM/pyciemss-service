@@ -15,7 +15,7 @@
 		"end": 90
 	},
 	"qoi": {
-		"contexts": ["Infected"],
+		"contexts": ["Infected_state"],
 		"method": "day_average"
 	},
 	"risk_bound": 10.0,
