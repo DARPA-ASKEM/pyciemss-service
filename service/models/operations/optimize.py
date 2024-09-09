@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import ClassVar, List, Optional
 from enum import Enum
+from utils.rabbitmq import OptimizeHook
 
 import numpy as np
 import torch
@@ -151,6 +152,11 @@ class Optimize(OperationRequest):
         if step_size is not None and solver_method == "euler":
             solver_options["step_size"] = step_size
 
+        total_possible_iterations = extra_options.get("maxiter") * extra_options.get(
+            "maxfeval"
+        )
+        progress_hook = OptimizeHook(job_id, total_possible_iterations)
+
         return {
             "model_path_or_json": amr_path,
             "logging_step_size": self.logging_step_size,
@@ -173,6 +179,7 @@ class Optimize(OperationRequest):
             "n_samples_ouu": n_samples_ouu,
             "solver_method": solver_method,
             "solver_options": solver_options,
+            "progress_hook": progress_hook,
             **extra_options,
         }
 

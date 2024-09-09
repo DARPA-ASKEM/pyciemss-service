@@ -13,7 +13,7 @@ from models.converters import (
     fetch_and_convert_static_interventions,
     fetch_and_convert_dynamic_interventions,
 )
-from utils.rabbitmq import gen_rabbitmq_hook
+from utils.rabbitmq import gen_calibrate_rabbitmq_hook
 from utils.tds import fetch_dataset, fetch_model
 
 
@@ -77,7 +77,7 @@ class Calibrate(OperationRequest):
 
         # TODO: Test RabbitMQ
         try:
-            hook = gen_rabbitmq_hook(job_id)
+            hook = gen_calibrate_rabbitmq_hook(job_id)
         except (socket.gaierror, AMQPConnectionError):
             logging.warning(
                 "%s: Failed to connect to RabbitMQ. Unable to log progress", job_id
