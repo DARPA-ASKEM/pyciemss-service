@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import ClassVar, List, Optional
+from typing import ClassVar, List, Optional, Union
 from enum import Enum
 
 import numpy as np
@@ -75,7 +75,7 @@ class OptimizeExtra(BaseModel):
     )
     maxiter: int = 5
     maxfeval: int = 25
-    alpha: float = 0.95
+    alpha: Union[List[float], float] = 0.95
     solver_method: str = "dopri5"
     # https://github.com/ciemss/pyciemss/blob/main/pyciemss/integration_utils/interface_checks.py
     solver_step_size: float = Field(
@@ -94,7 +94,7 @@ class Optimize(OperationRequest):
         None
     )  # Theses are interventions provided that will not be optimized
     logging_step_size: float = 1.0
-    qoi: QOI
+    qoi: list[QOI]
     risk_bound: float
     bounds_interventions: List[List[float]]
     extra: OptimizeExtra = Field(
