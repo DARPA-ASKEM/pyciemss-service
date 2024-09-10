@@ -95,7 +95,7 @@ class Optimize(OperationRequest):
     )  # Theses are interventions provided that will not be optimized
     logging_step_size: float = 1.0
     qoi: list[QOI]
-    risk_bound: float
+    risk_bound: list[float]
     bounds_interventions: List[List[float]]
     extra: OptimizeExtra = Field(
         None,
@@ -151,6 +151,10 @@ class Optimize(OperationRequest):
         if step_size is not None and solver_method == "euler":
             solver_options["step_size"] = step_size
 
+        qois = []
+        for qoi in self.qoi:
+            qois.append(qoi.gen_call())
+
         return {
             "model_path_or_json": amr_path,
             "logging_step_size": self.logging_step_size,
@@ -161,7 +165,7 @@ class Optimize(OperationRequest):
                 self.optimize_interventions.initial_guess[0],
                 self.optimize_interventions.objective_function_option[0],
             ),
-            "qoi": self.qoi.gen_call(),
+            "qoi": qois,
             "risk_bound": self.risk_bound,
             "initial_guess_interventions": self.optimize_interventions.initial_guess,
             "bounds_interventions": self.bounds_interventions,
