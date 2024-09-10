@@ -83,16 +83,6 @@ class OptimizeHook:
 
     def __call__(self, current_results):
         self.step += 1
-        print(
-            "job_id: ",
-            self.job_id,
-            " progress: ",
-            self.step,
-            " current_results: ",
-            current_results.tolist(),
-            " total_possible_iterations: ",
-            self.total_possible_iterations,
-        )
         self.channel.basic_publish(
             exchange="",
             routing_key="simulation-status",
