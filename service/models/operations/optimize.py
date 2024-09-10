@@ -152,9 +152,9 @@ class Optimize(OperationRequest):
         if step_size is not None and solver_method == "euler":
             solver_options["step_size"] = step_size
 
-        total_possible_iterations = extra_options.get("maxiter") * extra_options.get(
-            "maxfeval"
-        )
+        total_possible_iterations = (
+            extra_options.get("maxiter") + 1
+        ) * extra_options.get("maxfeval")
         progress_hook = OptimizeHook(job_id, total_possible_iterations)
 
         return {
