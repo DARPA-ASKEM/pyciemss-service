@@ -166,6 +166,10 @@ class Optimize(OperationRequest):
                 "%s: Failed to connect to RabbitMQ. Unable to log progress", job_id
             )
 
+            # Log progress hook when unable to connect - for testing purposes.
+            def progress_hook(current_results):
+                logging.info(f"Optimize current results: {current_results.tolist()}")
+
         return {
             "model_path_or_json": amr_path,
             "logging_step_size": self.logging_step_size,
