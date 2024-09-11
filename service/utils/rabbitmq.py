@@ -63,7 +63,12 @@ def gen_calibrate_rabbitmq_hook(job_id):
             exchange="",
             routing_key="simulation-status",
             body=json.dumps(
-                {"job_id": job_id, "progress": progress, "loss": str(loss)}
+                {
+                    "job_id": job_id,
+                    "type": "calibrate",
+                    "progress": progress,
+                    "loss": str(loss),
+                }
             ),
         )
 
@@ -77,6 +82,7 @@ class OptimizeHook:
         )
         self.channel = connection.channel()
         self.job_id = job_id
+        self.type = "optimize"
         self.result = []
         self.step = 0
         self.total_possible_iterations = total_possible_iterations
@@ -90,6 +96,7 @@ class OptimizeHook:
                 {
                     "job_id": self.job_id,
                     "progress": self.step,
+                    "type": self.type,
                     "current_results": current_results.tolist(),
                     "total_possible_iterations": self.total_possible_iterations,
                 }
