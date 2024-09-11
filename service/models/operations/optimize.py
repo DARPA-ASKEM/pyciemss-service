@@ -3,6 +3,10 @@ from __future__ import annotations
 from typing import ClassVar, List, Optional
 from enum import Enum
 from utils.rabbitmq import OptimizeHook
+from pika.exceptions import AMQPConnectionError
+import socket
+import logging
+
 
 import numpy as np
 import torch
@@ -155,7 +159,12 @@ class Optimize(OperationRequest):
         total_possible_iterations = (
             extra_options.get("maxiter") + 1
         ) * extra_options.get("maxfeval")
-        progress_hook = OptimizeHook(job_id, total_possible_iterations)
+        try:
+            progress_hook = OptimizeHook(job_id, total_possible_iterations)
+        except (socket.gaierror, AMQPConnectionError):
+            logging.warning(
+                "%s: Failed to connect to RabbitMQ. Unable to log progress", job_id
+            )
 
         return {
             "model_path_or_json": amr_path,
