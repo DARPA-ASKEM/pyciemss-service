@@ -31,16 +31,32 @@ class QOIMethod(str, Enum):
 class QOI(BaseModel):
     method: QOIMethod = QOIMethod.day_average
     contexts: List[str] = []
+    risk_bound: float = 0
+    is_minimized: bool = True
 
     def gen_call(self):
         contexts = self.contexts
-        qoi_map = {
-            QOIMethod.day_average: lambda samples: obs_nday_average_qoi(
-                samples, contexts, 1
-            ),
-            QOIMethod.max: lambda samples: obs_max_qoi(samples, contexts),
-        }
+        if self.is_minimized is True:
+            qoi_map = {
+                QOIMethod.day_average: lambda samples: obs_nday_average_qoi(
+                    samples, contexts, 1
+                ),
+                QOIMethod.max: lambda samples: obs_max_qoi(samples, contexts),
+            }
+        else:
+            qoi_map = {
+                QOIMethod.day_average: lambda samples: -obs_nday_average_qoi(
+                    samples, contexts, 1
+                ),
+                QOIMethod.max: lambda samples: -obs_max_qoi(samples, contexts),
+            }
         return qoi_map[self.method]
+
+    def gen_risk_bound(self):
+        if self.is_minimized is True:
+            return self.risk_bound
+        else:
+            return -self.risk_bound
 
 
 def objfun(x, initial_guess, objective_function_option):
@@ -100,7 +116,6 @@ class Optimize(OperationRequest):
     )  # Theses are interventions provided that will not be optimized
     logging_step_size: float = 1.0
     qoi: list[QOI]
-    risk_bound: list[float]
     bounds_interventions: List[List[float]]
     extra: OptimizeExtra = Field(
         None,
@@ -171,8 +186,10 @@ class Optimize(OperationRequest):
                 logging.info(f"Optimize current results: {current_results.tolist()}")
 
         qois = []
+        risk_bounds = []
         for qoi in self.qoi:
             qois.append(qoi.gen_call())
+            risk_bounds.append(qoi.gen_risk_bound())
 
         return {
             "model_path_or_json": amr_path,
@@ -185,7 +202,7 @@ class Optimize(OperationRequest):
                 self.optimize_interventions.objective_function_option[0],
             ),
             "qoi": qois,
-            "risk_bound": self.risk_bound,
+            "risk_bound": risk_bounds,
             "initial_guess_interventions": self.optimize_interventions.initial_guess,
             "bounds_interventions": self.bounds_interventions,
             "static_parameter_interventions": optimize_interventions,
