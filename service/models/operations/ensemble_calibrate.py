@@ -11,7 +11,7 @@ from pika.exceptions import AMQPConnectionError
 
 from models.base import Dataset, OperationRequest, Timespan, ModelConfig
 from models.converters import convert_to_solution_mapping
-from utils.rabbitmq import gen_rabbitmq_hook
+from utils.rabbitmq import gen_calibrate_rabbitmq_hook
 from utils.tds import fetch_dataset, fetch_model
 
 
@@ -52,7 +52,7 @@ class EnsembleCalibrate(OperationRequest):
         dataset_path = fetch_dataset(self.dataset.dict(), job_id)
 
         try:
-            hook = gen_rabbitmq_hook(job_id)
+            hook = gen_calibrate_rabbitmq_hook(job_id)
         except (socket.gaierror, AMQPConnectionError):
             logging.warning(
                 "%s: Failed to connect to RabbitMQ. Unable to log progress", job_id
