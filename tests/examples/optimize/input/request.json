@@ -14,12 +14,12 @@
 		"start": 0,
 		"end": 90
 	},
-	"qoi": {
+	"qoi": [{
 		"contexts": ["Infected_state"],
 		"method": "day_average",
 		"risk_bound": 10.0,
 		"is_minimized": true
-	},
+	}],
   "bounds_interventions": [[0.0], [3.0]],
 	"extra": {
 		"num_samples": 4
