@@ -16,12 +16,12 @@
 	},
 	"qoi": {
 		"contexts": ["Infected_state"],
-		"method": "day_average"
+		"method": "day_average",
+		"risk_bound": 10.0,
+		"is_minimized": true
 	},
-	"risk_bound": 10.0,
   "bounds_interventions": [[0.0], [3.0]],
 	"extra": {
-		"num_samples": 4,
-		"is_minimized": true
+		"num_samples": 4
 	}
 }
