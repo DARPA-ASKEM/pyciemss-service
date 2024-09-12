@@ -2,6 +2,11 @@ from __future__ import annotations
 
 from typing import ClassVar, List, Optional
 from enum import Enum
+from utils.rabbitmq import OptimizeHook
+from pika.exceptions import AMQPConnectionError
+import socket
+import logging
+
 
 import numpy as np
 import torch
@@ -151,6 +156,20 @@ class Optimize(OperationRequest):
         if step_size is not None and solver_method == "euler":
             solver_options["step_size"] = step_size
 
+        total_possible_iterations = (
+            extra_options.get("maxiter") + 1
+        ) * extra_options.get("maxfeval")
+        try:
+            progress_hook = OptimizeHook(job_id, total_possible_iterations)
+        except (socket.gaierror, AMQPConnectionError):
+            logging.warning(
+                "%s: Failed to connect to RabbitMQ. Unable to log progress", job_id
+            )
+
+            # Log progress hook when unable to connect - for testing purposes.
+            def progress_hook(current_results):
+                logging.info(f"Optimize current results: {current_results.tolist()}")
+
         return {
             "model_path_or_json": amr_path,
             "logging_step_size": self.logging_step_size,
@@ -173,6 +192,7 @@ class Optimize(OperationRequest):
             "n_samples_ouu": n_samples_ouu,
             "solver_method": solver_method,
             "solver_options": solver_options,
+            "progress_hook": progress_hook,
             **extra_options,
         }
 
