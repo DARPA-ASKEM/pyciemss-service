@@ -185,10 +185,10 @@ class Optimize(OperationRequest):
             def progress_hook(current_results):
                 logging.info(f"Optimize current results: {current_results.tolist()}")
 
-        qois = []
+        qoi_methods = []
         risk_bounds = []
         for qoi in self.qoi:
-            qois.append(qoi.gen_call())
+            qoi_methods.append(qoi.gen_call())
             risk_bounds.append(qoi.gen_risk_bound())
 
         return {
@@ -201,7 +201,7 @@ class Optimize(OperationRequest):
                 self.optimize_interventions.initial_guess[0],
                 self.optimize_interventions.objective_function_option[0],
             ),
-            "qoi": qois,
+            "qoi": qoi_methods,
             "risk_bound": risk_bounds,
             "initial_guess_interventions": self.optimize_interventions.initial_guess,
             "bounds_interventions": self.bounds_interventions,
