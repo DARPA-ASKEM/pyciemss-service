@@ -87,12 +87,5 @@ class Simulate(OperationRequest):
             **extra_options,
         }
 
-    def run_sciml_operation(self, job_id, julia_context):
-        amr_path = fetch_model(self.model_config_id, job_id)
-        with open(amr_path, "r") as file:
-            amr = file.read()
-        result = julia_context.simulate(amr, self.timespan.start, self.timespan.end)
-        return {"data": julia_context.pytable(result)}
-
     class Config:
         extra = Extra.forbid

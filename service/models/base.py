@@ -74,9 +74,6 @@ class OperationRequest(BaseModel):
     def gen_pyciemss_args(self, job_id):
         raise NotImplementedError("PyCIEMSS cannot handle this operation")
 
-    def run_sciml_operation(self, job_id, julia_context):
-        raise NotImplementedError("SciML cannot handle this operation")
-
     # @field_validator("engine")
     # def must_be_ciemss(cls, engine_choice):
     #     if engine_choice != "ciemss":
