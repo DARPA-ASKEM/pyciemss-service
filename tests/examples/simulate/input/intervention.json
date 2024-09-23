@@ -13,15 +13,16 @@
 	"interventions":[
 		{
 				"name":"New_Intervention",
-				"applied_to":"β",
 				"static_interventions":[
 					{
 							"timestep":0,
-							"value":0
+							"value":0,
+							"applied_to":"β"
 					},
 					{
 							"timestep":1,
-							"value":2
+							"value":2,
+							"applied_to":"β"
 					}
 				],
 				"dynamic_interventions":[

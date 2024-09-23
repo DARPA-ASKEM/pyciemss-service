@@ -45,12 +45,16 @@ class InterventionSelection(BaseModel):
 class HMIStaticIntervention(BaseModel):
     timestep: float
     value: float
+    applied_to: str
+    type: str
 
 
 class HMIDynamicIntervention(BaseModel):
     parameter: str
     threshold: float
     value: float
+    applied_to: str
+    type: str
 
 
 class HMIInterventionPolicy(BaseModel):
@@ -60,8 +64,6 @@ class HMIInterventionPolicy(BaseModel):
 
 class HMIIntervention(BaseModel):
     name: str
-    applied_to: str
-    type: str
     static_interventions: Optional[list[HMIStaticIntervention]] = Field(default=None)
     dynamic_interventions: Optional[list[HMIDynamicIntervention]] = Field(default=None)
 
