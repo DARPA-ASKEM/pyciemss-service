@@ -4,8 +4,6 @@ The service is a light wrapper service around [pyciemss](https://github.com/ciem
 Both a FastAPI and RQ tasks are provided so jobs can be run asynchronously for long periods
 of time. The service must also [conform to this spec](https://github.com/DARPA-ASKEM/simulation-api-spec).
 
-Experimental: `sciml` engine can be chosen for `simulate`.
-
 ## Startup
 
 To start the PyCIEMSS Simulation API, first run: 
