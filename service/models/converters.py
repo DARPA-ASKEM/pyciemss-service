@@ -15,8 +15,6 @@ def fetch_and_convert_static_interventions(policy_intervention_id, job_id):
     for inter in policy_intervention["interventions"]:
         intervention = HMIIntervention(
             name=inter["name"],
-            applied_to=inter["applied_to"],
-            type=inter["type"],
             static_interventions=inter["static_interventions"],
             dynamic_interventions=inter["dynamic_interventions"],
         )
@@ -32,8 +30,6 @@ def fetch_and_convert_dynamic_interventions(policy_intervention_id, job_id):
     for inter in policy_intervention["interventions"]:
         intervention = HMIIntervention(
             name=inter["name"],
-            applied_to=inter["applied_to"],
-            type=inter["type"],
             static_interventions=inter["static_interventions"],
             dynamic_interventions=inter["dynamic_interventions"],
         )
@@ -50,11 +46,11 @@ def convert_static_interventions(interventions: list[HMIIntervention]):
     for inter in interventions:
         for static_inter in inter.static_interventions:
             time = torch.tensor(float(static_inter.timestep))
-            parameter_name = inter.applied_to
+            parameter_name = static_inter.applied_to
             value = torch.tensor(float(static_inter.value))
-            if inter.type == "parameter":
+            if static_inter.type == "parameter":
                 static_param_interventions[time][parameter_name] = value
-            if inter.type == "state":
+            if static_inter.type == "state":
                 static_state_interventions[time][parameter_name] = value
     return static_param_interventions, static_state_interventions
 
@@ -83,17 +79,17 @@ def convert_dynamic_interventions(interventions: list[HMIIntervention]):
     ] = defaultdict(dict)
     for inter in interventions:
         for dynamic_inter in inter.dynamic_interventions:
-            parameter_name = inter.applied_to
+            parameter_name = dynamic_inter.applied_to
             threshold_value = torch.tensor(float(dynamic_inter.threshold))
             to_value = torch.tensor(float(dynamic_inter.value))
             threshold_func = make_var_threshold(
                 dynamic_inter.parameter, threshold_value
             )
-            if inter.type == "parameter":
+            if dynamic_inter.type == "parameter":
                 dynamic_parameter_interventions[threshold_func].update(
                     {parameter_name: to_value}
                 )
-            if inter.type == "state":
+            if dynamic_inter.type == "state":
                 dynamic_state_interventions[threshold_func].update(
                     {parameter_name: to_value}
                 )
