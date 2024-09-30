@@ -59,13 +59,19 @@ class QOI(BaseModel):
             return -self.risk_bound
 
 
-def objfun(x, initial_guess, objective_function_option):
-    if objective_function_option == "lower_bound":
-        return np.sum(np.abs(x))
-    if objective_function_option == "upper_bound":
-        return -np.sum(np.abs(x))
-    if objective_function_option == "initial_guess":
-        return np.sum(np.abs(x - initial_guess))
+def objfun(x, initial_guess, objective_function_option, relative_importance):
+    total_sum = 0
+    sum_of_all_weights = sum(relative_importance)
+
+    for i in range(len(x)):
+        weight = relative_importance[i] / sum_of_all_weights
+        if objective_function_option[i] == "lower_bound":
+            total_sum += weight * np.abs(x[i])
+        elif objective_function_option[i] == "upper_bound":
+            total_sum += weight * -np.abs(x[i])
+        elif objective_function_option[i] == "initial_guess":
+            total_sum += weight * np.abs(x[i] - initial_guess[i])
+    return total_sum
 
 
 class InterventionObjective(BaseModel):
@@ -79,6 +85,7 @@ class InterventionObjective(BaseModel):
     start_time: Optional[list[float]] = None
     objective_function_option: Optional[list[str]] = None
     initial_guess: Optional[list[float]] = None
+    relative_importance: Optional[list[float]] = None
 
 
 class OptimizeExtra(BaseModel):
@@ -198,8 +205,9 @@ class Optimize(OperationRequest):
             "end_time": self.timespan.end,
             "objfun": lambda x: objfun(
                 x,
-                self.optimize_interventions.initial_guess[0],
-                self.optimize_interventions.objective_function_option[0],
+                self.optimize_interventions.initial_guess,
+                self.optimize_interventions.objective_function_option,
+                self.optimize_interventions.relative_importance,
             ),
             "qoi": qoi_methods,
             "risk_bound": risk_bounds,
