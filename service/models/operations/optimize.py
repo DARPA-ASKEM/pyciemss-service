@@ -61,7 +61,7 @@ class QOI(BaseModel):
 
 def objfun(x, initial_guess, objective_function_option, relative_importance):
     total_sum = 0
-    sum_of_all_weights = np.sum(relative_importance)
+    sum_of_all_weights = np.sum(relative_importance) or 1  # fallback to 1 if sum is 0
 
     for i in range(len(x)):
         weight = relative_importance[i] / sum_of_all_weights
