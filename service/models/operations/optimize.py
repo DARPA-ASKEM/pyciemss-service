@@ -64,8 +64,8 @@ def objfun(x, initial_guess, objective_function_option, relative_importance):
     Calculate the weighted sum of objective functions based on the given parameters.
 
     Parameters:
-    x (list or array): The current values of the variables.
-    initial_guess (list or array): The initial guess values of the variables.
+    x (list): The current values of the variables.
+    initial_guess (list): The initial guess values of the variables.
     objective_function_option (list): List of options specifying the type of objective function for each variable.
     relative_importance (list): List of weights indicating the relative importance of each variable.
 
