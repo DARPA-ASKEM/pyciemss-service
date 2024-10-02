@@ -59,13 +59,52 @@ class QOI(BaseModel):
             return -self.risk_bound
 
 
-def objfun(x, initial_guess, objective_function_option):
-    if objective_function_option == "lower_bound":
-        return np.sum(np.abs(x))
-    if objective_function_option == "upper_bound":
-        return -np.sum(np.abs(x))
-    if objective_function_option == "initial_guess":
-        return np.sum(np.abs(x - initial_guess))
+def objfun(x, initial_guess, objective_function_option, relative_importance):
+    """
+    Calculate the weighted sum of objective functions based on the given parameters.
+
+    Parameters:
+    x (list): The current values of the variables.
+    initial_guess (list): The initial guess values of the variables.
+    objective_function_option (list): List of options specifying the type of objective function for each variable.
+    relative_importance (list): List of weights indicating the relative importance of each variable.
+
+    Returns:
+    float: The weighted sum of the objective functions.
+    """
+
+    # Initialize the total sum to zero
+    total_sum = 0
+
+    # Calculate the sum of all weights, fallback to 1 if the sum is 0
+    sum_of_all_weights = np.sum(relative_importance) or 1
+
+    # Check if any of the required parameters is None and raise an error if so
+    if (
+        x is None
+        or initial_guess is None
+        or objective_function_option is None
+        or relative_importance is None
+    ):
+        raise ValueError(
+            "There was an issue creating the objective function. None of the parameters x, initial_guess, objective_function_option, or relative_importance can be None"
+        )
+
+    # Iterate over each variable
+    for i in range(len(x)):
+        # Calculate the weight for the current variable
+        weight = relative_importance[i] / sum_of_all_weights
+
+        # Apply the corresponding objective function based on the option provided
+        if objective_function_option[i] == "lower_bound":
+            total_sum += weight * np.abs(x[i])
+        elif objective_function_option[i] == "upper_bound":
+            total_sum += weight * -np.abs(x[i])
+        elif objective_function_option[i] == "initial_guess":
+            total_sum += weight * np.abs(x[i] - initial_guess[i])
+
+    # Return the total weighted sum of the objective functions
+    return total_sum
 
 
 class InterventionObjective(BaseModel):
@@ -79,6 +118,7 @@ class InterventionObjective(BaseModel):
     start_time: Optional[list[float]] = None
     objective_function_option: Optional[list[str]] = None
     initial_guess: Optional[list[float]] = None
+    relative_importance: Optional[list[float]] = None
 
 
 class OptimizeExtra(BaseModel):
@@ -198,8 +238,9 @@ class Optimize(OperationRequest):
             "end_time": self.timespan.end,
             "objfun": lambda x: objfun(
                 x,
-                self.optimize_interventions.initial_guess[0],
-                self.optimize_interventions.objective_function_option[0],
+                self.optimize_interventions.initial_guess,
+                self.optimize_interventions.objective_function_option,
+                self.optimize_interventions.relative_importance,
             ),
             "qoi": qoi_methods,
             "risk_bound": risk_bounds,
