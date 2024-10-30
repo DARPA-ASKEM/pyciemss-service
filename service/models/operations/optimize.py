@@ -59,20 +59,20 @@ class QOI(BaseModel):
             return -self.risk_bound
 
 
-def objfun(x, initial_guess, objective_function_option, relative_importance):
+def objfun(x: list[float], optimize_interventions: InterventionObjective):
     """
     Calculate the weighted sum of objective functions based on the given parameters.
 
     Parameters:
-    x (list): The current values of the variables.
-    initial_guess (list): The initial guess values of the variables.
-    objective_function_option (list): List of options specifying the type of objective function for each variable.
-    relative_importance (list): List of weights indicating the relative importance of each variable.
+    x (list): The current values of the variables being optimized over.
+    optimize_interventions: The interventions that are being optimized over.
 
     Returns:
     float: The weighted sum of the objective functions.
     """
-
+    initial_guess = optimize_interventions.initial_guess
+    objective_function_option = optimize_interventions.objective_function_option
+    relative_importance = optimize_interventions.relative_importance
     # Initialize the total sum to zero
     total_sum = 0
 
@@ -97,9 +97,9 @@ def objfun(x, initial_guess, objective_function_option, relative_importance):
 
         # Apply the corresponding objective function based on the option provided
         if objective_function_option[i] == "lower_bound":
-            total_sum += weight * np.abs(x[i])
+            total_sum += weight * np.abs(x[i])  # TODO: param_values[0] or start_time
         elif objective_function_option[i] == "upper_bound":
-            total_sum += weight * -np.abs(x[i])
+            total_sum += weight * -np.abs(x[i])  # TODO: param_values[1] or end_time
         elif objective_function_option[i] == "initial_guess":
             total_sum += weight * np.abs(x[i] - initial_guess[i])
 
@@ -236,12 +236,7 @@ class Optimize(OperationRequest):
             "logging_step_size": self.logging_step_size,
             "start_time": self.timespan.start,
             "end_time": self.timespan.end,
-            "objfun": lambda x: objfun(
-                x,
-                self.optimize_interventions.initial_guess,
-                self.optimize_interventions.objective_function_option,
-                self.optimize_interventions.relative_importance,
-            ),
+            "objfun": lambda x: objfun(x, self.optimize_interventions),
             "qoi": qoi_methods,
             "risk_bound": risk_bounds,
             "initial_guess_interventions": self.optimize_interventions.initial_guess,
