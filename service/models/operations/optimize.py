@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import ClassVar, List, Optional, Union
+from typing import ClassVar, List, Optional, Union, Callable, Dict
+from chirho.interventional.ops import Intervention
 from enum import Enum
 from utils.rabbitmq import OptimizeHook
 from pika.exceptions import AMQPConnectionError
@@ -13,6 +14,7 @@ import torch
 from pydantic import BaseModel, Field, Extra
 from models.base import OperationRequest, Timespan, HMIIntervention
 from pyciemss.integration_utils.intervention_builder import (
+    intervention_func_combinator,
     param_value_objective,
     start_time_objective,
     start_time_param_value_objective,
@@ -59,15 +61,13 @@ class QOI(BaseModel):
             return -self.risk_bound
 
 
-def objfun(x, initial_guess, objective_function_option, relative_importance):
+def objfun(x, optimize_interventions: list[InterventionObjective]):
     """
     Calculate the weighted sum of objective functions based on the given parameters.
 
     Parameters:
     x (list): The current values of the variables.
-    initial_guess (list): The initial guess values of the variables.
-    objective_function_option (list): List of options specifying the type of objective function for each variable.
-    relative_importance (list): List of weights indicating the relative importance of each variable.
+    optimize_interventions: The interventions which are being optimized over
 
     Returns:
     float: The weighted sum of the objective functions.
@@ -75,7 +75,12 @@ def objfun(x, initial_guess, objective_function_option, relative_importance):
 
     # Initialize the total sum to zero
     total_sum = 0
-
+    # TODO: Will be cleaning this up in the next PR. I want minimal changes per PR for readability.
+    relative_importance = [i.relative_importance for i in optimize_interventions]
+    initial_guess = [i.initial_guess for i in optimize_interventions]
+    objective_function_option = [
+        i.objective_function_option for i in optimize_interventions
+    ]
     # Calculate the sum of all weights, fallback to 1 if the sum is 0
     sum_of_all_weights = np.sum(relative_importance) or 1
 
@@ -116,9 +121,9 @@ class InterventionObjective(BaseModel):
     param_names: list[str]
     param_values: Optional[list[Optional[float]]] = None
     start_time: Optional[list[float]] = None
-    objective_function_option: Optional[list[str]] = None
+    objective_function_option: Optional[str] = None
     initial_guess: Optional[list[float]] = None
-    relative_importance: Optional[list[float]] = None
+    relative_importance: Optional[float] = None
 
 
 class OptimizeExtra(BaseModel):
@@ -150,7 +155,9 @@ class Optimize(OperationRequest):
     pyciemss_lib_function: ClassVar[str] = "optimize"
     model_config_id: str = Field(..., example="ba8da8d4-047d-11ee-be56")
     timespan: Timespan = Timespan(start=0, end=90)
-    optimize_interventions: InterventionObjective  # These are the interventions to be optimized.
+    optimize_interventions: list[
+        InterventionObjective
+    ]  # These are the interventions to be optimized.
     fixed_interventions: list[HMIIntervention] = Field(
         None
     )  # Theses are interventions provided that will not be optimized
@@ -170,33 +177,43 @@ class Optimize(OperationRequest):
             fixed_static_state_interventions,
         ) = convert_static_interventions(self.fixed_interventions)
 
-        intervention_type = self.optimize_interventions.intervention_type
-        if intervention_type == "param_value":
-            assert self.optimize_interventions.start_time is not None
-            start_time = [
-                torch.tensor(time) for time in self.optimize_interventions.start_time
-            ]
-            param_value = [None] * len(self.optimize_interventions.param_names)
+        transformed_optimize_interventions: list[
+            Callable[[torch.Tensor], Dict[float, Dict[str, Intervention]]]
+        ] = []
+        for i in range(len(self.optimize_interventions)):
+            currentIntervention = self.optimize_interventions[i]
+            intervention_type = currentIntervention.intervention_type
+            if intervention_type == "param_value":
+                assert currentIntervention.start_time is not None
+                start_time = [
+                    torch.tensor(time) for time in currentIntervention.start_time
+                ]
+                param_value = [None] * len(currentIntervention.param_names)
 
-            optimize_interventions = param_value_objective(
-                start_time=start_time,
-                param_name=self.optimize_interventions.param_names,
-                param_value=param_value,
-            )
-        if intervention_type == "start_time":
-            assert self.optimize_interventions.param_values is not None
-            param_value = [
-                torch.tensor(value)
-                for value in self.optimize_interventions.param_values
-            ]
-            optimize_interventions = start_time_objective(
-                param_name=self.optimize_interventions.param_names,
-                param_value=param_value,
-            )
-        if intervention_type == "start_time_param_value":
-            optimize_interventions = start_time_param_value_objective(
-                param_name=self.optimize_interventions.param_names
-            )
+                transformed_optimize_interventions.append(
+                    param_value_objective(
+                        start_time=start_time,
+                        param_name=currentIntervention.param_names,
+                        param_value=param_value,
+                    )
+                )
+            if intervention_type == "start_time":
+                assert currentIntervention.param_values is not None
+                param_value = [
+                    torch.tensor(value) for value in currentIntervention.param_values
+                ]
+                transformed_optimize_interventions.append(
+                    start_time_objective(
+                        param_name=currentIntervention.param_names,
+                        param_value=param_value,
+                    )
+                )
+            if intervention_type == "start_time_param_value":
+                transformed_optimize_interventions.append(
+                    start_time_param_value_objective(
+                        param_name=currentIntervention.param_names
+                    )
+                )
 
         extra_options = self.extra.dict()
         inferred_parameters = fetch_inferred_parameters(
@@ -231,22 +248,23 @@ class Optimize(OperationRequest):
             qoi_methods.append(qoi.gen_call())
             risk_bounds.append(qoi.gen_risk_bound())
 
+        # TODO: Confirm with ciemss team this is what they intend
+        intervention_func_lengths = [
+            1 for i in range(len(transformed_optimize_interventions))
+        ]
         return {
             "model_path_or_json": amr_path,
             "logging_step_size": self.logging_step_size,
             "start_time": self.timespan.start,
             "end_time": self.timespan.end,
-            "objfun": lambda x: objfun(
-                x,
-                self.optimize_interventions.initial_guess,
-                self.optimize_interventions.objective_function_option,
-                self.optimize_interventions.relative_importance,
-            ),
+            "objfun": lambda x: objfun(x, self.optimize_interventions),
             "qoi": qoi_methods,
             "risk_bound": risk_bounds,
-            "initial_guess_interventions": self.optimize_interventions.initial_guess,
+            "initial_guess_interventions": self.optimize_interventions[0].initial_guess,
             "bounds_interventions": self.bounds_interventions,
-            "static_parameter_interventions": optimize_interventions,
+            "static_parameter_interventions": intervention_func_combinator(
+                transformed_optimize_interventions, intervention_func_lengths
+            ),
             "fixed_static_parameter_interventions": fixed_static_parameter_interventions,
             # https://github.com/DARPA-ASKEM/terarium/issues/4612
             # "fixed_static_state_interventions": fixed_static_state_interventions,
