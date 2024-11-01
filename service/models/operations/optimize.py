@@ -180,6 +180,7 @@ class Optimize(OperationRequest):
         transformed_optimize_interventions: list[
             Callable[[torch.Tensor], Dict[float, Dict[str, Intervention]]]
         ] = []
+        intervention_func_lengths: list[int] = []
         for i in range(len(self.optimize_interventions)):
             currentIntervention = self.optimize_interventions[i]
             intervention_type = currentIntervention.intervention_type
@@ -197,6 +198,7 @@ class Optimize(OperationRequest):
                         param_value=param_value,
                     )
                 )
+                intervention_func_lengths.append(1)
             if intervention_type == "start_time":
                 assert currentIntervention.param_values is not None
                 param_value = [
@@ -208,12 +210,14 @@ class Optimize(OperationRequest):
                         param_value=param_value,
                     )
                 )
+                intervention_func_lengths.append(1)
             if intervention_type == "start_time_param_value":
                 transformed_optimize_interventions.append(
                     start_time_param_value_objective(
                         param_name=currentIntervention.param_names
                     )
                 )
+                intervention_func_lengths.append(2)
 
         extra_options = self.extra.dict()
         inferred_parameters = fetch_inferred_parameters(
@@ -248,10 +252,6 @@ class Optimize(OperationRequest):
             qoi_methods.append(qoi.gen_call())
             risk_bounds.append(qoi.gen_risk_bound())
 
-        # TODO: Confirm with ciemss team this is what they intend
-        intervention_func_lengths = [
-            1 for i in range(len(transformed_optimize_interventions))
-        ]
         return {
             "model_path_or_json": amr_path,
             "logging_step_size": self.logging_step_size,
@@ -260,7 +260,9 @@ class Optimize(OperationRequest):
             "objfun": lambda x: objfun(x, self.optimize_interventions),
             "qoi": qoi_methods,
             "risk_bound": risk_bounds,
-            "initial_guess_interventions": self.optimize_interventions[0].initial_guess,
+            "initial_guess_interventions": [
+                i.initial_guess for i in self.optimize_interventions
+            ],
             "bounds_interventions": self.bounds_interventions,
             "static_parameter_interventions": intervention_func_combinator(
                 transformed_optimize_interventions, intervention_func_lengths
