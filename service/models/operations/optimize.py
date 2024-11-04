@@ -31,6 +31,12 @@ class InterventionType(str, Enum):
     start_time_param_value = "start_time_param_value"
 
 
+class InterventionObjectiveFunction(str, Enum):
+    lower_bound = ("lower_bound",)
+    upper_bound = ("upper_bound",)
+    initial_guess = "initial_guess"
+
+
 class QOIMethod(str, Enum):
     day_average = "day_average"
     max = "max"
@@ -107,11 +113,13 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
         weight = relative_importance[i] / sum_of_all_weights
 
         # Apply the corresponding objective function based on the option provided
-        if objective_function_option[i] == "lower_bound":
+        if objective_function_option[i] == InterventionObjectiveFunction.lower_bound:
             total_sum += weight * np.abs(x[i])
-        elif objective_function_option[i] == "upper_bound":
+        elif objective_function_option[i] == InterventionObjectiveFunction.upper_bound:
             total_sum += weight * -np.abs(x[i])
-        elif objective_function_option[i] == "initial_guess":
+        elif (
+            objective_function_option[i] == InterventionObjectiveFunction.initial_guess
+        ):
             total_sum += weight * np.abs(x[i] - initial_guess[i])
 
     # Return the total weighted sum of the objective functions
@@ -127,7 +135,7 @@ class InterventionObjective(BaseModel):
     param_names: list[str]
     param_values: Optional[list[Optional[float]]] = None
     start_time: Optional[list[float]] = None
-    objective_function_option: Optional[str] = None
+    objective_function_option: Optional[InterventionObjectiveFunction] = None
     initial_guess: Optional[list[float]] = None
     relative_importance: Optional[float] = None
 
