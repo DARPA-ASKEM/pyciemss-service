@@ -32,8 +32,8 @@ class InterventionType(str, Enum):
 
 
 class InterventionObjectiveFunction(str, Enum):
-    lower_bound = ("lower_bound",)
-    upper_bound = ("upper_bound",)
+    lower_bound = "lower_bound"
+    upper_bound = "upper_bound"
     initial_guess = "initial_guess"
 
 
