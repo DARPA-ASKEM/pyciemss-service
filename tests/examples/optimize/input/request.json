@@ -2,15 +2,15 @@
 	"engine": "ciemss",
 	"user_id": "not_provided",
 	"model_config_id": "sidarthe",
-	"optimize_interventions": {
+	"optimize_interventions": [{
 		"intervention_type": "param_value",
-		"objective_function_option": ["lower_bound"],
+		"objective_function_option": "lower_bound",
 		"start_time": [2],
 		"param_names": ["beta"],
 		"param_values": [0.02],
 		"initial_guess": [0],
-		"relative_importance": [1]
-	},
+		"relative_importance": 1
+	}],
 	"timespan": {
 		"start": 0,
 		"end": 90
