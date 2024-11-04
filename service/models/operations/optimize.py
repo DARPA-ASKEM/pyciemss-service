@@ -25,6 +25,12 @@ from models.converters import convert_static_interventions
 from utils.tds import fetch_model, fetch_inferred_parameters
 
 
+class InterventionType(str, Enum):
+    param_value = "param_value"
+    start_time = "start_time"
+    start_time_param_value = "start_time_param_value"
+
+
 class QOIMethod(str, Enum):
     day_average = "day_average"
     max = "max"
@@ -113,8 +119,8 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
 
 
 class InterventionObjective(BaseModel):
-    intervention_type: str = Field(
-        "param_value",
+    intervention_type: InterventionType = Field(
+        InterventionType.param_value,
         description="The intervention objective to use",
         example="param_value",
     )
@@ -184,7 +190,7 @@ class Optimize(OperationRequest):
         for i in range(len(self.optimize_interventions)):
             currentIntervention = self.optimize_interventions[i]
             intervention_type = currentIntervention.intervention_type
-            if intervention_type == "param_value":
+            if intervention_type == InterventionType.param_value:
                 assert currentIntervention.start_time is not None
                 start_time = [
                     torch.tensor(time) for time in currentIntervention.start_time
@@ -199,7 +205,7 @@ class Optimize(OperationRequest):
                     )
                 )
                 intervention_func_lengths.append(1)
-            if intervention_type == "start_time":
+            if intervention_type == InterventionType.start_time:
                 assert currentIntervention.param_values is not None
                 param_value = [
                     torch.tensor(value) for value in currentIntervention.param_values
@@ -211,7 +217,7 @@ class Optimize(OperationRequest):
                     )
                 )
                 intervention_func_lengths.append(1)
-            if intervention_type == "start_time_param_value":
+            if intervention_type == InterventionType.start_time_param_value:
                 transformed_optimize_interventions.append(
                     start_time_param_value_objective(
                         param_name=currentIntervention.param_names
