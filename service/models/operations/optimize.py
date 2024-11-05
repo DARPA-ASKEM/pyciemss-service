@@ -25,6 +25,18 @@ from models.converters import convert_static_interventions
 from utils.tds import fetch_model, fetch_inferred_parameters
 
 
+class InterventionType(str, Enum):
+    param_value = "param_value"
+    start_time = "start_time"
+    start_time_param_value = "start_time_param_value"
+
+
+class InterventionObjectiveFunction(str, Enum):
+    lower_bound = "lower_bound"
+    upper_bound = "upper_bound"
+    initial_guess = "initial_guess"
+
+
 class QOIMethod(str, Enum):
     day_average = "day_average"
     max = "max"
@@ -67,7 +79,7 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
 
     Parameters:
     x (list): The current values of the variables.
-    optimize_interventions: The interventions which are being optimized over
+    optimize_interventions: The interventions which are being optimized over.
 
     Returns:
     float: The weighted sum of the objective functions.
@@ -75,53 +87,57 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
 
     # Initialize the total sum to zero
     total_sum = 0
-    # TODO: Will be cleaning this up in the next PR. I want minimal changes per PR for readability.
-    relative_importance = [i.relative_importance for i in optimize_interventions]
-    initial_guess = [i.initial_guess for i in optimize_interventions]
-    objective_function_option = [
-        i.objective_function_option for i in optimize_interventions
-    ]
     # Calculate the sum of all weights, fallback to 1 if the sum is 0
-    sum_of_all_weights = np.sum(relative_importance) or 1
-
-    # Check if any of the required parameters is None and raise an error if so
-    if (
-        x is None
-        or initial_guess is None
-        or objective_function_option is None
-        or relative_importance is None
-    ):
-        raise ValueError(
-            "There was an issue creating the objective function. None of the parameters x, initial_guess, objective_function_option, or relative_importance can be None"
-        )
-
-    # Iterate over each variable
-    for i in range(len(x)):
-        # Calculate the weight for the current variable
-        weight = relative_importance[i] / sum_of_all_weights
-
-        # Apply the corresponding objective function based on the option provided
-        if objective_function_option[i] == "lower_bound":
-            total_sum += weight * np.abs(x[i])
-        elif objective_function_option[i] == "upper_bound":
-            total_sum += weight * -np.abs(x[i])
-        elif objective_function_option[i] == "initial_guess":
-            total_sum += weight * np.abs(x[i] - initial_guess[i])
-
+    sum_of_all_weights = (
+        np.sum([i.relative_importance for i in optimize_interventions]) or 1.0
+    )
+    # Iterate over each intervention
+    while len(optimize_interventions) > 0:
+        current_intervention = optimize_interventions.pop(0)
+        current_weight = current_intervention.relative_importance / sum_of_all_weights
+        intervention_type = current_intervention.intervention_type
+        obj_function_option = current_intervention.objective_function_option
+        initial_guess = current_intervention.initial_guess
+        # The following will have one value therefore we only grab the one value from X.
+        if (
+            intervention_type == InterventionType.start_time
+            or intervention_type == InterventionType.param_value
+        ):
+            x_val, x = x[0], x[1:]
+            if obj_function_option == InterventionObjectiveFunction.lower_bound:
+                total_sum += current_weight * np.abs(x_val)
+            elif obj_function_option == InterventionObjectiveFunction.upper_bound:
+                total_sum += current_weight * -np.abs(x_val)
+            elif obj_function_option == InterventionObjectiveFunction.initial_guess:
+                total_sum += current_weight * np.abs(x_val - initial_guess[0])
+        # The following will have two values therefore we grab the two corresponding values for X
+        # Note that start_time_param_value both start time and param value will have the same weight as eachother.
+        elif intervention_type == InterventionType.start_time_param_value:
+            x_val_one, x = x[0], x[1:]
+            x_val_two, x = x[0], x[1:]
+            if obj_function_option == InterventionObjectiveFunction.lower_bound:
+                total_sum += current_weight * np.abs(x_val_one)
+                total_sum += current_weight * np.abs(x_val_two)
+            elif obj_function_option == InterventionObjectiveFunction.upper_bound:
+                total_sum += current_weight * -np.abs(x_val_one)
+                total_sum += current_weight * -np.abs(x_val_two)
+            elif obj_function_option == InterventionObjectiveFunction.initial_guess:
+                total_sum += current_weight * np.abs(x_val_one - initial_guess[0])
+                total_sum += current_weight * np.abs(x_val_two - initial_guess[1])
     # Return the total weighted sum of the objective functions
     return total_sum
 
 
 class InterventionObjective(BaseModel):
-    intervention_type: str = Field(
-        "param_value",
+    intervention_type: InterventionType = Field(
+        InterventionType.param_value,
         description="The intervention objective to use",
         example="param_value",
     )
     param_names: list[str]
     param_values: Optional[list[Optional[float]]] = None
     start_time: Optional[list[float]] = None
-    objective_function_option: Optional[str] = None
+    objective_function_option: Optional[InterventionObjectiveFunction] = None
     initial_guess: Optional[list[float]] = None
     relative_importance: Optional[float] = None
 
@@ -184,7 +200,7 @@ class Optimize(OperationRequest):
         for i in range(len(self.optimize_interventions)):
             currentIntervention = self.optimize_interventions[i]
             intervention_type = currentIntervention.intervention_type
-            if intervention_type == "param_value":
+            if intervention_type == InterventionType.param_value:
                 assert currentIntervention.start_time is not None
                 start_time = [
                     torch.tensor(time) for time in currentIntervention.start_time
@@ -199,7 +215,7 @@ class Optimize(OperationRequest):
                     )
                 )
                 intervention_func_lengths.append(1)
-            if intervention_type == "start_time":
+            if intervention_type == InterventionType.start_time:
                 assert currentIntervention.param_values is not None
                 param_value = [
                     torch.tensor(value) for value in currentIntervention.param_values
@@ -211,7 +227,7 @@ class Optimize(OperationRequest):
                     )
                 )
                 intervention_func_lengths.append(1)
-            if intervention_type == "start_time_param_value":
+            if intervention_type == InterventionType.start_time_param_value:
                 transformed_optimize_interventions.append(
                     start_time_param_value_objective(
                         param_name=currentIntervention.param_names
@@ -251,7 +267,9 @@ class Optimize(OperationRequest):
         for qoi in self.qoi:
             qoi_methods.append(qoi.gen_call())
             risk_bounds.append(qoi.gen_risk_bound())
-
+        initial_guess_flatmap = [
+            item for list in self.optimize_interventions for item in list.initial_guess
+        ]
         return {
             "model_path_or_json": amr_path,
             "logging_step_size": self.logging_step_size,
@@ -260,9 +278,7 @@ class Optimize(OperationRequest):
             "objfun": lambda x: objfun(x, self.optimize_interventions),
             "qoi": qoi_methods,
             "risk_bound": risk_bounds,
-            "initial_guess_interventions": [
-                i.initial_guess for i in self.optimize_interventions
-            ],
+            "initial_guess_interventions": initial_guess_flatmap,
             "bounds_interventions": self.bounds_interventions,
             "static_parameter_interventions": intervention_func_combinator(
                 transformed_optimize_interventions, intervention_func_lengths
