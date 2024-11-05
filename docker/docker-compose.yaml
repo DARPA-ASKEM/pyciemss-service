@@ -3,11 +3,11 @@ networks:
   pyciemss:
     driver: bridge
     name: pyciemss
-  terarium:
+  data-api:
     external: true
 services:
   api:
-    container_name: pyciemss-api-ciemss
+    container_name: pyciemss-api
     build:
       context: ..
       dockerfile: docker/Dockerfile.api
@@ -17,32 +17,59 @@ services:
       - ../.env
     networks:
       - pyciemss
-      - terarium
+      - data-api
+    depends_on:
+      - redis
+      - rabbitmq
     volumes:
       - $PWD/service:/service
     extra_hosts:
       - "host.docker.internal:host-gateway"
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - pyciemss
   rqworker:
-    container_name: pyciemss-worker-ciemss
+    container_name: pyciemss-worker
     build:
       context: ..
       dockerfile: docker/Dockerfile.worker
     env_file:
       - ../.env
     depends_on:
+      - redis
       - api
     networks:
+      - data-api
       - pyciemss
-      - terarium
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-  redis:
-    container_name: redis-ciemss
-    image: redis:7-alpine
+  rabbitmq:
+    container_name: rabbitmq
+    profiles: ["standalone"]
+    hostname: rabbitmq
+    image: 'rabbitmq:3'
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     ports:
-      - "6666:6379"
-
-
-
-
-
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - pyciemss
+  rabbitmq-mock-consumer:
+    container_name: rabbitmq-mock-consumer
+    profiles: ["standalone"]
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    command: poetry run mockrabbitmq
+    env_file:
+      - ../.env
+    networks:
+      - pyciemss
+    depends_on:
+      - rabbitmq
