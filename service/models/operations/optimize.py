@@ -87,41 +87,40 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
 
     # Initialize the total sum to zero
     total_sum = 0
-    # TODO: Will be cleaning this up in the next PR. I want minimal changes per PR for readability.
-    relative_importance = [i.relative_importance for i in optimize_interventions]
-    initial_guess = [i.initial_guess for i in optimize_interventions]
-    objective_function_option = [
-        i.objective_function_option for i in optimize_interventions
-    ]
     # Calculate the sum of all weights, fallback to 1 if the sum is 0
-    sum_of_all_weights = np.sum(relative_importance) or 1
-
-    # Check if any of the required parameters is None and raise an error if so
-    if (
-        x is None
-        or initial_guess is None
-        or objective_function_option is None
-        or relative_importance is None
-    ):
-        raise ValueError(
-            "There was an issue creating the objective function. None of the parameters x, initial_guess, objective_function_option, or relative_importance can be None"
-        )
-
+    sum_of_all_weights = (
+        np.sum([i.relative_importance for i in optimize_interventions]) or 1.0
+    )
     # Iterate over each variable
-    for i in range(len(x)):
-        # Calculate the weight for the current variable
-        weight = relative_importance[i] / sum_of_all_weights
-
-        # Apply the corresponding objective function based on the option provided
-        if objective_function_option[i] == InterventionObjectiveFunction.lower_bound:
-            total_sum += weight * np.abs(x[i])
-        elif objective_function_option[i] == InterventionObjectiveFunction.upper_bound:
-            total_sum += weight * -np.abs(x[i])
-        elif (
-            objective_function_option[i] == InterventionObjectiveFunction.initial_guess
+    while len(optimize_interventions) > 0:
+        current_intervention = optimize_interventions.pop(0)
+        current_weight = current_intervention.relative_importance / sum_of_all_weights
+        intervention_type = current_intervention.intervention_type
+        obj_function_option = current_intervention.objective_function_option
+        initial_guess = current_intervention.initial_guess
+        if (
+            intervention_type == InterventionType.start_time
+            or intervention_type == InterventionType.param_value
         ):
-            total_sum += weight * np.abs(x[i] - initial_guess[i])
-
+            x_val, x = x[0], x[1:]
+            if obj_function_option == InterventionObjectiveFunction.lower_bound:
+                total_sum += current_weight * np.abs(x_val)
+            elif obj_function_option == InterventionObjectiveFunction.upper_bound:
+                total_sum += current_weight * -np.abs(x_val)
+            elif obj_function_option == InterventionObjectiveFunction.initial_guess:
+                total_sum += current_weight * np.abs(x_val - initial_guess[0])
+        elif intervention_type == InterventionType.start_time_param_value:
+            x_val_one, x = x[0], x[1:]
+            x_val_two, x = x[0], x[1:]
+            if obj_function_option == InterventionObjectiveFunction.lower_bound:
+                total_sum += current_weight * np.abs(x_val_one)
+                total_sum += current_weight * np.abs(x_val_two)
+            elif obj_function_option == InterventionObjectiveFunction.upper_bound:
+                total_sum += current_weight * -np.abs(x_val_one)
+                total_sum += current_weight * -np.abs(x_val_two)
+            elif obj_function_option == InterventionObjectiveFunction.initial_guess:
+                total_sum += current_weight * np.abs(x_val_one - initial_guess[0])
+                total_sum += current_weight * np.abs(x_val_two - initial_guess[1])
     # Return the total weighted sum of the objective functions
     return total_sum
 
@@ -265,7 +264,9 @@ class Optimize(OperationRequest):
         for qoi in self.qoi:
             qoi_methods.append(qoi.gen_call())
             risk_bounds.append(qoi.gen_risk_bound())
-
+        initial_guess_flatmap = [
+            item for list in self.optimize_interventions for item in list.initial_guess
+        ]
         return {
             "model_path_or_json": amr_path,
             "logging_step_size": self.logging_step_size,
@@ -274,9 +275,7 @@ class Optimize(OperationRequest):
             "objfun": lambda x: objfun(x, self.optimize_interventions),
             "qoi": qoi_methods,
             "risk_bound": risk_bounds,
-            "initial_guess_interventions": [
-                i.initial_guess for i in self.optimize_interventions
-            ],
+            "initial_guess_interventions": initial_guess_flatmap,
             "bounds_interventions": self.bounds_interventions,
             "static_parameter_interventions": intervention_func_combinator(
                 transformed_optimize_interventions, intervention_func_lengths
