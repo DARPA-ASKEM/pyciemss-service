@@ -79,7 +79,7 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
 
     Parameters:
     x (list): The current values of the variables.
-    optimize_interventions: The interventions which are being optimized over
+    optimize_interventions: The interventions which are being optimized over.
 
     Returns:
     float: The weighted sum of the objective functions.
@@ -91,13 +91,14 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
     sum_of_all_weights = (
         np.sum([i.relative_importance for i in optimize_interventions]) or 1.0
     )
-    # Iterate over each variable
+    # Iterate over each intervention
     while len(optimize_interventions) > 0:
         current_intervention = optimize_interventions.pop(0)
         current_weight = current_intervention.relative_importance / sum_of_all_weights
         intervention_type = current_intervention.intervention_type
         obj_function_option = current_intervention.objective_function_option
         initial_guess = current_intervention.initial_guess
+        # The following will have one value therefore we only grab the one value from X.
         if (
             intervention_type == InterventionType.start_time
             or intervention_type == InterventionType.param_value
@@ -109,6 +110,8 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
                 total_sum += current_weight * -np.abs(x_val)
             elif obj_function_option == InterventionObjectiveFunction.initial_guess:
                 total_sum += current_weight * np.abs(x_val - initial_guess[0])
+        # The following will have two values therefore we grab the two corresponding values for X
+        # Note that start_time_param_value both start time and param value will have the same weight as eachother.
         elif intervention_type == InterventionType.start_time_param_value:
             x_val_one, x = x[0], x[1:]
             x_val_two, x = x[0], x[1:]
