@@ -19,6 +19,16 @@ class EnsembleSimulateExtra(BaseModel):
         description="id from a previous calibration",
         example=None,
     )
+    solver_method: str = Field(
+        "dopri5",
+        description="Optional field for CIEMSS calibration",
+        example="dopri5",
+    )
+    solver_step_size: float = Field(
+        None,
+        description="Step size required if solver method is euler.",
+        example=1.0,
+    )
 
 
 class EnsembleSimulate(OperationRequest):
@@ -28,8 +38,7 @@ class EnsembleSimulate(OperationRequest):
         example=[],
     )
     timespan: Timespan
-
-    step_size: float = 1.0
+    logging_step_size: float = 1.0
 
     extra: EnsembleSimulateExtra = Field(
         None,
@@ -48,14 +57,22 @@ class EnsembleSimulate(OperationRequest):
             extra_options.pop("inferred_parameters"), job_id
         )
 
+        solver_options = {}
+        step_size = extra_options.pop("solver_step_size")
+        solver_method = extra_options.pop("solver_method")
+        if step_size is not None and solver_method == "euler":
+            solver_options["step_size"] = step_size
+
         return {
             "model_paths_or_jsons": amr_paths,
             "solution_mappings": solution_mappings,
             "start_time": self.timespan.start,
             "end_time": self.timespan.end,
-            "logging_step_size": self.step_size,
+            "logging_step_size": self.logging_step_size,
             "dirichlet_alpha": weights,
             "inferred_parameters": inferred_parameters,
+            "solver_method": solver_method,
+            "solver_options": solver_options,
             # "visual_options": True,
             **extra_options,
         }
