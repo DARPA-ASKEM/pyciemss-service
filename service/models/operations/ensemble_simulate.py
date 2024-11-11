@@ -58,9 +58,7 @@ class EnsembleSimulate(OperationRequest):
         )
 
         solver_options = {}
-        step_size = extra_options.pop(
-            "solver_step_size"
-        )  # Need to pop this out of extra.
+        step_size = extra_options.pop("solver_step_size")
         solver_method = extra_options.pop("solver_method")
         if step_size is not None and solver_method == "euler":
             solver_options["step_size"] = step_size
