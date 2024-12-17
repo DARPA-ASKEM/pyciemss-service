@@ -54,6 +54,11 @@ def mock_rabbitmq_consumer():
 
 def gen_calibrate_rabbitmq_hook(job_id):
     def get_new_rabbit_conn():
+        logging.info("")
+        logging.info("!!!!!!!!!!")
+        logging.info(f"{conn_config}")
+        logging.info("")
+        logging.info("")
         connection = pika.BlockingConnection(
             conn_config,
         )
