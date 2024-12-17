@@ -56,12 +56,16 @@ def gen_calibrate_rabbitmq_hook(job_id):
     def get_new_rabbit_conn():
         logging.info("")
         logging.info("!!!!!!!!!!")
-        logging.info(f"{conn_config}")
+        logging.info(f"{conn_config.host} {conn_config.port}")
         logging.info("")
         logging.info("")
         connection = pika.BlockingConnection(
             conn_config,
         )
+        logging.info("")
+        logging.info(">>>")
+        logging.info(f"{connection}")
+        logging.info("")
         return connection
 
     def hook(progress, loss):
@@ -79,7 +83,6 @@ def gen_calibrate_rabbitmq_hook(job_id):
                 }
             ),
         )
-        conn.close()
 
     return hook
 
