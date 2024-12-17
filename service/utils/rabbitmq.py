@@ -53,12 +53,12 @@ def mock_rabbitmq_consumer():
 
 
 def gen_calibrate_rabbitmq_hook(job_id):
-    def hook(progress, loss):
-        connection = pika.BlockingConnection(
-            conn_config,
-        )
-        channel = connection.channel()
+    connection = pika.BlockingConnection(
+        conn_config,
+    )
+    channel = connection.channel()
 
+    def hook(progress, loss):
         channel.basic_publish(
             exchange="",
             routing_key="simulation-status",
@@ -71,7 +71,6 @@ def gen_calibrate_rabbitmq_hook(job_id):
                 }
             ),
         )
-        connection.close()
 
     return hook
 
