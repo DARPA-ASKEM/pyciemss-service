@@ -4,6 +4,7 @@ import json
 import csv
 import io
 import pytest
+import httpx
 
 from rq import SimpleWorker, Queue
 from fastapi.testclient import TestClient
@@ -26,7 +27,8 @@ def worker(redis):
 @pytest.fixture
 def client(redis):
     app.dependency_overrides[get_redis] = lambda: redis
-    yield TestClient(app)
+    transport = httpx.ASGITransport(app=app)
+    yield TestClient(transport=transport)
     app.dependency_overrides[get_redis] = get_redis
 
 
