@@ -10,7 +10,7 @@ packages = [{include = "service"}, {include = "tests"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 requests = "^2.31.0"
-fastapi = "0.114.0"
+fastapi = "^0.96.0"
 rq = "^1.15.0"
 redis = "^4.5.5"
 boto3 = "^1.26.147"
