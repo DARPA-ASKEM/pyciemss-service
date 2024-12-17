@@ -53,12 +53,19 @@ def mock_rabbitmq_consumer():
 
 
 def gen_calibrate_rabbitmq_hook(job_id):
-    connection = pika.BlockingConnection(
-        conn_config,
-    )
-    channel = connection.channel()
+    def get_new_rabbit_conn():
+        connection = pika.BlockingConnection(
+            conn_config,
+        )
+        return connection
+
+    # FIXME: https://github.com/DARPA-ASKEM/pyciemss-service/issues/128 Nasty temp hack to get around weird test setup that depends on connection to fail
+    conn_dummy = get_new_rabbit_conn()
+    conn_dummy.close()
 
     def hook(progress, loss):
+        conn = get_new_rabbit_conn()
+        channel = conn.channel()
         channel.basic_publish(
             exchange="",
             routing_key="simulation-status",
@@ -71,6 +78,7 @@ def gen_calibrate_rabbitmq_hook(job_id):
                 }
             ),
         )
+        conn.close()
 
     return hook
 
