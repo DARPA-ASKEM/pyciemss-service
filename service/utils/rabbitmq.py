@@ -68,6 +68,10 @@ def gen_calibrate_rabbitmq_hook(job_id):
         logging.info("")
         return connection
 
+    # FIXME: Nasty temp hack to get around weird test setup that depends on connection to fail
+    conn_dummy = get_new_rabbit_conn()
+    conn_dummy.close()
+
     def hook(progress, loss):
         conn = get_new_rabbit_conn()
         channel = conn.channel()
