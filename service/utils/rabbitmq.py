@@ -59,7 +59,7 @@ def gen_calibrate_rabbitmq_hook(job_id):
         )
         return connection
 
-    # FIXME: Nasty temp hack to get around weird test setup that depends on connection to fail
+    # FIXME: https://github.com/DARPA-ASKEM/pyciemss-service/issues/128 Nasty temp hack to get around weird test setup that depends on connection to fail
     conn_dummy = get_new_rabbit_conn()
     conn_dummy.close()
 
