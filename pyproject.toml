@@ -10,7 +10,7 @@ packages = [{include = "service"}, {include = "tests"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 requests = "^2.31.0"
-fastapi = "^0.96.0"
+fastapi = "0.114.0"
 rq = "^1.15.0"
 redis = "^4.5.5"
 boto3 = "^1.26.147"
@@ -22,6 +22,7 @@ poethepoet = "^0.21.1"
 # juliacall = { version="^0.9.14", optional = true }
 dill = "^0.3.7"
 numpy = "^1.26.4"
+pydantic-settings = "^2.7.0"
 
 
 [tool.poetry.scripts]
@@ -40,7 +41,7 @@ httpx = "^0.24.1"
 
 
 [tool.poe.tasks]
-install-pyciemss = "pip install --no-cache-dir git+https://github.com/ciemss/pyciemss.git@08cf9fc354e1de858cf0854aa5ca1bd31c56b2c6 --use-pep517"
+install-pyciemss = "pip install --no-cache-dir git+https://github.com/mwdchang/pyciemss.git --use-pep517"
 
 
 [tool.pytest.ini_options]
