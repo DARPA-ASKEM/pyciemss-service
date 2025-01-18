@@ -29,15 +29,3 @@ jobs:
     secrets:
       username: ${{ github.repository_owner }}
       password: ${{ secrets.GITHUB_TOKEN }}
-
-  # Execute simulation-integration reporting
-  simulation-integration:
-    runs-on: ubuntu-latest
-    needs: 
-      - bake
-    steps:
-      - name: Report
-        env: 
-          GITHUB_TOKEN: ${{ secrets.GHP_ACCESS_TOKEN }}
-        run: |
-          gh workflow run report.yaml --repo DARPA-ASKEM/simulation-integration --ref main
