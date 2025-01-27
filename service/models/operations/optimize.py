@@ -23,7 +23,7 @@ from pyciemss.integration_utils.intervention_builder import (
 from pyciemss.ouu.qoi import obs_nday_average_qoi, obs_max_qoi
 from models.converters import (
     convert_static_interventions,
-    fetch_and_convert_dynamic_interventions,
+    convert_dynamic_interventions,
 )
 from utils.tds import fetch_model, fetch_inferred_parameters
 
@@ -199,7 +199,7 @@ class Optimize(OperationRequest):
         (
             dynamic_param_interventions,
             dynamic_state_interventions,
-        ) = fetch_and_convert_dynamic_interventions(self.policy_intervention_id, job_id)
+        ) = convert_dynamic_interventions(self.fixed_interventions, job_id)
 
         transformed_optimize_interventions: list[
             Callable[[torch.Tensor], Dict[float, Dict[str, Intervention]]]
