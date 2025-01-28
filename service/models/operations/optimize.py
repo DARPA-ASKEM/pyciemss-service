@@ -199,7 +199,7 @@ class Optimize(OperationRequest):
         (
             dynamic_param_interventions,
             dynamic_state_interventions,
-        ) = convert_dynamic_interventions(self.fixed_interventions, job_id)
+        ) = convert_dynamic_interventions(self.fixed_interventions)
 
         transformed_optimize_interventions: list[
             Callable[[torch.Tensor], Dict[float, Dict[str, Intervention]]]
