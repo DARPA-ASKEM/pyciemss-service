@@ -96,34 +96,50 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
         current_intervention = optimize_interventions.pop(0)
         current_weight = current_intervention.relative_importance / sum_of_all_weights
         intervention_type = current_intervention.intervention_type
-        obj_function_option = current_intervention.objective_function_option
+        time_objective_function = current_intervention.time_objective_function
+        param_value_objective = current_intervention.parameter_objective_function
         initial_guess = current_intervention.initial_guess
         # The following will have one value therefore we only grab the one value from X.
-        if (
-            intervention_type == InterventionType.start_time
-            or intervention_type == InterventionType.param_value
-        ):
+        if intervention_type == InterventionType.start_time:
             x_val, x = x[0], x[1:]
-            if obj_function_option == InterventionObjectiveFunction.lower_bound:
+            if time_objective_function == InterventionObjectiveFunction.lower_bound:
                 total_sum += current_weight * np.abs(x_val)
-            elif obj_function_option == InterventionObjectiveFunction.upper_bound:
+            elif time_objective_function == InterventionObjectiveFunction.upper_bound:
                 total_sum += current_weight * -np.abs(x_val)
-            elif obj_function_option == InterventionObjectiveFunction.initial_guess:
+            elif time_objective_function == InterventionObjectiveFunction.initial_guess:
                 total_sum += current_weight * np.abs(x_val - initial_guess[0])
+
+        # duplicate for param value obj.
+        elif intervention_type == InterventionType.param_value:
+            x_val, x = x[0], x[1:]
+            if param_value_objective == InterventionObjectiveFunction.lower_bound:
+                total_sum += current_weight * np.abs(x_val)
+            elif param_value_objective == InterventionObjectiveFunction.upper_bound:
+                total_sum += current_weight * -np.abs(x_val)
+            elif param_value_objective == InterventionObjectiveFunction.initial_guess:
+                total_sum += current_weight * np.abs(x_val - initial_guess[0])
+
         # The following will have two values therefore we grab the two corresponding values for X
         # Note that start_time_param_value both start time and param value will have the same weight as eachother.
         elif intervention_type == InterventionType.start_time_param_value:
             x_val_one, x = x[0], x[1:]
             x_val_two, x = x[0], x[1:]
-            if obj_function_option == InterventionObjectiveFunction.lower_bound:
+            # For start-time
+            if time_objective_function == InterventionObjectiveFunction.lower_bound:
                 total_sum += current_weight * np.abs(x_val_one)
-                total_sum += current_weight * np.abs(x_val_two)
-            elif obj_function_option == InterventionObjectiveFunction.upper_bound:
+            if time_objective_function == InterventionObjectiveFunction.upper_bound:
                 total_sum += current_weight * -np.abs(x_val_one)
-                total_sum += current_weight * -np.abs(x_val_two)
-            elif obj_function_option == InterventionObjectiveFunction.initial_guess:
+            if time_objective_function == InterventionObjectiveFunction.initial_guess:
                 total_sum += current_weight * np.abs(x_val_one - initial_guess[0])
+
+            # Ditto for param-value
+            if param_value_objective == InterventionObjectiveFunction.lower_bound:
+                total_sum += current_weight * np.abs(x_val_two)
+            elif param_value_objective == InterventionObjectiveFunction.upper_bound:
+                total_sum += current_weight * -np.abs(x_val_two)
+            elif param_value_objective == InterventionObjectiveFunction.initial_guess:
                 total_sum += current_weight * np.abs(x_val_two - initial_guess[1])
+
     # Return the total weighted sum of the objective functions
     return total_sum
 
@@ -137,7 +153,8 @@ class InterventionObjective(BaseModel):
     param_names: list[str]
     param_values: Optional[list[Optional[float]]] = None
     start_time: Optional[list[float]] = None
-    objective_function_option: Optional[InterventionObjectiveFunction] = None
+    time_objective_function: Optional[InterventionObjectiveFunction] = None
+    parameter_objective_function: Optional[InterventionObjectiveFunction] = None
     initial_guess: Optional[list[float]] = None
     relative_importance: Optional[float] = None
 
