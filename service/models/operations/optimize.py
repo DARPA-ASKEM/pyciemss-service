@@ -21,7 +21,10 @@ from pyciemss.integration_utils.intervention_builder import (
 )
 
 from pyciemss.ouu.qoi import obs_nday_average_qoi, obs_max_qoi
-from models.converters import convert_static_interventions
+from models.converters import (
+    convert_static_interventions,
+    convert_dynamic_interventions,
+)
 from utils.tds import fetch_model, fetch_inferred_parameters
 
 
@@ -193,6 +196,11 @@ class Optimize(OperationRequest):
             fixed_static_state_interventions,
         ) = convert_static_interventions(self.fixed_interventions)
 
+        (
+            dynamic_param_interventions,
+            dynamic_state_interventions,
+        ) = convert_dynamic_interventions(self.fixed_interventions)
+
         transformed_optimize_interventions: list[
             Callable[[torch.Tensor], Dict[float, Dict[str, Intervention]]]
         ] = []
@@ -284,8 +292,9 @@ class Optimize(OperationRequest):
                 transformed_optimize_interventions, intervention_func_lengths
             ),
             "fixed_static_parameter_interventions": fixed_static_parameter_interventions,
-            # https://github.com/DARPA-ASKEM/terarium/issues/4612
-            # "fixed_static_state_interventions": fixed_static_state_interventions,
+            "fixed_static_state_interventions": fixed_static_state_interventions,
+            "fixed_dynamic_parameter_interventions": dynamic_param_interventions,
+            "fixed_dynamic_state_interventions": dynamic_state_interventions,
             "inferred_parameters": inferred_parameters,
             "n_samples_ouu": n_samples_ouu,
             "solver_method": solver_method,
