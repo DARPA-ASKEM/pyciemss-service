@@ -234,8 +234,8 @@ class Optimize(OperationRequest):
         ] = []
         intervention_func_lengths: list[int] = []
 
-        # TODO Populate bounds_interventions
         bounds_interventions: List[List[float]] = [[], []]
+        initial_guess_flatmap = []
         for i in range(len(self.optimize_interventions)):
             currentIntervention = self.optimize_interventions[i]
             intervention_type = currentIntervention.intervention_type
@@ -249,6 +249,9 @@ class Optimize(OperationRequest):
                 )
                 bounds_interventions[1].append(
                     currentIntervention.parameter_value_upper_bound
+                )
+                initial_guess_flatmap.append(
+                    currentIntervention.param_value_initial_guess
                 )
 
                 transformed_optimize_interventions.append(
@@ -268,6 +271,9 @@ class Optimize(OperationRequest):
                 )
                 bounds_interventions[1].append(
                     currentIntervention.start_time_upper_bound
+                )
+                initial_guess_flatmap.append(
+                    currentIntervention.start_time_initial_guess
                 )
 
                 transformed_optimize_interventions.append(
@@ -291,6 +297,12 @@ class Optimize(OperationRequest):
                 )
                 bounds_interventions[1].append(
                     currentIntervention.parameter_value_lower_bound
+                )
+                initial_guess_flatmap.append(
+                    currentIntervention.start_time_initial_guess
+                )
+                initial_guess_flatmap.append(
+                    currentIntervention.param_value_initial_guess
                 )
 
                 transformed_optimize_interventions.append(
@@ -330,9 +342,7 @@ class Optimize(OperationRequest):
         for qoi in self.qoi:
             qoi_methods.append(qoi.gen_call())
             risk_bounds.append(qoi.gen_risk_bound())
-        initial_guess_flatmap = [
-            item for list in self.optimize_interventions for item in list.initial_guess
-        ]
+
         return {
             "model_path_or_json": amr_path,
             "logging_step_size": self.logging_step_size,
