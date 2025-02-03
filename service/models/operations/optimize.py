@@ -148,6 +148,7 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
 
 
 class InterventionObjective(BaseModel):
+    # TODO Fix InterventionObjective
     intervention_type: InterventionType = Field(
         InterventionType.param_value,
         description="The intervention objective to use",
