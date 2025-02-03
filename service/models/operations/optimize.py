@@ -244,10 +244,10 @@ class Optimize(OperationRequest):
                 # Format start time into a list for param_value_objective func call
                 start_time = [torch.tensor(currentIntervention.start_time)]
                 param_value = [None] * len(currentIntervention.param_name)
-                bounds_interventions[0].push(
+                bounds_interventions[0].append(
                     currentIntervention.parameter_value_lower_bound
                 )
-                bounds_interventions[1].push(
+                bounds_interventions[1].append(
                     currentIntervention.parameter_value_upper_bound
                 )
 
@@ -263,8 +263,12 @@ class Optimize(OperationRequest):
                 assert currentIntervention.param_value is not None
                 # Format the following into list for start_time_objective func call.
                 param_value = [torch.tensor(currentIntervention.param_value)]
-                bounds_interventions[0].push(currentIntervention.start_time_lower_bound)
-                bounds_interventions[1].push(currentIntervention.start_time_upper_bound)
+                bounds_interventions[0].append(
+                    currentIntervention.start_time_lower_bound
+                )
+                bounds_interventions[1].append(
+                    currentIntervention.start_time_upper_bound
+                )
 
                 transformed_optimize_interventions.append(
                     start_time_objective(
@@ -276,12 +280,16 @@ class Optimize(OperationRequest):
             if intervention_type == InterventionType.start_time_param_value:
                 # Format start time into a list for start_time_param_value_objective func call
                 param_names = [currentIntervention.param_name]
-                bounds_interventions[0].push(currentIntervention.start_time_lower_bound)
-                bounds_interventions[0].push(
+                bounds_interventions[0].append(
+                    currentIntervention.start_time_lower_bound
+                )
+                bounds_interventions[0].append(
                     currentIntervention.parameter_value_lower_bound
                 )
-                bounds_interventions[1].push(currentIntervention.start_time_upper_bound)
-                bounds_interventions[1].push(
+                bounds_interventions[1].append(
+                    currentIntervention.start_time_upper_bound
+                )
+                bounds_interventions[1].append(
                     currentIntervention.parameter_value_lower_bound
                 )
 
