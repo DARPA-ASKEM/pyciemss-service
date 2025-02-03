@@ -241,9 +241,7 @@ class Optimize(OperationRequest):
             intervention_type = currentIntervention.intervention_type
             if intervention_type == InterventionType.param_value:
                 assert currentIntervention.start_time is not None
-                # Format start time into a list for param_value_objective func call
-                start_time = [torch.tensor(currentIntervention.start_time)]
-                param_value = [None] * len(currentIntervention.param_name)
+                # update bounds and initial guesses:
                 bounds_interventions[0].append(
                     currentIntervention.parameter_value_lower_bound
                 )
@@ -253,19 +251,24 @@ class Optimize(OperationRequest):
                 initial_guess_flatmap.append(
                     currentIntervention.param_value_initial_guess
                 )
+                intervention_func_lengths.append(1)
+
+                # Format start time into a list for param_value_objective func call
+                start_time = [torch.tensor(currentIntervention.start_time)]
+                param_names = [currentIntervention.param_name]
+                param_value = [None] * len(currentIntervention.param_name)
 
                 transformed_optimize_interventions.append(
                     param_value_objective(
                         start_time=start_time,
-                        param_name=currentIntervention.param_name,
+                        param_name=param_names,
                         param_value=param_value,
                     )
                 )
-                intervention_func_lengths.append(1)
+
             if intervention_type == InterventionType.start_time:
                 assert currentIntervention.param_value is not None
-                # Format the following into list for start_time_objective func call.
-                param_value = [torch.tensor(currentIntervention.param_value)]
+                # update bounds and initial guesses:
                 bounds_interventions[0].append(
                     currentIntervention.start_time_lower_bound
                 )
@@ -275,17 +278,20 @@ class Optimize(OperationRequest):
                 initial_guess_flatmap.append(
                     currentIntervention.start_time_initial_guess
                 )
+                intervention_func_lengths.append(1)
+
+                # Format the following into list for start_time_objective func call.
+                param_value = [torch.tensor(currentIntervention.param_value)]
+                param_names = [currentIntervention.param_name]
 
                 transformed_optimize_interventions.append(
                     start_time_objective(
-                        param_name=currentIntervention.param_name,
+                        param_name=param_names,
                         param_value=param_value,
                     )
                 )
-                intervention_func_lengths.append(1)
             if intervention_type == InterventionType.start_time_param_value:
-                # Format start time into a list for start_time_param_value_objective func call
-                param_names = [currentIntervention.param_name]
+                # update bounds and initial guesses:
                 bounds_interventions[0].append(
                     currentIntervention.start_time_lower_bound
                 )
@@ -304,11 +310,13 @@ class Optimize(OperationRequest):
                 initial_guess_flatmap.append(
                     currentIntervention.param_value_initial_guess
                 )
+                intervention_func_lengths.append(2)
 
+                # Format start time into a list for start_time_param_value_objective func call
+                param_names = [currentIntervention.param_name]
                 transformed_optimize_interventions.append(
                     start_time_param_value_objective(param_name=param_names)
                 )
-                intervention_func_lengths.append(2)
 
         extra_options = self.extra.dict()
         inferred_parameters = fetch_inferred_parameters(
