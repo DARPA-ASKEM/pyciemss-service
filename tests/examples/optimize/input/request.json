@@ -27,7 +27,6 @@
 		"risk_bound": 10.0,
 		"is_minimized": true
 	}],
-  "bounds_interventions": [[0.0], [3.0]],
 	"extra": {
 		"num_samples": 4
 	}
