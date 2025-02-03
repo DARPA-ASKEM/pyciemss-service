@@ -160,7 +160,6 @@ class InterventionObjective(BaseModel):
         example="param_value",
     )
     param_name: str
-    # TODO Do we need param_value and start_time or can we use init?
     param_value: Optional[Optional[float]] = None
     start_time: Optional[float] = None
     time_objective_function: Optional[InterventionObjectiveFunction] = None
