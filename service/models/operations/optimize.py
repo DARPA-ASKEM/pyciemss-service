@@ -160,6 +160,7 @@ class InterventionObjective(BaseModel):
         example="param_value",
     )
     param_name: str
+    # TODO Do we need param_value and start_time or can we use init?
     param_value: Optional[Optional[float]] = None
     start_time: Optional[float] = None
     time_objective_function: Optional[InterventionObjectiveFunction] = None
@@ -234,7 +235,7 @@ class Optimize(OperationRequest):
         intervention_func_lengths: list[int] = []
 
         # TODO Populate bounds_interventions
-        bounds_interventions: List[List[float]] = []
+        bounds_interventions: List[List[float]] = [[], []]
         for i in range(len(self.optimize_interventions)):
             currentIntervention = self.optimize_interventions[i]
             intervention_type = currentIntervention.intervention_type
@@ -243,6 +244,12 @@ class Optimize(OperationRequest):
                 # Format start time into a list for param_value_objective func call
                 start_time = [torch.tensor(currentIntervention.start_time)]
                 param_value = [None] * len(currentIntervention.param_name)
+                bounds_interventions[0].push(
+                    currentIntervention.parameter_value_lower_bound
+                )
+                bounds_interventions[1].push(
+                    currentIntervention.parameter_value_upper_bound
+                )
 
                 transformed_optimize_interventions.append(
                     param_value_objective(
@@ -256,6 +263,9 @@ class Optimize(OperationRequest):
                 assert currentIntervention.param_value is not None
                 # Format the following into list for start_time_objective func call.
                 param_value = [torch.tensor(currentIntervention.param_value)]
+                bounds_interventions[0].push(currentIntervention.start_time_lower_bound)
+                bounds_interventions[1].push(currentIntervention.start_time_upper_bound)
+
                 transformed_optimize_interventions.append(
                     start_time_objective(
                         param_name=currentIntervention.param_name,
@@ -266,6 +276,15 @@ class Optimize(OperationRequest):
             if intervention_type == InterventionType.start_time_param_value:
                 # Format start time into a list for start_time_param_value_objective func call
                 param_names = [currentIntervention.param_name]
+                bounds_interventions[0].push(currentIntervention.start_time_lower_bound)
+                bounds_interventions[0].push(
+                    currentIntervention.parameter_value_lower_bound
+                )
+                bounds_interventions[1].push(currentIntervention.start_time_upper_bound)
+                bounds_interventions[1].push(
+                    currentIntervention.parameter_value_lower_bound
+                )
+
                 transformed_optimize_interventions.append(
                     start_time_param_value_objective(param_name=param_names)
                 )
