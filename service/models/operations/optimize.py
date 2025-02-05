@@ -102,15 +102,19 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
         time_objective_function = current_intervention.time_objective_function
         param_value_objective = current_intervention.parameter_objective_function
         start_time_initial_guess = current_intervention.start_time_initial_guess
+        start_time_upper_bound = current_intervention.start_time_upper_bound
+        start_time_lower_bound = current_intervention.start_time_lower_bound
         param_value_initial_guess = current_intervention.param_value_initial_guess
+        param_value_lower_bound = current_intervention.parameter_value_lower_bound
+        param_value_upper_bound = current_intervention.parameter_value_upper_bound
 
         # The following will have one value therefore we only grab the one value from X.
         if intervention_type == InterventionType.start_time:
             x_val, x = x[0], x[1:]
             if time_objective_function == InterventionObjectiveFunction.lower_bound:
-                total_sum += current_weight * np.abs(x_val)
+                total_sum += current_weight * np.abs(x_val - start_time_lower_bound)
             elif time_objective_function == InterventionObjectiveFunction.upper_bound:
-                total_sum += current_weight * -np.abs(x_val)
+                total_sum += current_weight * np.abs(x_val - start_time_upper_bound)
             elif time_objective_function == InterventionObjectiveFunction.initial_guess:
                 total_sum += current_weight * np.abs(x_val - start_time_initial_guess)
 
@@ -118,9 +122,9 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
         elif intervention_type == InterventionType.param_value:
             x_val, x = x[0], x[1:]
             if param_value_objective == InterventionObjectiveFunction.lower_bound:
-                total_sum += current_weight * np.abs(x_val)
+                total_sum += current_weight * np.abs(x_val - param_value_lower_bound)
             elif param_value_objective == InterventionObjectiveFunction.upper_bound:
-                total_sum += current_weight * -np.abs(x_val)
+                total_sum += current_weight * np.abs(x_val - param_value_upper_bound)
             elif param_value_objective == InterventionObjectiveFunction.initial_guess:
                 total_sum += current_weight * np.abs(x_val - param_value_initial_guess)
 
@@ -131,9 +135,9 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
             x_val_two, x = x[0], x[1:]
             # For start-time
             if time_objective_function == InterventionObjectiveFunction.lower_bound:
-                total_sum += current_weight * np.abs(x_val_one)
+                total_sum += current_weight * np.abs(x_val_one - start_time_lower_bound)
             if time_objective_function == InterventionObjectiveFunction.upper_bound:
-                total_sum += current_weight * -np.abs(x_val_one)
+                total_sum += current_weight * np.abs(x_val_one - start_time_upper_bound)
             if time_objective_function == InterventionObjectiveFunction.initial_guess:
                 total_sum += current_weight * np.abs(
                     x_val_one - start_time_initial_guess
@@ -141,9 +145,13 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
 
             # Ditto for param-value
             if param_value_objective == InterventionObjectiveFunction.lower_bound:
-                total_sum += current_weight * np.abs(x_val_two)
+                total_sum += current_weight * np.abs(
+                    x_val_two - param_value_lower_bound
+                )
             elif param_value_objective == InterventionObjectiveFunction.upper_bound:
-                total_sum += current_weight * -np.abs(x_val_two)
+                total_sum += current_weight * np.abs(
+                    x_val_two - param_value_upper_bound
+                )
             elif param_value_objective == InterventionObjectiveFunction.initial_guess:
                 total_sum += current_weight * np.abs(
                     x_val_two - param_value_initial_guess
@@ -233,8 +241,10 @@ class Optimize(OperationRequest):
         ] = []
         intervention_func_lengths: list[int] = []
 
+        # Note that the the first will be lower bounds and the second will be upper bounds.
         bounds_interventions: List[List[float]] = [[], []]
         initial_guess_flatmap = []
+        # Populate transformed_optimize_interventions utilizing ciemss functions
         for i in range(len(self.optimize_interventions)):
             currentIntervention = self.optimize_interventions[i]
             intervention_type = currentIntervention.intervention_type
