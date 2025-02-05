@@ -4,12 +4,18 @@
 	"model_config_id": "sidarthe",
 	"optimize_interventions": [{
 		"intervention_type": "param_value",
-		"objective_function_option": "lower_bound",
-		"start_time": [2],
-		"param_names": ["beta"],
-		"param_values": [0.02],
-		"initial_guess": [0],
-		"relative_importance": 1
+		"param_name": "beta",
+		"start_time": 2,
+		"param_value": 0.02,
+		"time_objective_function": "initial_guess",
+		"parameter_objective_function": "initial_guess",
+		"relative_importance": 5,
+		"param_value_initial_guess": 0.02,
+		"parameter_value_lower_bound": 0,
+		"parameter_value_upper_bound": 0.08,
+		"start_time_initial_guess": 1,
+		"start_time_lower_bound": 0,
+		"start_time_upper_bound": 50
 	}],
 	"timespan": {
 		"start": 0,
@@ -21,7 +27,6 @@
 		"risk_bound": 10.0,
 		"is_minimized": true
 	}],
-  "bounds_interventions": [[0.0], [3.0]],
 	"extra": {
 		"num_samples": 4
 	}
