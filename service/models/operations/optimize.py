@@ -107,26 +107,48 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
         param_value_initial_guess = current_intervention.param_value_initial_guess
         param_value_lower_bound = current_intervention.parameter_value_lower_bound
         param_value_upper_bound = current_intervention.parameter_value_upper_bound
+        param_normalization_factor = np.abs(
+            param_value_upper_bound - param_value_lower_bound
+        )
+        start_time_normalization_factor = np.abs(
+            start_time_upper_bound - start_time_lower_bound
+        )
 
         # The following will have one value therefore we only grab the one value from X.
         if intervention_type == InterventionType.start_time:
             x_val, x = x[0], x[1:]
             if time_objective_function == InterventionObjectiveFunction.lower_bound:
-                total_sum += current_weight * np.abs(x_val - start_time_lower_bound)
+                total_sum += current_weight * (
+                    np.abs(x_val - start_time_lower_bound)
+                    / start_time_normalization_factor
+                )
             elif time_objective_function == InterventionObjectiveFunction.upper_bound:
-                total_sum += current_weight * np.abs(x_val - start_time_upper_bound)
+                total_sum += current_weight * (
+                    np.abs(x_val - start_time_upper_bound)
+                    / start_time_normalization_factor
+                )
             elif time_objective_function == InterventionObjectiveFunction.initial_guess:
-                total_sum += current_weight * np.abs(x_val - start_time_initial_guess)
+                total_sum += current_weight * (
+                    np.abs(x_val - start_time_initial_guess)
+                    / start_time_normalization_factor
+                )
 
         # duplicate for param value obj.
         elif intervention_type == InterventionType.param_value:
             x_val, x = x[0], x[1:]
             if param_value_objective == InterventionObjectiveFunction.lower_bound:
-                total_sum += current_weight * np.abs(x_val - param_value_lower_bound)
+                total_sum += current_weight * (
+                    np.abs(x_val - param_value_lower_bound) / param_normalization_factor
+                )
             elif param_value_objective == InterventionObjectiveFunction.upper_bound:
-                total_sum += current_weight * np.abs(x_val - param_value_upper_bound)
+                total_sum += current_weight * (
+                    np.abs(x_val - param_value_upper_bound) / param_normalization_factor
+                )
             elif param_value_objective == InterventionObjectiveFunction.initial_guess:
-                total_sum += current_weight * np.abs(x_val - param_value_initial_guess)
+                total_sum += current_weight * (
+                    np.abs(x_val - param_value_initial_guess)
+                    / param_normalization_factor
+                )
 
         # The following will have two values therefore we grab the two corresponding values for X
         # Note that start_time_param_value both start time and param value will have the same weight as eachother.
@@ -135,26 +157,36 @@ def objfun(x, optimize_interventions: list[InterventionObjective]):
             x_val_two, x = x[0], x[1:]
             # For start-time
             if time_objective_function == InterventionObjectiveFunction.lower_bound:
-                total_sum += current_weight * np.abs(x_val_one - start_time_lower_bound)
+                total_sum += current_weight * (
+                    np.abs(x_val_one - start_time_lower_bound)
+                    / start_time_normalization_factor
+                )
             if time_objective_function == InterventionObjectiveFunction.upper_bound:
-                total_sum += current_weight * np.abs(x_val_one - start_time_upper_bound)
+                total_sum += current_weight * (
+                    np.abs(x_val_one - start_time_upper_bound)
+                    / start_time_normalization_factor
+                )
             if time_objective_function == InterventionObjectiveFunction.initial_guess:
-                total_sum += current_weight * np.abs(
-                    x_val_one - start_time_initial_guess
+                total_sum += current_weight * (
+                    np.abs(x_val_one - start_time_initial_guess)
+                    / start_time_normalization_factor
                 )
 
             # Ditto for param-value
             if param_value_objective == InterventionObjectiveFunction.lower_bound:
-                total_sum += current_weight * np.abs(
-                    x_val_two - param_value_lower_bound
+                total_sum += current_weight * (
+                    np.abs(x_val_two - param_value_lower_bound)
+                    / param_normalization_factor
                 )
             elif param_value_objective == InterventionObjectiveFunction.upper_bound:
-                total_sum += current_weight * np.abs(
-                    x_val_two - param_value_upper_bound
+                total_sum += current_weight * (
+                    np.abs(x_val_two - param_value_upper_bound)
+                    / param_normalization_factor
                 )
             elif param_value_objective == InterventionObjectiveFunction.initial_guess:
-                total_sum += current_weight * np.abs(
-                    x_val_two - param_value_initial_guess
+                total_sum += current_weight * (
+                    np.abs(x_val_two - param_value_initial_guess)
+                    / param_normalization_factor
                 )
 
     # Return the total weighted sum of the objective functions
