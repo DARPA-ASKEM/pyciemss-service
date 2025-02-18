@@ -20,7 +20,7 @@ def test_ensemble_simulate_example(
     for config_id in config_ids:
         model = json.loads(example_context["fetch"](config_id + ".json"))
         requests_mock.get(
-            f"{TDS_URL}/model-configurations/as-configured-model/{config_id}",
+            f"{TDS_URL}/model-configurations/{config_id}/model",
             json=model,
         )
 

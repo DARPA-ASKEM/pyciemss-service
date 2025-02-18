@@ -24,7 +24,7 @@ TDS_USER = settings.TDS_USER
 TDS_PASSWORD = settings.TDS_PASSWORD
 TDS_SIMULATIONS = "/simulations"
 TDS_DATASETS = "/datasets"
-TDS_CONFIGURATIONS = "/model-configurations/as-configured-model"
+TDS_CONFIGURATIONS = "/model-configurations"
 TDS_INTERVENTIONS = "/interventions"
 
 
@@ -128,7 +128,7 @@ def fetch_model(model_config_id, job_id):
     job_dir = get_job_dir(job_id)
     logging.debug(f"Fetching model {model_config_id}")
 
-    model_url = TDS_URL + TDS_CONFIGURATIONS + "/" + model_config_id
+    model_url = TDS_URL + TDS_CONFIGURATIONS + "/" + model_config_id + "/model"
 
     model_response = tds_session().get(model_url)
     if model_response.status_code == 404:
