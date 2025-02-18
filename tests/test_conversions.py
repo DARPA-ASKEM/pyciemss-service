@@ -43,7 +43,7 @@ class TestSimulate:
         config_id = example_context["request"]["model_config_id"]
         model = json.loads(example_context["fetch"](config_id + ".json"))
         requests_mock.get(
-            f"{TDS_URL}/model-configurations/as-configured-model/{config_id}",
+            f"{TDS_URL}/model-configurations/{config_id}/model",
             json=model,
         )
 
@@ -64,7 +64,7 @@ class TestCalibrate:
         config_id = example_context["request"]["model_config_id"]
         model = json.loads(example_context["fetch"](config_id + ".json"))
         requests_mock.get(
-            f"{TDS_URL}/model-configurations/as-configured-model/{config_id}",
+            f"{TDS_URL}/model-configurations/{config_id}/model",
             json=model,
         )
 
@@ -96,7 +96,7 @@ class TestEnsembleSimulate:
         for config_id in config_ids:
             model = json.loads(example_context["fetch"](config_id + ".json"))
             requests_mock.get(
-                f"{TDS_URL}/model-configurations/as-configured-model/{config_id}",
+                f"{TDS_URL}/model-configurations/{config_id}/model",
                 json=model,
             )
 
@@ -120,7 +120,7 @@ class TestEnsembleCalibrate:
         for config_id in config_ids:
             model = json.loads(example_context["fetch"](config_id + ".json"))
             requests_mock.get(
-                f"{TDS_URL}/model-configurations/as-configured-model/{config_id}",
+                f"{TDS_URL}/model-configurations/{config_id}/model",
                 json=model,
             )
 
@@ -150,7 +150,7 @@ class TestOptimize:
         config_id = example_context["request"]["model_config_id"]
         model = json.loads(example_context["fetch"](config_id + ".json"))
         requests_mock.get(
-            f"{TDS_URL}/model-configurations/as-configured-model/{config_id}",
+            f"{TDS_URL}/model-configurations/{config_id}/model",
             json=model,
         )
 
