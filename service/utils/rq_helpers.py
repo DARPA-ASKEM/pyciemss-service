@@ -39,6 +39,8 @@ def update_status_on_job_fail(job, connection, etype, value, traceback):
 def create_job(request_payload, sim_type, redis_conn):
     workflow_id = f"{uuid4()}"
 
+    logging.info(f"processing new request {sim_type}")
+
     payload = {
         "name": workflow_id,
         "execution_payload": request_payload.dict(),

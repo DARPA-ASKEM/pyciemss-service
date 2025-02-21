@@ -21,7 +21,7 @@ logger.setLevel(logging.DEBUG)
 
 
 def run(request, *, job_id):
-    logging.debug(f"STARTED {job_id} (user_id: {request.user_id})")
+    logging.info(f"STARTED {job_id} (user_id: {request.user_id})")
     update_tds_status(job_id, status="running", start=True)
 
     operation_name = request.__class__.pyciemss_lib_function
@@ -34,4 +34,4 @@ def run(request, *, job_id):
 
     attach_files(output, job_id)
     cleanup_job_dir(job_id)
-    logging.debug(f"FINISHED {job_id} (user_id: {request.user_id})")
+    logging.info(f"FINISHED {job_id} (user_id: {request.user_id})")
