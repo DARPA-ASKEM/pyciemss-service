@@ -7,7 +7,7 @@ from typing import Dict, Callable
 from models.base import HMIIntervention
 
 
-def fetch_and_convert_static_interventions(policy_intervention_id, job_id):
+def fetch_and_convert_static_interventions(policy_intervention_id, model_config, job_id):
     if not (policy_intervention_id):
         return defaultdict(dict), defaultdict(dict)
     policy_intervention = fetch_interventions(policy_intervention_id, job_id)
@@ -19,7 +19,7 @@ def fetch_and_convert_static_interventions(policy_intervention_id, job_id):
             dynamic_interventions=inter["dynamic_interventions"],
         )
         interventionList.append(intervention)
-    return convert_static_interventions(interventionList)
+    return convert_static_interventions(interventionList, model_config)
 
 
 def fetch_and_convert_dynamic_interventions(policy_intervention_id, job_id):
@@ -36,9 +36,44 @@ def fetch_and_convert_dynamic_interventions(policy_intervention_id, job_id):
         interventionList.append(intervention)
     return convert_dynamic_interventions(interventionList)
 
+def get_semantic_value(semantic):
+    """Helper function to get the correct value based on distribution type"""
+    if semantic["distribution"]["type"] == "StandardUniform1":
+        return (semantic["distribution"]["parameters"]["maximum"] +
+								semantic["distribution"]["parameters"]["minimum"]) / 2
+    return semantic["distribution"]["parameters"]["value"]
+
+def get_static_intervention_value(static_inter, model_config):
+    """Get static intervention value with distribution and percentage handling"""
+    semantic_name = static_inter.applied_to
+    semantic = None
+    base_value = None
+    # Find the appropriate semantic based on intervention type
+    if static_inter.type == "parameter":
+        for param in model_config["parameter_semantic_list"]:
+            if param["reference_id"] == semantic_name:
+                semantic = param
+                base_value = get_semantic_value(semantic)
+                break
+    else:  # type == "state"
+        for initial in model_config["initial_semantic_list"]:
+            if initial["target"] == semantic_name:
+                semantic = initial
+                base_value = initial["expression"]
+                break
+
+    if not semantic:
+        raise ValueError(f"Could not find semantic for {semantic_name}")
+
+    # Handle percentage vs direct value
+    if static_inter.value_type == "percentage":
+        return torch.tensor(float(base_value) * (static_inter.value / 100))
+
+    return torch.tensor(float(static_inter.value))
+
 
 # Used to convert from HMI Intervention Policy -> pyciemss static interventions.
-def convert_static_interventions(interventions: list[HMIIntervention]):
+def convert_static_interventions(interventions: list[HMIIntervention], model_config):
     if not (interventions):
         return defaultdict(dict), defaultdict(dict)
     static_param_interventions: Dict[torch.Tensor, Dict[str, any]] = defaultdict(dict)
@@ -47,7 +82,7 @@ def convert_static_interventions(interventions: list[HMIIntervention]):
         for static_inter in inter.static_interventions:
             time = torch.tensor(float(static_inter.timestep))
             parameter_name = static_inter.applied_to
-            value = torch.tensor(float(static_inter.value))
+            value = get_static_intervention_value(static_inter, model_config)
             if static_inter.type == "parameter":
                 static_param_interventions[time][parameter_name] = value
             if static_inter.type == "state":
