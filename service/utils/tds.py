@@ -210,12 +210,13 @@ def fetch_inferred_parameters(parameters_id: Optional[str], job_id):
 
 def get_result_summary(data_result):
     try:
-        df2 = data_result.groupby("timepoint_id", as_index=False).agg(
-            ["min", "max", "mean", "median", "std"]
-        )
-        df2 = df2.drop(columns=["sample_id", "timepoint_unknown"])
+        df2 = data_result.groupby(
+            ["timepoint_id", "timepoint_unknown"], as_index=False
+        ).agg(["min", "max", "mean", "median", "std"])
+        df2 = df2.drop(columns=["sample_id"])
         df2.columns = ["_".join(i) for i in df2.columns]
         df2 = df2.rename(columns={"timepoint_id_": "timepoint_id"})
+        df2 = df2.rename(columns={"timepoint_unknown_": "timepoint_unknown"})
         return df2
     # If the format of the data_result does not match expected column names ect just throw error
     except:
