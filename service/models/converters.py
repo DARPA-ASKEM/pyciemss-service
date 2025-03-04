@@ -7,7 +7,9 @@ from typing import Dict, Callable
 from models.base import HMIIntervention
 
 
-def fetch_and_convert_static_interventions(policy_intervention_id, model_config, job_id):
+def fetch_and_convert_static_interventions(
+    policy_intervention_id, model_config, job_id
+):
     if not (policy_intervention_id):
         return defaultdict(dict), defaultdict(dict)
     policy_intervention = fetch_interventions(policy_intervention_id, job_id)
@@ -36,13 +38,15 @@ def fetch_and_convert_dynamic_interventions(policy_intervention_id, job_id):
         interventionList.append(intervention)
     return convert_dynamic_interventions(interventionList)
 
+
 def get_semantic_value(semantic):
     """Helper function to get the correct value based on distribution type"""
     distribution = semantic.get("distribution", {})
-    if distribution.get('type') == "StandardUniform1":
-        params = distribution.get('parameters', {})
-        return (params.get('maximum', 0) + params.get('minimum', 0)) / 2
+    if distribution.get("type") == "StandardUniform1":
+        params = distribution.get("parameters", {})
+        return (params.get("maximum", 0) + params.get("minimum", 0)) / 2
     return semantic["value"]
+
 
 def get_static_intervention_value(static_inter, model_config):
     """Get static intervention value with distribution and percentage handling"""

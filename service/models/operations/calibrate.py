@@ -72,7 +72,9 @@ class Calibrate(OperationRequest):
         (
             static_param_interventions,
             static_state_interventions,
-        ) = fetch_and_convert_static_interventions(self.policy_intervention_id, model_config_json, job_id)
+        ) = fetch_and_convert_static_interventions(
+            self.policy_intervention_id, model_config_json, job_id
+        )
 
         (
             dynamic_param_interventions,

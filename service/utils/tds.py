@@ -123,6 +123,7 @@ def cleanup_job_dir(job_id):
     path = get_job_dir(job_id)
     shutil.rmtree(path)
 
+
 def fetch_model(model_config_id, job_id):
     job_dir = get_job_dir(job_id)
     logging.debug(f"Fetching model {model_config_id}")
