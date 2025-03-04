@@ -17,12 +17,14 @@
 					{
 							"timestep":0,
 							"value":0,
-							"applied_to":"β"
+							"applied_to":"β",
+							"value_type": "value"
 					},
 					{
 							"timestep":1,
 							"value":2,
-							"applied_to":"β"
+							"applied_to":"β",
+							"value_type": "value"
 					}
 				],
 				"dynamic_interventions":[
