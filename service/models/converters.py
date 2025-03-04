@@ -38,10 +38,11 @@ def fetch_and_convert_dynamic_interventions(policy_intervention_id, job_id):
 
 def get_semantic_value(semantic):
     """Helper function to get the correct value based on distribution type"""
-    if semantic["distribution"]["type"] == "StandardUniform1":
-        return (semantic["distribution"]["parameters"]["maximum"] +
-								semantic["distribution"]["parameters"]["minimum"]) / 2
-    return semantic["distribution"]["parameters"]["value"]
+    distribution = semantic.get("distribution", {})
+    if distribution.get('type') == "StandardUniform1":
+        params = distribution.get('parameters', {})
+        return (params.get('maximum', 0) + params.get('minimum', 0)) / 2
+    return semantic["value"]
 
 def get_static_intervention_value(static_inter, model_config):
     """Get static intervention value with distribution and percentage handling"""
@@ -50,13 +51,13 @@ def get_static_intervention_value(static_inter, model_config):
     base_value = None
     # Find the appropriate semantic based on intervention type
     if static_inter.type == "parameter":
-        for param in model_config["parameter_semantic_list"]:
-            if param["reference_id"] == semantic_name:
+        for param in model_config["semantics"]["ode"]["parameters"]:
+            if param["id"] == semantic_name:
                 semantic = param
                 base_value = get_semantic_value(semantic)
                 break
     else:  # type == "state"
-        for initial in model_config["initial_semantic_list"]:
+        for initial in model_config["semantics"]["ode"]["initials"]:
             if initial["target"] == semantic_name:
                 semantic = initial
                 base_value = initial["expression"]

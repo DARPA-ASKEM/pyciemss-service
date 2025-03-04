@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import ClassVar, List, Optional, Union, Callable, Dict
 from chirho.interventional.ops import Intervention
 from enum import Enum
@@ -25,7 +26,7 @@ from models.converters import (
     convert_static_interventions,
     convert_dynamic_interventions,
 )
-from utils.tds import fetch_model, fetch_inferred_parameters, fetch_model_config
+from utils.tds import fetch_model, fetch_inferred_parameters
 
 
 class InterventionType(str, Enum):
@@ -258,11 +259,12 @@ class Optimize(OperationRequest):
     def gen_pyciemss_args(self, job_id):
         # Get model from TDS
         amr_path = fetch_model(self.model_config_id, job_id)
-        model_config = fetch_model_config(self.model_config_id)
+        with open(amr_path, "r") as f:
+            model_config_json = json.load(f)
         (
             fixed_static_parameter_interventions,
             fixed_static_state_interventions,
-        ) = convert_static_interventions(self.fixed_interventions, model_config)
+        ) = convert_static_interventions(self.fixed_interventions, model_config_json)
 
         (
             dynamic_param_interventions,

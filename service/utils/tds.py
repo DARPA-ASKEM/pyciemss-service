@@ -123,16 +123,6 @@ def cleanup_job_dir(job_id):
     path = get_job_dir(job_id)
     shutil.rmtree(path)
 
-def fetch_model_config(model_config_id):
-		model_url = TDS_URL + TDS_CONFIGURATIONS + "/" + model_config_id
-		model_config_response = tds_session().get(model_url)
-		logging.debug(f"Fetching model config {model_config_id}")
-
-		if model_config_response.status_code == 404:
-				raise HTTPException(status_code=404, detail="Model config not found")
-		return model_config_response.json()
-
-
 def fetch_model(model_config_id, job_id):
     job_dir = get_job_dir(job_id)
     logging.debug(f"Fetching model {model_config_id}")
