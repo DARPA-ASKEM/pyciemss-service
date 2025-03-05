@@ -45,7 +45,7 @@ def get_semantic_value(semantic):
     if distribution.get("type") == "StandardUniform1":
         params = distribution.get("parameters", {})
         return (params.get("maximum", 0) + params.get("minimum", 0)) / 2
-    return semantic["distribution"]["value"]
+    return semantic["distribution"]["parameters"]["value"]
 
 
 def get_static_intervention_value(static_inter, model_map):
@@ -93,7 +93,7 @@ def create_model_config_map(model_config):
     for intitial in model_config["initial_semantic_list"]:
         model_map["initials"][intitial["target"]] = intitial
     for param in model_config["parameter_semantic_list"]:
-        model_map["parameters"][param["id"]] = param
+        model_map["parameters"][param["reference_id"]] = param
     return model_map
 
 
