@@ -39,13 +39,37 @@ def fetch_and_convert_dynamic_interventions(policy_intervention_id, job_id):
     return convert_dynamic_interventions(interventionList)
 
 
-def get_semantic_value(semantic):
+def get_parameter_value(parameter):
     """Helper function to get the correct value based on distribution type"""
-    distribution = semantic.get("distribution", {})
-    if distribution.get("type") == "StandardUniform1":
-        params = distribution.get("parameters", {})
-        return (params.get("maximum", 0) + params.get("minimum", 0)) / 2
-    return semantic["distribution"]["parameters"]["value"]
+    if not parameter or "distribution" not in parameter:
+        raise ValueError("Parameter must contain a distribution configuration")
+
+    distribution = parameter["distribution"]
+    dist_type = distribution.get("type")
+    params = distribution.get("parameters", {})
+
+    if not dist_type or not params:
+        raise ValueError("Distribution must specify type and parameters")
+
+    if dist_type == "StandardUniform1":
+        maximum = params.get("maximum")
+        minimum = params.get("minimum")
+        if maximum is None or minimum is None:
+            raise ValueError(
+                "StandardUniform1 distribution requires maximum and minimum values"
+            )
+        return (maximum + minimum) / 2
+
+    elif dist_type == "inferred":
+        mean = params.get("mean")
+        if mean is None:
+            raise ValueError("Inferred distribution requires mean value")
+        return mean
+
+    elif "value" in params:
+        return float(params["value"])
+
+    raise ValueError(f"Unsupported distribution type: {dist_type}")
 
 
 def get_static_intervention_value(static_inter, model_map):
@@ -61,7 +85,7 @@ def get_static_intervention_value(static_inter, model_map):
     if not parameter:
         raise ValueError(f"Could not find semantic for {semantic_name}")
 
-    base_value = get_semantic_value(parameter)
+    base_value = get_parameter_value(parameter)
 
     return torch.tensor(float(base_value) * (static_inter.value / 100))
 
@@ -92,7 +116,15 @@ def create_model_config_map(model_config):
     }
     for intitial in model_config["initial_semantic_list"]:
         model_map["initials"][intitial["target"]] = intitial
-    for param in model_config["parameter_semantic_list"]:
+
+    # Use inferred_parameter_list if it exists, otherwise use parameter_semantic_list
+    is_configured_config = len(model_config.get("inferred_parameter_list", [])) > 0
+    parameter_list = (
+        "inferred_parameter_list"
+        if is_configured_config in model_config
+        else "parameter_semantic_list"
+    )
+    for param in model_config[parameter_list]:
         model_map["parameters"][param["reference_id"]] = param
     return model_map
 
