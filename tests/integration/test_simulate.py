@@ -16,6 +16,7 @@ def test_simulate_example(
     request = example_context["request"]
     config_id = request["model_config_id"]
     model = json.loads(example_context["fetch"](config_id + ".json"))
+    model_config = json.loads(example_context["fetch"](config_id + "_config.json"))
 
     requests_mock.post(f"{TDS_URL}/simulations", json={"id": str(job_id)})
 
@@ -39,6 +40,7 @@ def test_simulate_example(
         f"{TDS_URL}/simulations/{simulation_id}", json={"status": "success"}
     )
     requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}/model", json=model)
+    requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}", json=model_config)
 
     worker.work(burst=True)
 

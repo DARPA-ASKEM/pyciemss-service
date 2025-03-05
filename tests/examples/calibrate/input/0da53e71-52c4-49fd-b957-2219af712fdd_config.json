@@ -1,0 +1,86 @@
+{
+  "id": "02eb70c7-1890-4db5-a21d-eda1363598fb",
+  "created_on": "2025-03-05T18:58:51.748+00:00",
+  "updated_on": "2025-03-05T18:58:51.748+00:00",
+  "name": "Default configuration",
+  "description": "This is a default configuration.",
+  "file_names": [],
+  "temporary": false,
+  "public_asset": false,
+  "model_id": "3ec43287-3645-4845-8f28-c32f204f7006",
+  "observable_semantic_list": [
+    {
+      "id": "bab17de0-97be-42c5-91d8-82860b5bdbfa",
+      "created_on": "2025-03-05T18:58:51.752+00:00",
+      "updated_on": "2025-03-05T18:58:51.752+00:00",
+      "reference_id": "Cases",
+      "expression": "Diagnosed + Recognized + Threatened",
+      "expression_mathml": "<apply><plus/><ci>Diagnosed</ci><ci>Recognized</ci><ci>Threatened</ci></apply>"
+    },
+    {
+      "id": "980736af-32fb-4c69-a76a-aa2fd96c453d",
+      "created_on": "2025-03-05T18:58:51.753+00:00",
+      "updated_on": "2025-03-05T18:58:51.753+00:00",
+      "reference_id": "Hospitalizations",
+      "expression": "Recognized + Threatened",
+      "expression_mathml": "<apply><plus/><ci>Recognized</ci><ci>Threatened</ci></apply>"
+    },
+    {
+      "id": "718ab823-2dea-43e3-8516-e2549a157c67",
+      "created_on": "2025-03-05T18:58:51.753+00:00",
+      "updated_on": "2025-03-05T18:58:51.753+00:00",
+      "reference_id": "Deaths",
+      "expression": "Extinct",
+      "expression_mathml": "<ci>Extinct</ci>"
+    }
+  ],
+  "parameter_semantic_list": [
+    {
+      "id": "e7850d4e-520c-4fc3-8bc2-fc29a9abbaba",
+      "created_on": "2025-03-05T18:58:51.754+00:00",
+      "updated_on": "2025-03-05T18:58:51.759+00:00",
+      "reference_id": "beta",
+      "distribution": {
+        "type": "StandardUniform1",
+        "parameters": {
+          "minimum": 0.0088,
+          "maximum": 0.0132
+        }
+      },
+      "default": false
+    },
+    {
+      "id": "e8681cc1-71c7-438c-b85b-abb0478aaad1",
+      "created_on": "2025-03-05T18:58:51.754+00:00",
+      "updated_on": "2025-03-05T18:58:51.759+00:00",
+      "reference_id": "gamma",
+      "distribution": {
+        "type": "StandardUniform1",
+        "parameters": {
+          "minimum": 0.3648,
+          "maximum": 0.5472
+        }
+      },
+      "default": false
+    }
+  ],
+  "initial_semantic_list": [
+    {
+      "id": "03f6a6cf-10ee-4a2d-b7d2-caa06c37256f",
+      "created_on": "2025-03-05T18:58:51.749+00:00",
+      "updated_on": "2025-03-05T18:58:51.749+00:00",
+      "target": "Susceptible",
+      "expression": "0.999996300000000",
+      "expression_mathml": "<cn>0.99999629999999995</cn>"
+    },
+    {
+      "id": "4a8034f9-c930-4b71-9d1e-e530c07ecb3b",
+      "created_on": "2025-03-05T18:58:51.749+00:00",
+      "updated_on": "2025-03-05T18:58:51.749+00:00",
+      "target": "Diagnosed",
+      "expression": "3.33333333000000e-7",
+      "expression_mathml": "<cn>3.33333333e-7</cn>"
+    }
+  ],
+  "inferred_parameter_list": []
+}
