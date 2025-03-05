@@ -45,7 +45,7 @@ def get_semantic_value(semantic):
     if distribution.get("type") == "StandardUniform1":
         params = distribution.get("parameters", {})
         return (params.get("maximum", 0) + params.get("minimum", 0)) / 2
-    return semantic["value"]
+    return semantic["distribution"]["value"]
 
 
 def get_static_intervention_value(static_inter, model_map):
@@ -68,7 +68,7 @@ def get_static_intervention_value(static_inter, model_map):
 
 # Used to convert from HMI Intervention Policy -> pyciemss static interventions.
 def convert_static_interventions(interventions: list[HMIIntervention], model_config):
-    model_map = create_model_map(model_config)
+    model_map = create_model_config_map(model_config)
     if not (interventions):
         return defaultdict(dict), defaultdict(dict)
     static_param_interventions: Dict[torch.Tensor, Dict[str, any]] = defaultdict(dict)
@@ -85,14 +85,14 @@ def convert_static_interventions(interventions: list[HMIIntervention], model_con
     return static_param_interventions, static_state_interventions
 
 
-def create_model_map(model):
+def create_model_config_map(model_config):
     model_map = {
         "initials": {},
         "parameters": {},
     }
-    for intitial in model["semantics"]["ode"]["initials"]:
+    for intitial in model_config["initial_semantic_list"]:
         model_map["initials"][intitial["target"]] = intitial
-    for param in model["semantics"]["ode"]["parameters"]:
+    for param in model_config["parameter_semantic_list"]:
         model_map["parameters"][param["id"]] = param
     return model_map
 
