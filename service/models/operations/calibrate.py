@@ -1,5 +1,4 @@
 from __future__ import annotations
-import json
 import socket
 import logging
 
@@ -15,7 +14,7 @@ from models.converters import (
     fetch_and_convert_dynamic_interventions,
 )
 from utils.rabbitmq import gen_calibrate_rabbitmq_hook
-from utils.tds import fetch_dataset, fetch_model
+from utils.tds import fetch_dataset, fetch_model, fetch_model_config
 
 
 class CalibrateExtra(BaseModel):
@@ -64,8 +63,7 @@ class Calibrate(OperationRequest):
     def gen_pyciemss_args(self, job_id):
         amr_path = fetch_model(self.model_config_id, job_id)
 
-        with open(amr_path, "r") as f:
-            model_config_json = json.load(f)
+        model_config = fetch_model_config(self.model_config_id)
 
         dataset_path = fetch_dataset(self.dataset.dict(), job_id)
 
@@ -73,7 +71,7 @@ class Calibrate(OperationRequest):
             static_param_interventions,
             static_state_interventions,
         ) = fetch_and_convert_static_interventions(
-            self.policy_intervention_id, model_config_json, job_id
+            self.policy_intervention_id, model_config, job_id
         )
 
         (
