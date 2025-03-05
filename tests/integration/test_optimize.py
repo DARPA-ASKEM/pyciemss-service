@@ -38,6 +38,11 @@ def test_optimize_example(
         f"{TDS_URL}/simulations/{simulation_id}", json={"status": "success"}
     )
     requests_mock.get(f"{TDS_URL}/model-configurations/{config_id}/model", json=model)
+    model_config = json.loads(example_context["fetch"](config_id + "_config.json"))
+    requests_mock.get(
+        f"{TDS_URL}/model-configurations/{config_id}",
+        json=model_config,
+    )
 
     worker.work(burst=True)
 
