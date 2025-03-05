@@ -48,37 +48,27 @@ def get_semantic_value(semantic):
     return semantic["value"]
 
 
-def get_static_intervention_value(static_inter, model_config):
+def get_static_intervention_value(static_inter, model_map):
     """Get static intervention value with distribution and percentage handling"""
-    semantic_name = static_inter.applied_to
-    semantic = None
-    base_value = None
-    # Find the appropriate semantic based on intervention type
-    if static_inter.type == "parameter":
-        for param in model_config["semantics"]["ode"]["parameters"]:
-            if param["id"] == semantic_name:
-                semantic = param
-                base_value = get_semantic_value(semantic)
-                break
-    else:  # type == "state"
-        for initial in model_config["semantics"]["ode"]["initials"]:
-            if initial["target"] == semantic_name:
-                semantic = initial
-                base_value = initial["expression"]
-                break
 
-    if not semantic:
+    # If the intervention is not a type of parameter or value type of percentage, return the value directly
+    if static_inter.type != "parameter" or static_inter.value_type != "percentage":
+        return torch.tensor(float(static_inter.value))
+
+    semantic_name = static_inter.applied_to
+    parameter = model_map["parameters"][static_inter.applied_to]
+
+    if not parameter:
         raise ValueError(f"Could not find semantic for {semantic_name}")
 
-    # Handle percentage vs direct value
-    if static_inter.value_type == "percentage":
-        return torch.tensor(float(base_value) * (static_inter.value / 100))
+    base_value = get_semantic_value(parameter)
 
-    return torch.tensor(float(static_inter.value))
+    return torch.tensor(float(base_value) * (static_inter.value / 100))
 
 
 # Used to convert from HMI Intervention Policy -> pyciemss static interventions.
 def convert_static_interventions(interventions: list[HMIIntervention], model_config):
+    model_map = create_model_map(model_config)
     if not (interventions):
         return defaultdict(dict), defaultdict(dict)
     static_param_interventions: Dict[torch.Tensor, Dict[str, any]] = defaultdict(dict)
@@ -87,12 +77,24 @@ def convert_static_interventions(interventions: list[HMIIntervention], model_con
         for static_inter in inter.static_interventions:
             time = torch.tensor(float(static_inter.timestep))
             parameter_name = static_inter.applied_to
-            value = get_static_intervention_value(static_inter, model_config)
+            value = get_static_intervention_value(static_inter, model_map)
             if static_inter.type == "parameter":
                 static_param_interventions[time][parameter_name] = value
             if static_inter.type == "state":
                 static_state_interventions[time][parameter_name] = value
     return static_param_interventions, static_state_interventions
+
+
+def create_model_map(model):
+    model_map = {
+        "initials": {},
+        "parameters": {},
+    }
+    for intitial in model["semantics"]["ode"]["initials"]:
+        model_map["initials"][intitial["target"]] = intitial
+    for param in model["semantics"]["ode"]["parameters"]:
+        model_map["parameters"][param["id"]] = param
+    return model_map
 
 
 # Define the threshold for when the intervention should be applied.

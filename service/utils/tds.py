@@ -149,6 +149,14 @@ def fetch_model(model_config_id, job_id):
     return amr_path
 
 
+def fetch_model_config(model_config_id):
+    model_url = TDS_URL + TDS_CONFIGURATIONS + "/" + model_config_id
+    model_config_response = tds_session().get(model_url)
+    if model_config_response.status_code == 404:
+        raise HTTPException(status_code=404, detail="Model not found")
+    return model_config_response.json()
+
+
 def fetch_dataset(dataset: dict, job_id):
     job_dir = get_job_dir(job_id)
     logging.debug(f"Fetching dataset {dataset['id']}")

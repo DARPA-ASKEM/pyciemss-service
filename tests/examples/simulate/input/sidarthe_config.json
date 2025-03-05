@@ -1,0 +1,330 @@
+{
+	"id": "02eb70c7-1890-4db5-a21d-eda1363598fb",
+	"createdOn": "2025-03-05T18:58:51.748+00:00",
+	"updatedOn": "2025-03-05T18:58:51.748+00:00",
+	"name": "Default configuration",
+	"description": "This is a default configuration.",
+	"fileNames": [],
+	"temporary": false,
+	"publicAsset": false,
+	"modelId": "3ec43287-3645-4845-8f28-c32f204f7006",
+	"observableSemanticList": [
+			{
+					"id": "bab17de0-97be-42c5-91d8-82860b5bdbfa",
+					"createdOn": "2025-03-05T18:58:51.752+00:00",
+					"updatedOn": "2025-03-05T18:58:51.752+00:00",
+					"referenceId": "Cases",
+					"expression": "Diagnosed + Recognized + Threatened",
+					"expressionMathml": "<apply><plus/><ci>Diagnosed</ci><ci>Recognized</ci><ci>Threatened</ci></apply>"
+			},
+			{
+					"id": "980736af-32fb-4c69-a76a-aa2fd96c453d",
+					"createdOn": "2025-03-05T18:58:51.753+00:00",
+					"updatedOn": "2025-03-05T18:58:51.753+00:00",
+					"referenceId": "Hospitalizations",
+					"expression": "Recognized + Threatened",
+					"expressionMathml": "<apply><plus/><ci>Recognized</ci><ci>Threatened</ci></apply>"
+			},
+			{
+					"id": "718ab823-2dea-43e3-8516-e2549a157c67",
+					"createdOn": "2025-03-05T18:58:51.753+00:00",
+					"updatedOn": "2025-03-05T18:58:51.753+00:00",
+					"referenceId": "Deaths",
+					"expression": "Extinct",
+					"expressionMathml": "<ci>Extinct</ci>"
+			}
+	],
+	"parameterSemanticList": [
+			{
+					"id": "e7850d4e-520c-4fc3-8bc2-fc29a9abbaba",
+					"createdOn": "2025-03-05T18:58:51.754+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "beta",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.008799999999999999,
+									"maximum": 0.0132
+							}
+					},
+					"default": false
+			},
+			{
+					"id": "e8681cc1-71c7-438c-b85b-abb0478aaad1",
+					"createdOn": "2025-03-05T18:58:51.754+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "gamma",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.3648,
+									"maximum": 0.5472
+							}
+					},
+					"default": false
+			},
+			{
+					"id": "39c7197d-2d83-4182-b1ce-4e5c6631767b",
+					"createdOn": "2025-03-05T18:58:51.754+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "delta",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.008799999999999999,
+									"maximum": 0.0132
+							}
+					},
+					"default": false
+			},
+			{
+					"id": "569dc9de-93b1-4991-a2d3-c5b549fd412e",
+					"createdOn": "2025-03-05T18:58:51.755+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "alpha",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.45599999999999996,
+									"maximum": 0.6839999999999999
+							}
+					},
+					"default": false
+			},
+			{
+					"id": "897ab21e-95c6-4488-990e-f5dcbb973101",
+					"createdOn": "2025-03-05T18:58:51.755+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "epsilon",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.1368,
+									"maximum": 0.20520000000000002
+							}
+					},
+					"default": false
+			},
+			{
+					"id": "bf991647-a0eb-4ece-8c09-1d93677e2043",
+					"createdOn": "2025-03-05T18:58:51.756+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "zeta",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.1,
+									"maximum": 0.15
+							}
+					},
+					"default": false
+			},
+			{
+					"id": "fb1ebdc5-3ccf-4646-ad16-bd7d0fb19605",
+					"createdOn": "2025-03-05T18:58:51.756+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "lambda",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.027200000000000002,
+									"maximum": 0.0408
+							}
+					},
+					"default": false
+			},
+			{
+					"id": "0b1fbad2-ebd9-413a-972e-2ec90ba1968c",
+					"createdOn": "2025-03-05T18:58:51.756+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "eta",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.1,
+									"maximum": 0.15
+							}
+					},
+					"default": false
+			},
+			{
+					"id": "bdc752b2-22e8-4417-90f5-d1b806f0d2de",
+					"createdOn": "2025-03-05T18:58:51.757+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "rho",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.027200000000000002,
+									"maximum": 0.0408
+							}
+					},
+					"default": false
+			},
+			{
+					"id": "702fa5ae-16c4-4d15-ae5c-80920c9d25b0",
+					"createdOn": "2025-03-05T18:58:51.757+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "theta",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.2968,
+									"maximum": 0.4452
+							}
+					},
+					"default": false
+			},
+			{
+					"id": "73b1776b-fa7a-470a-a6a4-13f95f6894b3",
+					"createdOn": "2025-03-05T18:58:51.758+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "kappa",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.013600000000000001,
+									"maximum": 0.0204
+							}
+					},
+					"default": false
+			},
+			{
+					"id": "3c0cc124-55be-483c-b53b-d0b2c9927d4f",
+					"createdOn": "2025-03-05T18:58:51.758+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "mu",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.013600000000000001,
+									"maximum": 0.0204
+							}
+					},
+					"default": false
+			},
+			{
+					"id": "368226cc-ce3c-4387-8490-c6eac1ba188e",
+					"createdOn": "2025-03-05T18:58:51.758+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "nu",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.0216,
+									"maximum": 0.0324
+							}
+					},
+					"default": false
+			},
+			{
+					"id": "a55159a7-6b4d-4b1a-aa1b-ce50a9121288",
+					"createdOn": "2025-03-05T18:58:51.758+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "xi",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.013600000000000001,
+									"maximum": 0.0204
+							}
+					},
+					"default": false
+			},
+			{
+					"id": "1bf7954c-a3c7-4553-8aab-76dbe1557a78",
+					"createdOn": "2025-03-05T18:58:51.759+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "tau",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.008,
+									"maximum": 0.012
+							}
+					},
+					"default": false
+			},
+			{
+					"id": "c26d6ced-c552-4b8f-b171-59570f639cf0",
+					"createdOn": "2025-03-05T18:58:51.759+00:00",
+					"updatedOn": "2025-03-05T18:58:51.759+00:00",
+					"referenceId": "sigma",
+					"distribution": {
+							"type": "StandardUniform1",
+							"parameters": {
+									"minimum": 0.013600000000000001,
+									"maximum": 0.0204
+							}
+					},
+					"default": false
+			}
+	],
+	"initialSemanticList": [
+			{
+					"id": "03f6a6cf-10ee-4a2d-b7d2-caa06c37256f",
+					"createdOn": "2025-03-05T18:58:51.749+00:00",
+					"updatedOn": "2025-03-05T18:58:51.749+00:00",
+					"target": "Susceptible",
+					"expression": "0.999996300000000",
+					"expressionMathml": "<cn>0.99999629999999995</cn>"
+			},
+			{
+					"id": "4a8034f9-c930-4b71-9d1e-e530c07ecb3b",
+					"createdOn": "2025-03-05T18:58:51.749+00:00",
+					"updatedOn": "2025-03-05T18:58:51.749+00:00",
+					"target": "Diagnosed",
+					"expression": "3.33333333000000e-7",
+					"expressionMathml": "<cn>3.33333333e-7</cn>"
+			},
+			{
+					"id": "0e44057e-dc49-4fea-86fd-abfd1a117bb1",
+					"createdOn": "2025-03-05T18:58:51.750+00:00",
+					"updatedOn": "2025-03-05T18:58:51.750+00:00",
+					"target": "Infected",
+					"expression": "3.33333333000000e-6",
+					"expressionMathml": "<cn>3.3333333299999999e-6</cn>"
+			},
+			{
+					"id": "d099c2f2-8556-414d-bc9d-662093cacc1a",
+					"createdOn": "2025-03-05T18:58:51.750+00:00",
+					"updatedOn": "2025-03-05T18:58:51.750+00:00",
+					"target": "Ailing",
+					"expression": "1.66666666000000e-8",
+					"expressionMathml": "<cn>1.6666666599999999e-8</cn>"
+			},
+			{
+					"id": "50bfefdd-fb4b-4d6a-8839-7a11c6e466a3",
+					"createdOn": "2025-03-05T18:58:51.750+00:00",
+					"updatedOn": "2025-03-05T18:58:51.750+00:00",
+					"target": "Recognized",
+					"expression": "3.33333333000000e-8",
+					"expressionMathml": "<cn>3.33333333e-8</cn>"
+			},
+			{
+					"id": "1bac70d9-bdc5-41d0-83a9-13d10af870a0",
+					"createdOn": "2025-03-05T18:58:51.751+00:00",
+					"updatedOn": "2025-03-05T18:58:51.751+00:00",
+					"target": "Healed",
+					"expression": "0.0",
+					"expressionMathml": "<cn>0.0</cn>"
+			},
+			{
+					"id": "497c1275-e325-446b-9d3c-2e6db8223aea",
+					"createdOn": "2025-03-05T18:58:51.751+00:00",
+					"updatedOn": "2025-03-05T18:58:51.751+00:00",
+					"target": "Threatened",
+					"expression": "0.0",
+					"expressionMathml": "<cn>0.0</cn>"
+			},
+			{
+					"id": "d426f375-cc3d-484d-a238-8c3cb51ecc20",
+					"createdOn": "2025-03-05T18:58:51.752+00:00",
+					"updatedOn": "2025-03-05T18:58:51.752+00:00",
+					"target": "Extinct",
+					"expression": "0.0",
+					"expressionMathml": "<cn>0.0</cn>"
+			}
+	],
+	"inferredParameterList": []
+}

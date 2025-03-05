@@ -10,7 +10,7 @@ from models.converters import (
     fetch_and_convert_static_interventions,
     fetch_and_convert_dynamic_interventions,
 )
-from utils.tds import fetch_model, fetch_inferred_parameters
+from utils.tds import fetch_model, fetch_inferred_parameters, fetch_model_config
 
 
 class SimulateExtra(BaseModel):
@@ -52,6 +52,8 @@ class Simulate(OperationRequest):
         with open(amr_path, "r") as f:
             model_config_json = json.load(f)
 
+        model_config = fetch_model_config(self.model_config_id)
+        print(model_config)
         (
             static_param_interventions,
             static_state_interventions,
