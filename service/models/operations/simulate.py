@@ -9,7 +9,7 @@ from models.converters import (
     fetch_and_convert_static_interventions,
     fetch_and_convert_dynamic_interventions,
 )
-from utils.tds import fetch_model, fetch_inferred_parameters
+from utils.tds import fetch_model, fetch_inferred_parameters, fetch_model_config
 
 
 class SimulateExtra(BaseModel):
@@ -49,10 +49,13 @@ class Simulate(OperationRequest):
         # Get model from TDS
         amr_path = fetch_model(self.model_config_id, job_id)
 
+        model_config = fetch_model_config(self.model_config_id)
         (
             static_param_interventions,
             static_state_interventions,
-        ) = fetch_and_convert_static_interventions(self.policy_intervention_id, job_id)
+        ) = fetch_and_convert_static_interventions(
+            self.policy_intervention_id, model_config, job_id
+        )
 
         (
             dynamic_param_interventions,

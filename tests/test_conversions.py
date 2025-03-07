@@ -46,6 +46,11 @@ class TestSimulate:
             f"{TDS_URL}/model-configurations/{config_id}/model",
             json=model,
         )
+        model_config = json.loads(example_context["fetch"](config_id + "_config.json"))
+        requests_mock.get(
+            f"{TDS_URL}/model-configurations/{config_id}",
+            json=model_config,
+        )
 
         ### Act and Assert
 
@@ -66,6 +71,11 @@ class TestCalibrate:
         requests_mock.get(
             f"{TDS_URL}/model-configurations/{config_id}/model",
             json=model,
+        )
+        model_config = json.loads(example_context["fetch"](config_id + "_config.json"))
+        requests_mock.get(
+            f"{TDS_URL}/model-configurations/{config_id}",
+            json=model_config,
         )
 
         dataset_id = example_context["request"]["dataset"]["id"]
@@ -152,6 +162,11 @@ class TestOptimize:
         requests_mock.get(
             f"{TDS_URL}/model-configurations/{config_id}/model",
             json=model,
+        )
+        model_config = json.loads(example_context["fetch"](config_id + "_config.json"))
+        requests_mock.get(
+            f"{TDS_URL}/model-configurations/{config_id}",
+            json=model_config,
         )
 
         ### Act and Assert

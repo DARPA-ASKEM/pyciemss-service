@@ -47,6 +47,7 @@ class HMIStaticIntervention(BaseModel):
     value: float
     applied_to: str
     type: str
+    value_type: str
 
 
 class HMIDynamicIntervention(BaseModel):

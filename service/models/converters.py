@@ -7,7 +7,9 @@ from typing import Dict, Callable
 from models.base import HMIIntervention
 
 
-def fetch_and_convert_static_interventions(policy_intervention_id, job_id):
+def fetch_and_convert_static_interventions(
+    policy_intervention_id, model_config, job_id
+):
     if not (policy_intervention_id):
         return defaultdict(dict), defaultdict(dict)
     policy_intervention = fetch_interventions(policy_intervention_id, job_id)
@@ -19,7 +21,7 @@ def fetch_and_convert_static_interventions(policy_intervention_id, job_id):
             dynamic_interventions=inter["dynamic_interventions"],
         )
         interventionList.append(intervention)
-    return convert_static_interventions(interventionList)
+    return convert_static_interventions(interventionList, model_config)
 
 
 def fetch_and_convert_dynamic_interventions(policy_intervention_id, job_id):
@@ -37,8 +39,60 @@ def fetch_and_convert_dynamic_interventions(policy_intervention_id, job_id):
     return convert_dynamic_interventions(interventionList)
 
 
+def get_parameter_value(parameter):
+    """Helper function to get the correct value based on distribution type"""
+    if not parameter or "distribution" not in parameter:
+        raise ValueError("Parameter must contain a distribution configuration")
+
+    distribution = parameter["distribution"]
+    dist_type = distribution.get("type")
+    params = distribution.get("parameters", {})
+
+    if not dist_type or not params:
+        raise ValueError("Distribution must specify type and parameters")
+
+    if dist_type == "StandardUniform1":
+        maximum = params.get("maximum")
+        minimum = params.get("minimum")
+        if maximum is None or minimum is None:
+            raise ValueError(
+                "StandardUniform1 distribution requires maximum and minimum values"
+            )
+        return (maximum + minimum) / 2
+
+    elif dist_type == "inferred":
+        mean = params.get("mean")
+        if mean is None:
+            raise ValueError("Inferred distribution requires mean value")
+        return mean
+
+    elif "value" in params:
+        return float(params["value"])
+
+    raise ValueError(f"Unsupported distribution type: {dist_type}")
+
+
+def get_static_intervention_value(static_inter, model_map):
+    """Get static intervention value with distribution and percentage handling"""
+
+    # If the intervention is not a type of parameter or value type of percentage, return the value directly
+    if static_inter.type != "parameter" or static_inter.value_type != "percentage":
+        return torch.tensor(float(static_inter.value))
+
+    semantic_name = static_inter.applied_to
+    parameter = model_map["parameters"][static_inter.applied_to]
+
+    if not parameter:
+        raise ValueError(f"Could not find semantic for {semantic_name}")
+
+    base_value = get_parameter_value(parameter)
+
+    return torch.tensor(float(base_value) * (static_inter.value / 100))
+
+
 # Used to convert from HMI Intervention Policy -> pyciemss static interventions.
-def convert_static_interventions(interventions: list[HMIIntervention]):
+def convert_static_interventions(interventions: list[HMIIntervention], model_config):
+    model_map = create_model_config_map(model_config)
     if not (interventions):
         return defaultdict(dict), defaultdict(dict)
     static_param_interventions: Dict[torch.Tensor, Dict[str, any]] = defaultdict(dict)
@@ -47,12 +101,32 @@ def convert_static_interventions(interventions: list[HMIIntervention]):
         for static_inter in inter.static_interventions:
             time = torch.tensor(float(static_inter.timestep))
             parameter_name = static_inter.applied_to
-            value = torch.tensor(float(static_inter.value))
+            value = get_static_intervention_value(static_inter, model_map)
             if static_inter.type == "parameter":
                 static_param_interventions[time][parameter_name] = value
             if static_inter.type == "state":
                 static_state_interventions[time][parameter_name] = value
     return static_param_interventions, static_state_interventions
+
+
+def create_model_config_map(model_config):
+    model_map = {
+        "initials": {},
+        "parameters": {},
+    }
+    for intitial in model_config["initial_semantic_list"]:
+        model_map["initials"][intitial["target"]] = intitial
+
+    # Use inferred_parameter_list if it exists, otherwise use parameter_semantic_list
+    is_configured_config = len(model_config.get("inferred_parameter_list", [])) > 0
+    parameter_list = (
+        "inferred_parameter_list"
+        if is_configured_config in model_config
+        else "parameter_semantic_list"
+    )
+    for param in model_config[parameter_list]:
+        model_map["parameters"][param["reference_id"]] = param
+    return model_map
 
 
 # Define the threshold for when the intervention should be applied.
