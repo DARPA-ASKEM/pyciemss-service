@@ -14,7 +14,12 @@ from models.converters import (
     fetch_and_convert_dynamic_interventions,
 )
 from utils.rabbitmq import gen_calibrate_rabbitmq_hook
-from utils.tds import fetch_dataset, fetch_model, fetch_model_config
+from utils.tds import (
+    fetch_dataset,
+    fetch_model,
+    fetch_model_config,
+    create_model_config_map,
+)
 
 
 class CalibrateExtra(BaseModel):
@@ -64,6 +69,7 @@ class Calibrate(OperationRequest):
         amr_path = fetch_model(self.model_config_id, job_id)
 
         model_config = fetch_model_config(self.model_config_id)
+        model_map = create_model_config_map(model_config)
 
         dataset_path = fetch_dataset(self.dataset.dict(), job_id)
 
@@ -71,13 +77,15 @@ class Calibrate(OperationRequest):
             static_param_interventions,
             static_state_interventions,
         ) = fetch_and_convert_static_interventions(
-            self.policy_intervention_id, model_config, job_id
+            self.policy_intervention_id, model_map, job_id
         )
 
         (
             dynamic_param_interventions,
             dynamic_state_interventions,
-        ) = fetch_and_convert_dynamic_interventions(self.policy_intervention_id, job_id)
+        ) = fetch_and_convert_dynamic_interventions(
+            self.policy_intervention_id, model_map, job_id
+        )
 
         # TODO: Test RabbitMQ
         try:

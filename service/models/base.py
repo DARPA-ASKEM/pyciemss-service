@@ -56,6 +56,7 @@ class HMIDynamicIntervention(BaseModel):
     value: float
     applied_to: str
     type: str
+    value_type: str
 
 
 class HMIInterventionPolicy(BaseModel):

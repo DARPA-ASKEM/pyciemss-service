@@ -25,7 +25,12 @@ from models.converters import (
     convert_static_interventions,
     convert_dynamic_interventions,
 )
-from utils.tds import fetch_model, fetch_inferred_parameters, fetch_model_config
+from utils.tds import (
+    fetch_model,
+    fetch_inferred_parameters,
+    fetch_model_config,
+    create_model_config_map,
+)
 
 
 class InterventionType(str, Enum):
@@ -259,15 +264,16 @@ class Optimize(OperationRequest):
         # Get model from TDS
         amr_path = fetch_model(self.model_config_id, job_id)
         model_config = fetch_model_config(self.model_config_id)
+        model_map = create_model_config_map(model_config)
         (
             fixed_static_parameter_interventions,
             fixed_static_state_interventions,
-        ) = convert_static_interventions(self.fixed_interventions, model_config)
+        ) = convert_static_interventions(self.fixed_interventions, model_map)
 
         (
             dynamic_param_interventions,
             dynamic_state_interventions,
-        ) = convert_dynamic_interventions(self.fixed_interventions)
+        ) = convert_dynamic_interventions(self.fixed_interventions, model_map)
 
         transformed_optimize_interventions: list[
             Callable[[torch.Tensor], Dict[float, Dict[str, Intervention]]]
