@@ -75,8 +75,8 @@ def resolve_intervention_value(
 ):
     """Get static intervention value with distribution and percentage handling"""
 
-    # If the intervention is not a type of parameter or value type of percentage, return the value directly
-    if intervetion.type != "parameter" or intervetion.value_type != "percentage":
+    # If the intervention is not of value type percentage, return the value directly
+    if intervetion.value_type != "percentage":
         return torch.tensor(float(intervetion.value))
 
     semantic_name = intervetion.applied_to
