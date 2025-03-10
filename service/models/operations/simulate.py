@@ -8,13 +8,9 @@ from models.base import OperationRequest, Timespan
 from models.converters import (
     fetch_and_convert_static_interventions,
     fetch_and_convert_dynamic_interventions,
-)
-from utils.tds import (
-    fetch_model,
-    fetch_inferred_parameters,
-    fetch_model_config,
     create_model_config_map,
 )
+from utils.tds import fetch_model, fetch_inferred_parameters, fetch_model_config
 
 
 class SimulateExtra(BaseModel):

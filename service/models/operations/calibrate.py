@@ -12,14 +12,10 @@ from models.base import Dataset, OperationRequest, Timespan
 from models.converters import (
     fetch_and_convert_static_interventions,
     fetch_and_convert_dynamic_interventions,
-)
-from utils.rabbitmq import gen_calibrate_rabbitmq_hook
-from utils.tds import (
-    fetch_dataset,
-    fetch_model,
-    fetch_model_config,
     create_model_config_map,
 )
+from utils.rabbitmq import gen_calibrate_rabbitmq_hook
+from utils.tds import fetch_dataset, fetch_model, fetch_model_config
 
 
 class CalibrateExtra(BaseModel):

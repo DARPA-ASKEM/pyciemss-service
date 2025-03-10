@@ -24,13 +24,9 @@ from pyciemss.ouu.qoi import obs_nday_average_qoi, obs_max_qoi
 from models.converters import (
     convert_static_interventions,
     convert_dynamic_interventions,
-)
-from utils.tds import (
-    fetch_model,
-    fetch_inferred_parameters,
-    fetch_model_config,
     create_model_config_map,
 )
+from utils.tds import fetch_model, fetch_inferred_parameters, fetch_model_config
 
 
 class InterventionType(str, Enum):
