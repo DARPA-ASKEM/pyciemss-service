@@ -179,12 +179,9 @@ def convert_to_solution_mapping(config):
     def solution_mapping(individual_states):
         ensemble_map = defaultdict(lambda: 0)
         for state, value in individual_states.items():
-            ensemble_state = (
-                individual_to_ensemble[state]
-                if state in individual_to_ensemble
-                else "uncategorized"
-            )
-            ensemble_map[ensemble_state] += value
+            if state in individual_to_ensemble:
+                ensemble_state = individual_to_ensemble[state]
+                ensemble_map[ensemble_state] += value
         return ensemble_map
 
     return solution_mapping
